@@ -1,0 +1,14 @@
+# Rustfmt configuration for strapd project
+# Only stable features
+
+# Basic formatting options
+edition = "2024"
+max_width = 100
+hard_tabs = false
+tab_spaces = 4
+
+# Function formatting
+fn_params_layout = "Tall"
+
+# Import reordering
+reorder_imports = true
