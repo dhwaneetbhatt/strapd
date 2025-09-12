@@ -11,14 +11,15 @@ fn main() {
     match &cli.command {
         Commands::String { operation } => {
             let input = get_input_string(match operation {
-                StringOperation::Uppercase { input } | StringOperation::Lowercase { input } => {
-                    input.as_ref()
-                }
+                StringOperation::Uppercase { input }
+                | StringOperation::Lowercase { input }
+                | StringOperation::CapitalCase { input } => input.as_ref(),
             });
 
             let result = match operation {
                 StringOperation::Uppercase { .. } => string::to_uppercase(&input),
                 StringOperation::Lowercase { .. } => string::to_lowercase(&input),
+                StringOperation::CapitalCase { .. } => string::to_capitalcase(&input),
             };
 
             io::stdout()

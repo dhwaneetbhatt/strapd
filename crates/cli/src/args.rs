@@ -20,7 +20,7 @@ pub enum Commands {
 #[derive(Subcommand, Debug)]
 pub enum StringOperation {
     /// Convert string to uppercase
-    #[command(aliases = ["upper", "upper_case", "uc"])]
+    #[command(aliases = ["upper", "upper_case", "caps", "uc"])]
     Uppercase {
         /// The string to convert (if not provided, reads from stdin)
         input: Option<String>,
@@ -28,6 +28,11 @@ pub enum StringOperation {
     /// Convert string to lowercase
     #[command(aliases = ["lower", "lower_case", "lc"])]
     Lowercase {
+        /// The string to convert (if not provided, reads from stdin)
+        input: Option<String>,
+    },
+    #[command(aliases = ["capital_case"])]
+    CapitalCase {
         /// The string to convert (if not provided, reads from stdin)
         input: Option<String>,
     },
