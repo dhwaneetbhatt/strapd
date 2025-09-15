@@ -15,6 +15,10 @@ pub enum Commands {
         #[clap(subcommand)]
         operation: StringOperation,
     },
+    Uuid {
+        #[clap(subcommand)]
+        operation: UuidOperation,
+    },
 }
 
 #[derive(Subcommand, Debug)]
@@ -35,5 +39,19 @@ pub enum StringOperation {
     CapitalCase {
         /// The string to convert (if not provided, reads from stdin)
         input: Option<String>,
+    },
+}
+
+#[derive(Subcommand, Debug)]
+pub enum UuidOperation {
+    /// Generate a v4 UUID
+    V4 {
+        /// Number of UUIDs to generate (if not provided, defaults to 1)
+        number: Option<usize>,
+    },
+    /// Generate a v7 UUID
+    V7 {
+        /// Number of UUIDs to generate (if not provided, defaults to 1)
+        number: Option<usize>,
     },
 }
