@@ -35,10 +35,35 @@ pub enum StringOperation {
         /// The string to convert (if not provided, reads from stdin)
         input: Option<String>,
     },
+    /// Convert string to capital case (first letter of each word is a capital letter)
     #[command(aliases = ["capital_case"])]
     CapitalCase {
         /// The string to convert (if not provided, reads from stdin)
         input: Option<String>,
+    },
+    /// Remove whitespaces from the string.
+    /// Trims leading and trailing whitespaces by default.
+    Trim {
+        /// The string to convert (if not provided, reads from stdin)
+        input: Option<String>,
+
+        /// Trim leading whitespace only
+        #[arg(short = 'l', long = "left",
+              visible_aliases = ["leading", "start", "ltrim"],
+              conflicts_with_all = ["right", "all"])]
+        left: bool,
+
+        /// Trim trailing whitespace only
+        #[arg(short = 'r', long = "right",
+              visible_aliases = ["trailing", "end", "rtrim"],
+              conflicts_with_all = ["left", "all"])]
+        right: bool,
+
+        /// Trim both sides and collapse internal whitespace
+        #[arg(short = 'a', long = "all",
+              visible_aliases = ["collapse", "strip", "everything"],
+              conflicts_with_all = ["left", "right"])]
+        all: bool,
     },
 }
 
