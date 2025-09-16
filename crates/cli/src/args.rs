@@ -41,6 +41,12 @@ pub enum StringOperation {
         /// The string to convert (if not provided, reads from stdin)
         input: Option<String>,
     },
+    /// Reverse the string
+    #[command(aliases = ["rev"])]
+    Reverse {
+        /// The string to reverse (if not provided, reads from stdin)
+        input: Option<String>,
+    },
     /// Remove whitespaces from the string.
     /// Trims leading and trailing whitespaces by default.
     Trim {

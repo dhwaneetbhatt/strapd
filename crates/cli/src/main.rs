@@ -19,6 +19,7 @@ fn main() {
             StringOperation::CapitalCase { input } => {
                 get_input_string(input, |s| string::to_capitalcase(&s))
             }
+            StringOperation::Reverse { input } => get_input_string(input, |s| string::reverse(&s)),
             StringOperation::Trim {
                 input,
                 left,

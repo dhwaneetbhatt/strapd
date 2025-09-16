@@ -39,6 +39,10 @@ pub fn trim(input: &str, left: bool, right: bool, all: bool) -> String {
     }
 }
 
+pub fn reverse(input: &str) -> String {
+    input.chars().rev().collect()
+}
+
 fn collapse_whitspace(input: &str) -> String {
     let mut out = String::with_capacity(input.len());
     let mut previous_ws = false;
