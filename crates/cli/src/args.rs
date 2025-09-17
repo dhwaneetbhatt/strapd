@@ -24,7 +24,7 @@ pub enum Commands {
 #[derive(Subcommand, Debug)]
 pub enum StringOperation {
     /// Convert string to uppercase
-    #[command(aliases = ["upper", "upper_case", "caps", "uc"])]
+    #[command(aliases = ["upper", "upper_case", "uc"])]
     Uppercase {
         /// The string to convert (if not provided, reads from stdin)
         input: Option<String>,
@@ -36,7 +36,7 @@ pub enum StringOperation {
         input: Option<String>,
     },
     /// Convert string to capital case (first letter of each word is a capital letter)
-    #[command(aliases = ["capital_case"])]
+    #[command(aliases = ["capital_case", "title_case"])]
     CapitalCase {
         /// The string to convert (if not provided, reads from stdin)
         input: Option<String>,
@@ -46,6 +46,15 @@ pub enum StringOperation {
     Reverse {
         /// The string to reverse (if not provided, reads from stdin)
         input: Option<String>,
+    },
+    /// Replaces all matches of a pattern with another string
+    Replace {
+        #[arg(
+            help = "Accepts either:\n- input search replace_with\n- search replace_with (input taken from stdin)",
+            value_names = ["input", "search", "replace_with"],
+            num_args = 2..=3
+        )]
+        params: Vec<String>,
     },
     /// Remove whitespaces from the string.
     /// Trims leading and trailing whitespaces by default.

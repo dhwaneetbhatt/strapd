@@ -43,6 +43,10 @@ pub fn reverse(input: &str) -> String {
     input.chars().rev().collect()
 }
 
+pub fn replace(input: &str, from: &str, to: &str) -> String {
+    input.replace(from, to)
+}
+
 fn collapse_whitspace(input: &str) -> String {
     let mut out = String::with_capacity(input.len());
     let mut previous_ws = false;

@@ -11,21 +11,30 @@ fn main() {
     let result = match &cli.command {
         Commands::String { operation } => match operation {
             StringOperation::Uppercase { input } => {
-                get_input_string(input, |s| string::to_uppercase(&s))
+                get_input_string(input, |s| string::to_uppercase(s))
             }
             StringOperation::Lowercase { input } => {
-                get_input_string(input, |s| string::to_lowercase(&s))
+                get_input_string(input, |s| string::to_lowercase(s))
             }
             StringOperation::CapitalCase { input } => {
-                get_input_string(input, |s| string::to_capitalcase(&s))
+                get_input_string(input, |s| string::to_capitalcase(s))
             }
             StringOperation::Reverse { input } => get_input_string(input, |s| string::reverse(&s)),
+            StringOperation::Replace { params } => match params.as_slice() {
+                [search, replacement] => {
+                    get_input_string(&None, |s| string::replace(s, search, replacement))
+                }
+                [input, search, replacement] => get_input_string(&Some(input.clone()), |s| {
+                    string::replace(s, search, replacement)
+                }),
+                _ => unreachable!(),
+            },
             StringOperation::Trim {
                 input,
                 left,
                 right,
                 all,
-            } => get_input_string(input, |s| string::trim(&s, *left, *right, *all)),
+            } => get_input_string(input, |s| string::trim(s, *left, *right, *all)),
         },
         Commands::Uuid { operation } => match operation {
             UuidOperation::V4 { number } => uuid::generate_v4(&number),
