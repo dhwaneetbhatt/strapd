@@ -11,22 +11,27 @@ fn main() {
     let result = match &cli.command {
         Commands::String { operation } => match operation {
             StringOperation::Uppercase { input } => {
-                get_input_string(input, |s| string::to_uppercase(s))
+                let input = get_input_string(input);
+                string::to_uppercase(&input)
             }
             StringOperation::Lowercase { input } => {
-                get_input_string(input, |s| string::to_lowercase(s))
+                let input = get_input_string(input);
+                string::to_lowercase(&input)
             }
             StringOperation::CapitalCase { input } => {
-                get_input_string(input, |s| string::to_capitalcase(s))
+                let input = get_input_string(input);
+                string::to_capitalcase(&input)
             }
-            StringOperation::Reverse { input } => get_input_string(input, |s| string::reverse(&s)),
+            StringOperation::Reverse { input } => {
+                let input = get_input_string(input);
+                string::reverse(&input)
+            }
             StringOperation::Replace { params } => match params.as_slice() {
                 [search, replacement] => {
-                    get_input_string(&None, |s| string::replace(s, search, replacement))
+                    let input = get_input_string(&None);
+                    string::replace(&input, search, replacement)
                 }
-                [input, search, replacement] => get_input_string(&Some(input.clone()), |s| {
-                    string::replace(s, search, replacement)
-                }),
+                [input, search, replacement] => string::replace(input, search, replacement),
                 _ => unreachable!(),
             },
             StringOperation::Trim {
@@ -34,7 +39,10 @@ fn main() {
                 left,
                 right,
                 all,
-            } => get_input_string(input, |s| string::trim(s, *left, *right, *all)),
+            } => {
+                let input = get_input_string(input);
+                string::trim(&input, *left, *right, *all)
+            }
         },
         Commands::Uuid { operation } => match operation {
             UuidOperation::V4 { number } => uuid::generate_v4(&number),
@@ -50,16 +58,15 @@ fn main() {
         .expect("Failed to write newline to stdout");
 }
 
-fn get_input_string<R>(input: &Option<String>, f: impl FnOnce(&str) -> R) -> R {
-    let s = match input.as_deref() {
-        Some(s) => s,
+fn get_input_string(input: &Option<String>) -> String {
+    match input.as_ref() {
+        Some(s) => s.clone(),
         None => {
             let mut buf = String::new();
             io::stdin()
                 .read_to_string(&mut buf)
                 .expect("Failed to read from stdin");
-            &buf.trim().to_string()
+            buf.trim().to_string()
         }
-    };
-    f(s)
+    }
 }

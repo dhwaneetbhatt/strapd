@@ -43,8 +43,8 @@ pub fn reverse(input: &str) -> String {
     input.chars().rev().collect()
 }
 
-pub fn replace(input: &str, from: &str, to: &str) -> String {
-    input.replace(from, to)
+pub fn replace(input: &str, search: &str, replacement: &str) -> String {
+    input.replace(search, replacement)
 }
 
 fn collapse_whitspace(input: &str) -> String {
