@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <!-- Essential Meta Tags -->
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description"
+        content="strapd is a fast, portable CLI toolkit for developers with string manipulation, UUID generation, data conversions, and more. Written in Rust for Linux, macOS, and Windows.">
+    <meta name="keywords"
+        content="CLI tool, developer toolkit, string manipulation, UUID generation, Rust, command line, developer utilities">
+    <meta name="author" content="Dhwaneet Bhatt">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="https://yourdomain.com/">
+
+    <!-- Open Graph Meta Tags -->
+    <meta property="og:title" content="strapd - Developer CLI Toolkit">
+    <meta property="og:description"
+        content="Fast, portable CLI toolkit for developers with string manipulation, UUID generation, and more utilities. Written in Rust.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://yourdomain.com/">
+    <meta property="og:image" content="https://yourdomain.com/strapd-og-image.png">
+    <meta property="og:site_name" content="strapd">
+
+    <!-- Twitter Card Meta Tags -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="strapd - Developer CLI Toolkit">
+    <meta name="twitter:description"
+        content="Fast, portable CLI toolkit for developers with string manipulation, UUID generation, and more utilities.">
+    <meta name="twitter:image" content="https://yourdomain.com/strapd-og-image.png">
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" href="/favicon.ico">
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+
+    <title>strapd - Developer CLI Toolkit | Fast Rust-based Command Line Tools</title>
+
+    <!-- Preload Critical Resources -->
+    <link rel="preload" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" as="style">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap">
+
+    <style>
+        :root {
+            --bg-primary: #ffffff;
+            --bg-secondary: #f6f8fa;
+            --bg-tertiary: #ffffff;
+            --text-primary: #24292f;
+            --text-secondary: #656d76;
+            --text-accent: #0969da;
+            --border-color: #d0d7de;
+            --btn-primary-bg: #1f883d;
+            --btn-primary-hover: #1a7f37;
+            --btn-secondary-bg: #f6f8fa;
+            --btn-secondary-hover: #f3f4f6;
+            --btn-secondary-border: #d0d7de;
+            --focus-ring: #0969da;
+        }
+
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --bg-primary: #0d1117;
+                --bg-secondary: #161b22;
+                --bg-tertiary: #0d1117;
+                --text-primary: #c9d1d9;
+                --text-secondary: #8b949e;
+                --text-accent: #58a6ff;
+                --border-color: #30363d;
+                --btn-primary-bg: #238636;
+                --btn-primary-hover: #2ea043;
+                --btn-secondary-bg: #21262d;
+                --btn-secondary-hover: #30363d;
+                --btn-secondary-border: #30363d;
+                --focus-ring: #58a6ff;
+            }
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+            line-height: 1.6;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            transition: background-color 0.3s ease-out, color 0.3s ease-out;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 2rem;
+            padding: 2rem 0;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .hero-title {
+            font-size: clamp(2rem, 5vw, 3rem);
+            margin-bottom: 0.5rem;
+            color: var(--text-accent);
+            font-weight: 700;
+        }
+
+        .hero-subtitle {
+            font-size: clamp(1rem, 3vw, 1.2rem);
+            color: var(--text-secondary);
+            margin-bottom: 2rem;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .badges {
+            margin: 1rem 0;
+        }
+
+        .badges img {
+            margin: 0 5px;
+            height: 20px;
+            width: auto;
+        }
+
+        .cta-buttons {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        /* Hidden heading for accessibility */
+        .visually-hidden {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            white-space: nowrap;
+            border: 0;
+        }
+
+        .features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin: 2rem 0;
+        }
+
+        .feature {
+            background: var(--bg-secondary);
+            padding: 1.5rem;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            will-change: transform;
+            transform: translate3d(0, 0, 0);
+            transition: transform 0.2s ease-out;
+        }
+
+        .feature:hover {
+            transform: translate3d(0, -2px, 0);
+        }
+
+        .feature h3 {
+            color: var(--text-accent);
+            margin-top: 0;
+            font-weight: 600;
+        }
+
+        .install-section {
+            background: var(--bg-secondary);
+            padding: 2rem;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            margin: 2rem 0;
+        }
+
+        .code-block {
+            background: var(--bg-tertiary);
+            padding: 1rem;
+            border-radius: 6px;
+            border: 1px solid var(--border-color);
+            font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+            font-size: 14px;
+            overflow-x: auto;
+            white-space: pre-wrap;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 0.75rem 1.5rem;
+            background: var(--btn-primary-bg);
+            color: white;
+            text-decoration: none;
+            border-radius: 6px;
+            font-weight: 600;
+            transition: background-color 0.2s ease-out;
+        }
+
+        .btn:hover {
+            background: var(--btn-primary-hover);
+        }
+
+        .btn:focus {
+            outline: 2px solid var(--focus-ring);
+            outline-offset: 2px;
+        }
+
+        .btn-secondary {
+            background: var(--btn-secondary-bg);
+            border: 1px solid var(--btn-secondary-border);
+            color: var(--text-primary);
+        }
+
+        .btn-secondary:hover {
+            background: var(--btn-secondary-hover);
+        }
+
+        a {
+            color: var(--text-accent);
+            text-decoration: underline;
+            /* Always show underline for accessibility */
+        }
+
+        a:hover {
+            text-decoration: none;
+            /* Remove underline on hover for visual effect */
+        }
+
+        a:focus {
+            outline: 2px solid var(--focus-ring);
+            outline-offset: 2px;
+            border-radius: 2px;
+        }
+
+        /* Exception for buttons - they shouldn't have underlines */
+        .btn {
+            text-decoration: none;
+        }
+
+        .btn:hover {
+            text-decoration: none;
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 3rem;
+            padding-top: 2rem;
+            border-top: 1px solid var(--border-color);
+            color: var(--text-secondary);
+        }
+
+        .features-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .features-list li {
+            padding: 0.5rem 0;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .features-list li:last-child {
+            border-bottom: none;
+        }
+
+        /* Responsive improvements */
+        @media (max-width: 768px) {
+            body {
+                padding: 10px;
+            }
+
+            .header {
+                padding: 1rem 0;
+            }
+
+            .install-section {
+                padding: 1rem;
+            }
+
+            .features {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+            }
+        }
+    </style>
+
+    <!-- Structured Data -->
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "SoftwareApplication",
+        "name": "strapd",
+        "description": "A CLI tool for developers with common utilities like string manipulation, data format conversions, encoding, security stuff, date/time processing, and more.",
+        "url": "https://github.com/dhwaneetbhatt/strapd",
+        "author": {
+            "@type": "Person",
+            "name": "Dhwaneet Bhatt"
+        },
+        "programmingLanguage": "Rust",
+        "operatingSystem": ["Linux", "macOS", "Windows"],
+        "applicationCategory": "DeveloperApplication",
+        "offers": {
+            "@type": "Offer",
+            "price": "0",
+            "priceCurrency": "USD"
+        },
+        "license": "Apache License 2.0"
+    }
+    </script>
+</head>
+
+<body>
+    <header class="header">
+        <h1 class="hero-title">strapd 🛠️</h1>
+        <p class="hero-subtitle">A CLI tool for developers with common utilities like string manipulation, data format
+            conversions, encoding, security stuff, date/time processing, and more.</p>
+
+        <div class="badges">
+            <a href="https://github.com/dhwaneetbhatt/strapd/actions">
+                <img src="https://github.com/dhwaneetbhatt/strapd/workflows/CI/badge.svg" alt="CI Status Badge"
+                    loading="lazy">
+            </a>
+        </div>
+
+        <div class="cta-buttons">
+            <a href="https://github.com/dhwaneetbhatt/strapd" class="btn">View on GitHub</a>
+            <a href="#installation" class="btn btn-secondary">Get Started</a>
+        </div>
+    </header>
+
+    <main>
+        <section class="features">
+            <h2 class="visually-hidden">Key Features</h2>
+            <div class="feature">
+                <h3>⚡ Fast</h3>
+                <p>Written in Rust, runs quickly with minimal resource usage</p>
+            </div>
+            <div class="feature">
+                <h3>🌍 Portable</h3>
+                <p>Linux, macOS, Windows, single binary, no dependencies</p>
+            </div>
+            <div class="feature">
+                <h3>🎯 Focused</h3>
+                <p>Designed specifically for developer tasks, not everything</p>
+            </div>
+            <div class="feature">
+                <h3>🔄 Flexible</h3>
+                <p>Multiple aliases so commands feel natural and intuitive</p>
+            </div>
+        </section>
+
+        <section id="installation" class="install-section">
+            <h2>Installation 📥</h2>
+
+            <h3>🔧 From Source</h3>
+            <pre class="code-block"><code>git clone https://github.com/dhwaneetbhatt/strapd.git
+cd strapd
+cargo build --release
+
+# Add to PATH
+sudo cp target/release/strapd /usr/local/bin/</code></pre>
+
+            <h3>🚀 Quick Examples</h3>
+            <pre class="code-block"><code># Convert text to uppercase
+strapd str upper "hello world"
+
+# Generate a UUID
+strapd uuid v4
+
+# Create a URL slug
+echo "Hello, World!" | strapd str slugify
+
+# Pipe from stdin
+echo "hello world" | strapd str upper</code></pre>
+        </section>
+
+        <section>
+            <h2>Features (more coming soon) ✨</h2>
+            <ul class="features-list">
+                <li>🔤 <strong>String Operations</strong> - Case conversion, trimming, slugify, reverse, replace</li>
+                <li>🆔 <strong>UUID Generation</strong> - v4 and v7 UUIDs</li>
+            </ul>
+        </section>
+    </main>
+
+    <footer class="footer">
+        <p>Licensed under the Apache License 2.0 | <a href="https://github.com/dhwaneetbhatt/strapd">View Source on
+                GitHub</a></p>
+    </footer>
+</body>
+
+</html>
