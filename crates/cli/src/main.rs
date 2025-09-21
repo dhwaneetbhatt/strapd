@@ -49,8 +49,8 @@ fn main() {
             }
         },
         Commands::Uuid { operation } => match operation {
-            UuidOperation::V4 { number } => uuid::generate_v4(&number),
-            UuidOperation::V7 { number } => uuid::generate_v7(&number),
+            UuidOperation::V4 { number } => uuid::generate_v4(*number),
+            UuidOperation::V7 { number } => uuid::generate_v7(*number),
         },
     };
 
