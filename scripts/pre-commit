@@ -1,0 +1,22 @@
+#!/bin/bash
+
+# Pre-commit hook for strapd project
+# Runs formatting, linting, and tests before allowing commit
+
+set -e
+
+echo "Running pre-commit checks..."
+
+# Format code
+echo "🎨 Formatting code..."
+make fmt
+
+# Run linter
+echo "🔍 Running linter..."
+make lint
+
+# Run tests
+echo "🧪 Running tests..."
+make test
+
+echo "✅ All pre-commit checks passed!"
