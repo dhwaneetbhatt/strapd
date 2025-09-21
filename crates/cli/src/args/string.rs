@@ -1,25 +1,4 @@
-use clap::{Parser, Subcommand};
-
-#[derive(Parser, Debug)]
-#[command(name = "strapd", version, about = "A Swiss Army knife CLI tool for developer utilities.", long_about = None)]
-pub struct Cli {
-    #[clap(subcommand)]
-    pub command: Commands,
-}
-
-#[derive(Subcommand, Debug)]
-pub enum Commands {
-    /// String manipulation operations
-    #[command(aliases = ["str", "text"])]
-    String {
-        #[clap(subcommand)]
-        operation: StringOperation,
-    },
-    Uuid {
-        #[clap(subcommand)]
-        operation: UuidOperation,
-    },
-}
+use clap::Subcommand;
 
 #[derive(Subcommand, Debug)]
 pub enum StringOperation {
@@ -88,21 +67,5 @@ pub enum StringOperation {
         /// The separator to use (uses - (dash) by default)
         #[arg(short = 's', long = "separator", default_value_t = '-')]
         separator: char,
-    },
-}
-
-#[derive(Subcommand, Debug)]
-pub enum UuidOperation {
-    /// Generate a v4 UUID
-    V4 {
-        /// Number of UUIDs to generate (if not provided, defaults to 1)
-        #[arg(default_value_t = 1)]
-        number: usize,
-    },
-    /// Generate a v7 UUID
-    V7 {
-        /// Number of UUIDs to generate (if not provided, defaults to 1)
-        #[arg(default_value_t = 1)]
-        number: usize,
     },
 }

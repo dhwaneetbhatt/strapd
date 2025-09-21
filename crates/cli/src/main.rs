@@ -1,6 +1,6 @@
 use clap::Parser;
 use std::io::{self, Read, Write};
-use strapd_core::{string, uuid};
+use strapd_core::{identifiers, string};
 
 mod args;
 use args::{Cli, Commands, StringOperation, UuidOperation};
@@ -12,26 +12,28 @@ fn main() {
         Commands::String { operation } => match operation {
             StringOperation::Uppercase { input } => {
                 let input = get_input_string(input);
-                string::to_uppercase(&input)
+                string::case::to_uppercase(&input)
             }
             StringOperation::Lowercase { input } => {
                 let input = get_input_string(input);
-                string::to_lowercase(&input)
+                string::case::to_lowercase(&input)
             }
             StringOperation::CapitalCase { input } => {
                 let input = get_input_string(input);
-                string::to_capitalcase(&input)
+                string::case::to_capitalcase(&input)
             }
             StringOperation::Reverse { input } => {
                 let input = get_input_string(input);
-                string::reverse(&input)
+                string::transform::reverse(&input)
             }
             StringOperation::Replace { params } => match params.as_slice() {
                 [search, replacement] => {
                     let input = get_input_string(&None);
-                    string::replace(&input, search, replacement)
+                    string::transform::replace(&input, search, replacement)
                 }
-                [input, search, replacement] => string::replace(input, search, replacement),
+                [input, search, replacement] => {
+                    string::transform::replace(input, search, replacement)
+                }
                 _ => unreachable!(),
             },
             StringOperation::Trim {
@@ -41,16 +43,16 @@ fn main() {
                 all,
             } => {
                 let input = get_input_string(input);
-                string::trim(&input, *left, *right, *all)
+                string::whitespace::trim(&input, *left, *right, *all)
             }
             StringOperation::Slugify { input, separator } => {
                 let input = get_input_string(input);
-                string::slugify(&input, *separator)
+                string::transform::slugify(&input, *separator)
             }
         },
         Commands::Uuid { operation } => match operation {
-            UuidOperation::V4 { number } => uuid::generate_v4(*number),
-            UuidOperation::V7 { number } => uuid::generate_v7(*number),
+            UuidOperation::V4 { number } => identifiers::uuid::generate_v4(*number),
+            UuidOperation::V7 { number } => identifiers::uuid::generate_v7(*number),
         },
     };
 
