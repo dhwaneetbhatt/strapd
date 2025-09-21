@@ -80,6 +80,15 @@ pub enum StringOperation {
               conflicts_with_all = ["left", "right"])]
         all: bool,
     },
+    /// Converts the string into a URL slug
+    Slugify {
+        /// The string to convert (if not provided, reads from stdin)
+        input: Option<String>,
+
+        /// The separator to use (uses - (dash) by default)
+        #[arg(short = 's', long = "separator", default_value_t = '-')]
+        separator: char,
+    },
 }
 
 #[derive(Subcommand, Debug)]

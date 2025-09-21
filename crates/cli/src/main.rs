@@ -43,6 +43,10 @@ fn main() {
                 let input = get_input_string(input);
                 string::trim(&input, *left, *right, *all)
             }
+            StringOperation::Slugify { input, separator } => {
+                let input = get_input_string(input);
+                string::slugify(&input, *separator)
+            }
         },
         Commands::Uuid { operation } => match operation {
             UuidOperation::V4 { number } => uuid::generate_v4(&number),
