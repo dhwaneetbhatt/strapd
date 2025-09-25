@@ -29,9 +29,7 @@ Eventually planning to build a web version using WASM, making these same tools a
 
 - **String Operations**: Case conversion, trimming, slugification, reversal, and replacement
 - **UUID Generation**: Generate v4 and v7 UUIDs
-- **Flexible Input**: Accept input via command-line arguments or stdin
-- **Library Support**: Available as `strapd-core` Rust library for integration
-- **Extensive Aliases**: Multiple ways to invoke the same command for maximum convenience
+- **Encoding/Decoding**: Base64, other formats coming soon
 
 ## Requirements
 

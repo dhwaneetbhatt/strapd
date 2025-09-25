@@ -1,11 +1,9 @@
 use clap::{Parser, Subcommand};
 
+pub mod data_formats;
+pub mod encoding;
 pub mod identifiers;
 pub mod string;
-
-// Re-export operation enums
-pub use identifiers::UuidOperation;
-pub use string::StringOperation;
 
 #[derive(Parser, Debug)]
 #[command(name = "strapd", version, about = "A Swiss Army knife CLI tool for developer utilities.", long_about = None)]
@@ -20,10 +18,15 @@ pub enum Commands {
     #[command(aliases = ["str", "text"])]
     String {
         #[clap(subcommand)]
-        operation: StringOperation,
+        operation: string::StringOperation,
     },
     Uuid {
         #[clap(subcommand)]
-        operation: UuidOperation,
+        operation: identifiers::UuidOperation,
+    },
+    Base64 {
+        #[clap(subcommand)]
+        operation: encoding::Base64Operation,
+    },
     },
 }
