@@ -1,8 +1,6 @@
 use crate::{
     args::encoding::Base64Operation,
-    handlers::{
-        CommandResult, binary_result, get_input_bytes, get_input_string, text_result,
-    },
+    handlers::{CommandResult, binary_result, get_input_bytes, get_input_string, text_result},
 };
 use strapd_core::encoding::base64;
 
