@@ -7,3 +7,4 @@ edition = "2024"
 uuid = { version = "1.18.1", features = ["v4", "v7"] }
 base64 = "0.22.1"
 json = "0.12.4"
+quick-xml = "0.38.3"

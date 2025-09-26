@@ -5,6 +5,7 @@ pub mod base64_handler;
 pub mod json_handler;
 pub mod string_handler;
 pub mod uuid_handler;
+pub mod xml_handler;
 
 pub type CommandResult = Result<Vec<u8>, String>;
 

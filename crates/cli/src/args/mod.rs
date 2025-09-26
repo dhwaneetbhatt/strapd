@@ -32,4 +32,8 @@ pub enum Commands {
         #[clap(subcommand)]
         operation: data_formats::JsonOperation,
     },
+    Xml {
+        #[clap(subcommand)]
+        operation: data_formats::XmlOperation,
+    },
 }
