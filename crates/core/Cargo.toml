@@ -8,3 +8,7 @@ uuid = { version = "1.18.1", features = ["v4", "v7"] }
 base64 = "0.22.1"
 json = "0.12.4"
 quick-xml = "0.38.3"
+md-5 = "0.10.6"
+sha1 = "0.10.6"
+sha2 = "0.10.9"
+hex = "0.4.3"

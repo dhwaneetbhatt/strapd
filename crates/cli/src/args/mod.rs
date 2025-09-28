@@ -3,6 +3,7 @@ use clap::{Parser, Subcommand};
 pub mod data_formats;
 pub mod encoding;
 pub mod identifiers;
+pub mod security;
 pub mod string;
 
 #[derive(Parser, Debug)]
@@ -35,5 +36,9 @@ pub enum Commands {
     Xml {
         #[clap(subcommand)]
         operation: data_formats::XmlOperation,
+    },
+    Hash {
+        #[clap(subcommand)]
+        operation: security::HashOperation,
     },
 }

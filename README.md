@@ -18,10 +18,10 @@ LLMs are overkill and not best suited for these tasks — they're slow, costly, 
 
 So I built `strapd`: one tool with simple commands and lots of intuitive aliases. Type commands however feels natural.
 
-* **Fast** — Written in Rust, runs quickly
-* **Portable** — Linux, macOS, Windows, single binary, no dependencies
-* **Focused** — Designed for developer tasks, not everything
-* **Flexible** — Multiple aliases so commands feel natural
+- **Fast** — Written in Rust, runs quickly
+- **Portable** — Linux, macOS, Windows, single binary, no dependencies
+- **Focused** — Designed for developer tasks, not everything
+- **Flexible** — Multiple aliases so commands feel natural
 
 Eventually planning to build a web version using WASM, making these same tools available in browsers.
 
@@ -31,6 +31,7 @@ Eventually planning to build a web version using WASM, making these same tools a
 - **UUID Generation**: Generate v4 and v7 UUIDs
 - **Encoding/Decoding**: Base64, other formats coming soon
 - **JSON/XML Formatting**: Beautify and minify
+- **Hashing**: MD5, SHA-1, SHA-256, SHA-512
 
 ## Requirements
 
@@ -40,9 +41,11 @@ Eventually planning to build a web version using WASM, making these same tools a
 ## Installation
 
 ### Pre-built Binaries (Coming Soon)
+
 Download from [Releases](https://github.com/dhwaneetbhatt/strapd/releases)
 
 ### Via Cargo (When Published)
+
 ```bash
 cargo install strapd
 ```
@@ -99,6 +102,7 @@ cat file.txt | strapd string slugify
 ## Library Usage
 
 Add `strapd-core` to `Cargo.toml`:
+
 ```toml
 [dependencies]
 strapd-core = "0.1.0"
@@ -141,7 +145,7 @@ make install-hooks # Install git pre-commit hooks
 
 ### Learning & Contributing
 
-I'm learning Rust as I build this project. I'm making use of AI to write docs and tests, but I'm trying to type code by hand as much as possible. If something is not done the Rust way - help is appreciated from expert rustaceans.
+I'm learning Rust as I build this project. I'm making use of AI to learn, write docs and tests, but I'm trying to type code by hand as much as possible without relying on AI for code generation. If something is not done the Rust way - help is appreciated from expert rustaceans.
 
 ### Contributing
 

@@ -2,6 +2,7 @@
 use std::io::{self, Read};
 
 pub mod base64_handler;
+pub mod hash_handler;
 pub mod json_handler;
 pub mod string_handler;
 pub mod uuid_handler;

@@ -4,7 +4,9 @@ use std::io::{self, Write};
 mod args;
 mod handlers;
 use args::{Cli, Commands};
-use handlers::{base64_handler, json_handler, string_handler, uuid_handler, xml_handler};
+use handlers::{
+    base64_handler, hash_handler, json_handler, string_handler, uuid_handler, xml_handler,
+};
 
 fn main() {
     let cli = Cli::parse();
@@ -15,6 +17,7 @@ fn main() {
         Commands::Base64 { operation } => base64_handler::handle(operation),
         Commands::Json { operation } => json_handler::handle(operation),
         Commands::Xml { operation } => xml_handler::handle(operation),
+        Commands::Hash { operation } => hash_handler::handle(operation),
     };
 
     match result {
