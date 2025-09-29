@@ -41,6 +41,10 @@ pub enum Commands {
         #[clap(subcommand)]
         operation: data_formats::XmlOperation,
     },
+    Sql {
+        #[clap(subcommand)]
+        operation: data_formats::SqlOperation,
+    },
     Hash {
         #[clap(subcommand)]
         operation: security::HashOperation,

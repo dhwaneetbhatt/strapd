@@ -5,10 +5,9 @@ mod args;
 mod handlers;
 use args::{Cli, Commands};
 use handlers::{
-    base64_handler, hash_handler, json_handler, string_handler, uuid_handler, xml_handler,
+    base64_handler, hash_handler, json_handler, sql_handler, string_handler, url_handler,
+    uuid_handler, xml_handler,
 };
-
-use crate::handlers::url_handler;
 
 fn main() {
     let cli = Cli::parse();
@@ -20,6 +19,7 @@ fn main() {
         Commands::Url { operation } => url_handler::handle(operation),
         Commands::Json { operation } => json_handler::handle(operation),
         Commands::Xml { operation } => xml_handler::handle(operation),
+        Commands::Sql { operation } => sql_handler::handle(operation),
         Commands::Hash { operation } => hash_handler::handle(operation),
     };
 
