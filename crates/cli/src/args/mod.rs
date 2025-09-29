@@ -29,6 +29,10 @@ pub enum Commands {
         #[clap(subcommand)]
         operation: encoding::Base64Operation,
     },
+    Url {
+        #[clap(subcommand)]
+        operation: encoding::UrlOperation,
+    },
     Json {
         #[clap(subcommand)]
         operation: data_formats::JsonOperation,

@@ -8,6 +8,8 @@ use handlers::{
     base64_handler, hash_handler, json_handler, string_handler, uuid_handler, xml_handler,
 };
 
+use crate::handlers::url_handler;
+
 fn main() {
     let cli = Cli::parse();
 
@@ -15,6 +17,7 @@ fn main() {
         Commands::String { operation } => string_handler::handle(operation),
         Commands::Uuid { operation } => uuid_handler::handle(operation),
         Commands::Base64 { operation } => base64_handler::handle(operation),
+        Commands::Url { operation } => url_handler::handle(operation),
         Commands::Json { operation } => json_handler::handle(operation),
         Commands::Xml { operation } => xml_handler::handle(operation),
         Commands::Hash { operation } => hash_handler::handle(operation),
