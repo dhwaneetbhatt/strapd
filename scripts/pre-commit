@@ -8,8 +8,8 @@ set -e
 echo "Running pre-commit checks..."
 
 # Format code
-echo "🎨 Formatting code..."
-make fmt
+echo "🎨 Checking code format..."
+make fmt-check
 
 # Run linter
 echo "🔍 Running linter..."
