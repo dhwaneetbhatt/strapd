@@ -1,6 +1,6 @@
 use crate::{
     args::string::StringOperation,
-    handlers::{CommandResult, error_result, get_input_string, text_result},
+    handlers::{CommandResult, get_input_string, text_result},
 };
 use strapd_core::string;
 
@@ -22,16 +22,14 @@ pub fn handle(operation: &StringOperation) -> CommandResult {
             let input = get_input_string(input);
             text_result(string::transform::reverse(&input))
         }
-        StringOperation::Replace { params } => match params.as_slice() {
-            [search, replacement] => {
-                let input = get_input_string(&None);
-                text_result(string::transform::replace(&input, search, replacement))
-            }
-            [input, search, replacement] => {
-                text_result(string::transform::replace(input, search, replacement))
-            }
-            _ => error_result("Invalid number of arguments to replace"),
-        },
+        StringOperation::Replace {
+            input,
+            find,
+            replace,
+        } => {
+            let input = get_input_string(input);
+            text_result(string::transform::replace(&input, find, replace))
+        }
         StringOperation::Trim {
             input,
             left,

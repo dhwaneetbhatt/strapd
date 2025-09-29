@@ -28,12 +28,16 @@ pub enum StringOperation {
     },
     /// Replaces all matches of a pattern with another string
     Replace {
-        #[arg(
-            help = "Accepts either:\n- input search replace_with\n- search replace_with (input taken from stdin)",
-            value_names = ["input", "search", "replace_with"],
-            num_args = 2..=3
-        )]
-        params: Vec<String>,
+        /// The string to convert (if not provided, reads from stdin)
+        input: Option<String>,
+
+        /// Text to find/search
+        #[arg(short = 'f', long = "find", visible_short_alias = 's', visible_aliases = ["search", "pattern", "match"])]
+        find: String,
+
+        /// Text to replace
+        #[arg(short = 'r', long = "replace", visible_short_alias = 'w', visible_aliases = ["with", "replacement"])]
+        replace: String,
     },
     /// Remove whitespaces from the string.
     /// Trims leading and trailing whitespaces by default.
