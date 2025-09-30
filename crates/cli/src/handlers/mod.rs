@@ -1,14 +1,11 @@
 // Handlers for various command line operations
 use std::io::{self, Read};
 
-pub mod base64_handler;
-pub mod hash_handler;
-pub mod json_handler;
-pub mod sql_handler;
+pub mod data_formats_handler;
+pub mod encoding_handler;
+pub mod identifiers_handler;
+pub mod security_handler;
 pub mod string_handler;
-pub mod url_handler;
-pub mod uuid_handler;
-pub mod xml_handler;
 
 pub type CommandResult = Result<Vec<u8>, String>;
 

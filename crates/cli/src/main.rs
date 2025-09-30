@@ -5,8 +5,7 @@ mod args;
 mod handlers;
 use args::{Cli, Commands};
 use handlers::{
-    base64_handler, hash_handler, json_handler, sql_handler, string_handler, url_handler,
-    uuid_handler, xml_handler,
+    data_formats_handler, encoding_handler, identifiers_handler, security_handler, string_handler,
 };
 
 fn main() {
@@ -14,13 +13,13 @@ fn main() {
 
     let result = match &cli.command {
         Commands::String { operation } => string_handler::handle(operation),
-        Commands::Uuid { operation } => uuid_handler::handle(operation),
-        Commands::Base64 { operation } => base64_handler::handle(operation),
-        Commands::Url { operation } => url_handler::handle(operation),
-        Commands::Json { operation } => json_handler::handle(operation),
-        Commands::Xml { operation } => xml_handler::handle(operation),
-        Commands::Sql { operation } => sql_handler::handle(operation),
-        Commands::Hash { operation } => hash_handler::handle(operation),
+        Commands::Uuid { operation } => identifiers_handler::handle_uuid(operation),
+        Commands::Base64 { operation } => encoding_handler::handle_base64(operation),
+        Commands::Url { operation } => encoding_handler::handle_url(operation),
+        Commands::Json { operation } => data_formats_handler::handle_json(operation),
+        Commands::Xml { operation } => data_formats_handler::handle_xml(operation),
+        Commands::Sql { operation } => data_formats_handler::handle_sql(operation),
+        Commands::Hash { operation } => security_handler::handle_hash(operation),
     };
 
     match result {
