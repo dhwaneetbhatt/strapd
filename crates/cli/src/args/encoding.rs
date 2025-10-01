@@ -27,3 +27,17 @@ pub enum UrlOperation {
         input: Option<String>,
     },
 }
+
+#[derive(Subcommand, Debug)]
+pub enum HexOperation {
+    /// URL encode the string
+    Encode {
+        /// The string to convert (if not provided, reads from stdin)
+        input: Option<String>,
+    },
+    /// Decode the URL encoded string
+    Decode {
+        /// The string to convert (if not provided, reads from stdin)
+        input: Option<String>,
+    },
+}

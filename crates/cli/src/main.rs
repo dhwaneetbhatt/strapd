@@ -16,6 +16,7 @@ fn main() {
         Commands::Uuid { operation } => identifiers_handler::handle_uuid(operation),
         Commands::Base64 { operation } => encoding_handler::handle_base64(operation),
         Commands::Url { operation } => encoding_handler::handle_url(operation),
+        Commands::Hex { operation } => encoding_handler::handle_hex(operation),
         Commands::Json { operation } => data_formats_handler::handle_json(operation),
         Commands::Xml { operation } => data_formats_handler::handle_xml(operation),
         Commands::Sql { operation } => data_formats_handler::handle_sql(operation),

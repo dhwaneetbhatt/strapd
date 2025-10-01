@@ -33,6 +33,10 @@ pub enum Commands {
         #[clap(subcommand)]
         operation: encoding::UrlOperation,
     },
+    Hex {
+        #[clap(subcommand)]
+        operation: encoding::HexOperation,
+    },
     Json {
         #[clap(subcommand)]
         operation: data_formats::JsonOperation,
