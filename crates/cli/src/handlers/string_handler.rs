@@ -1,6 +1,6 @@
 use crate::{
     args::string::StringOperation,
-    handlers::{CommandResult, get_input_string, text_result},
+    handlers::{CommandResult, error_result, get_input_string, text_result},
 };
 use strapd_core::string;
 
@@ -42,6 +42,32 @@ pub fn handle(operation: &StringOperation) -> CommandResult {
         StringOperation::Slugify { input, separator } => {
             let input = get_input_string(input);
             text_result(string::transform::slugify(&input, *separator))
+        }
+        StringOperation::Random {
+            length,
+            lowercase,
+            uppercase,
+            digits,
+            symbols,
+            count,
+        } => {
+            // If no flags specified, use all character types
+            let any_flag_set = *lowercase || *uppercase || *digits || *symbols;
+            let (lower, upper, digit, symbol) = if any_flag_set {
+                (*lowercase, *uppercase, *digits, *symbols)
+            } else {
+                (true, true, true, true)
+            };
+
+            let mut results = Vec::new();
+            for _ in 0..*count {
+                let result = string::random::generate(*length, lower, upper, digit, symbol);
+                match result {
+                    Ok(s) => results.push(s),
+                    Err(e) => return error_result(&e),
+                }
+            }
+            text_result(results.join("\n"))
         }
     }
 }

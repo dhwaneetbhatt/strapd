@@ -17,6 +17,10 @@ pub fn binary_result(bytes: Vec<u8>) -> CommandResult {
     Ok(bytes)
 }
 
+pub fn error_result(msg: &str) -> CommandResult {
+    Err(msg.to_string())
+}
+
 pub fn get_input_string(input: &Option<String>) -> String {
     match input.as_ref() {
         Some(s) => s.clone(),
