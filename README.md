@@ -29,8 +29,8 @@ Eventually planning to build a web version using WASM, making these same tools a
 
 - **String Operations**: Case conversion, trimming, slugification, reversal, replacement and random string generation
 - **UUID Generation**: Generate v4 and v7 UUIDs
-- **Encoding/Decoding**: Base64, URL and Hex encoding/decoding
-- **JSON/XML/SQL Formatting**: Beautify and minify
+- **Encoding/Decoding**: Base64, URL and Hex
+- **JSON/XML/SQL Formatting**: Beautify, minify and sort JSON
 - **Hashing**: MD5, SHA-1, SHA-256, SHA-512
 
 ## Requirements

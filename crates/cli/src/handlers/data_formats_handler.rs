@@ -6,13 +6,21 @@ use strapd_core::data_formats::{json, sql, xml};
 
 pub fn handle_json(operation: &JsonOperation) -> CommandResult {
     match operation {
-        JsonOperation::Beautify { input, spaces } => {
+        JsonOperation::Beautify {
+            input,
+            spaces,
+            sort,
+        } => {
             let input = get_input_string(input);
-            text_result(json::beautify(&input, *spaces)?)
+            text_result(json::beautify(&input, *spaces, *sort)?)
         }
-        JsonOperation::Minify { input } => {
+        JsonOperation::Minify { input, sort } => {
             let input = get_input_string(input);
-            text_result(json::minify(&input)?)
+            text_result(json::minify(&input, *sort)?)
+        }
+        JsonOperation::Sort { input, format } => {
+            let input = get_input_string(input);
+            text_result(json::sort(&input, *format)?)
         }
     }
 }
