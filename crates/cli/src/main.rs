@@ -5,7 +5,8 @@ mod args;
 mod handlers;
 use args::{Cli, Commands};
 use handlers::{
-    data_formats_handler, encoding_handler, identifiers_handler, security_handler, string_handler,
+    data_formats_handler, encoding_handler, identifiers_handler, random_handler, security_handler,
+    string_handler,
 };
 
 fn main() {
@@ -21,6 +22,7 @@ fn main() {
         Commands::Xml { operation } => data_formats_handler::handle_xml(operation),
         Commands::Sql { operation } => data_formats_handler::handle_sql(operation),
         Commands::Hash { operation } => security_handler::handle_hash(operation),
+        Commands::Random { operation } => random_handler::handle(operation),
     };
 
     match result {

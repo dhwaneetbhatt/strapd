@@ -4,6 +4,7 @@ use std::io::{self, Read};
 pub mod data_formats_handler;
 pub mod encoding_handler;
 pub mod identifiers_handler;
+pub mod random_handler;
 pub mod security_handler;
 pub mod string_handler;
 

@@ -1,8 +1,8 @@
-use strapd_core::string::random;
+use strapd_core::random;
 
 #[test]
 fn test_generate_contains_all_types() {
-    let result = random::generate(20, true, true, true, true).unwrap();
+    let result = random::string(20, true, true, true, true).unwrap();
 
     assert_eq!(result.len(), 20);
     assert!(
@@ -26,17 +26,17 @@ fn test_generate_contains_all_types() {
 #[test]
 fn test_generate_minimum_length() {
     // Should fail if length is less than number of required charsets
-    let result = random::generate(2, true, true, true, true);
+    let result = random::string(2, true, true, true, true);
     assert!(result.is_err());
 
     // Should succeed with exact minimum length
-    let result = random::generate(4, true, true, true, true);
+    let result = random::string(4, true, true, true, true);
     assert!(result.is_ok());
 }
 
 #[test]
 fn test_generate_only_lowercase_and_digits() {
-    let result = random::generate(10, true, false, true, false).unwrap();
+    let result = random::string(10, true, false, true, false).unwrap();
 
     assert_eq!(result.len(), 10);
     assert!(result.chars().any(|c| c.is_lowercase()));
@@ -47,6 +47,6 @@ fn test_generate_only_lowercase_and_digits() {
 
 #[test]
 fn test_no_flags_error() {
-    let result = random::generate(10, false, false, false, false);
+    let result = random::string(10, false, false, false, false);
     assert!(result.is_err());
 }
