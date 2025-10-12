@@ -55,6 +55,10 @@ pub enum Commands {
         #[clap(subcommand)]
         operation: security::HashOperation,
     },
+    Hmac {
+        #[clap(subcommand)]
+        operation: security::HmacOperation,
+    },
     Random {
         #[clap(subcommand)]
         operation: random::RandomOperation,

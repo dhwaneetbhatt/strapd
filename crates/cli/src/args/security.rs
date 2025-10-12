@@ -23,3 +23,23 @@ pub enum HashOperation {
         input: Option<String>,
     },
 }
+
+#[derive(Subcommand, Debug)]
+pub enum HmacOperation {
+    /// Generate SHA256 hash of the data
+    Sha256 {
+        /// The secret key
+        secret: String,
+
+        /// The string that needs to be hashed (if not provided, reads from stdin)
+        input: Option<String>,
+    },
+    /// Generate SHA512 hash of the data
+    Sha512 {
+        /// The secret key
+        secret: String,
+
+        /// The string that needs to be hashed (if not provided, reads from stdin)
+        input: Option<String>,
+    },
+}

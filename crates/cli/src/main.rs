@@ -22,6 +22,7 @@ fn main() {
         Commands::Xml { operation } => data_formats_handler::handle_xml(operation),
         Commands::Sql { operation } => data_formats_handler::handle_sql(operation),
         Commands::Hash { operation } => security_handler::handle_hash(operation),
+        Commands::Hmac { operation } => security_handler::handle_hmac(operation),
         Commands::Random { operation } => random_handler::handle(operation),
         Commands::Time { operation } => datetime_handler::handle(operation),
     };
