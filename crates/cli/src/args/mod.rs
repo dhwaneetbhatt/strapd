@@ -1,6 +1,7 @@
 use clap::{Parser, Subcommand};
 
 pub mod data_formats;
+pub mod datetime;
 pub mod encoding;
 pub mod identifiers;
 pub mod random;
@@ -57,5 +58,10 @@ pub enum Commands {
     Random {
         #[clap(subcommand)]
         operation: random::RandomOperation,
+    },
+    #[command(aliases = ["ts", "timestamp"])]
+    Time {
+        #[clap(subcommand)]
+        operation: datetime::TimeOperation,
     },
 }

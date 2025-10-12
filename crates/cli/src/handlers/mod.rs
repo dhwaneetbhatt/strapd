@@ -1,7 +1,11 @@
 // Handlers for various command line operations
-use std::io::{self, Read};
+use std::{
+    io::{self, Read},
+    str::FromStr,
+};
 
 pub mod data_formats_handler;
+pub mod datetime_handler;
 pub mod encoding_handler;
 pub mod identifiers_handler;
 pub mod random_handler;
@@ -44,6 +48,25 @@ pub fn get_input_bytes(input: &Option<String>) -> Result<Vec<u8>, String> {
                 .read_to_end(&mut buf)
                 .map_err(|e| format!("Failed to read from stdin: {}", e))?;
             Ok(buf)
+        }
+    }
+}
+
+pub fn get_input_int<T>(input: &Option<T>) -> T
+where
+    T: FromStr + Copy,
+    T::Err: std::fmt::Debug,
+{
+    match input {
+        Some(v) => *v,
+        None => {
+            let mut buf = String::new();
+            io::stdin()
+                .read_to_string(&mut buf)
+                .expect("Failed to read from stdin");
+            buf.trim()
+                .parse::<T>()
+                .expect("Failed to parse integer from stdin")
         }
     }
 }
