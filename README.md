@@ -27,7 +27,7 @@ Eventually planning to build a web version using WASM, making these same tools a
 
 ## Current Features
 
-- **String Operations**: Case conversion, trimming, slugification, reversal, replacement
+- **String Operations**: Case conversion, trimming, slugification, reversal, replace, text analysis
 - **UUID Generation**: Generate v4 and v7 UUIDs
 - **Encoding/Decoding**: Base64, URL and Hex
 - **JSON/XML/SQL Formatting**: Beautify, minify and sort JSON

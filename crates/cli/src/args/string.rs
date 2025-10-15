@@ -78,4 +78,40 @@ pub enum StringOperation {
         #[command(flatten)]
         args: super::random::RandomStringArgs,
     },
+    /// Count the lines, words, chars and bytes of a string
+    #[command(aliases = ["stats"])]
+    Count {
+        /// The string to convert (if not provided, reads from stdin)
+        input: Option<String>,
+
+        /// Count the lines
+        #[arg(short = 'l', long = "lines")]
+        lines: bool,
+
+        /// Count the words
+        #[arg(short = 'w', long = "words")]
+        words: bool,
+
+        /// Count the characters
+        #[arg(short = 'c', long = "characters")]
+        chars: bool,
+
+        /// Count the bytes
+        #[arg(short = 'b', long = "bytes")]
+        bytes: bool,
+    },
+    // Analyse the words and chars in a string
+    #[command(aliases = ["analyse", "analyze", "freq"])]
+    Frequency {
+        /// The string to convert (if not provided, reads from stdin)
+        input: Option<String>,
+
+        /// Count the words
+        #[arg(short = 'w', long = "words", conflicts_with_all = ["chars"])]
+        words: bool,
+
+        /// Count the characters
+        #[arg(short = 'c', long = "characters", conflicts_with_all = ["words"])]
+        chars: bool,
+    },
 }
