@@ -19,6 +19,7 @@ fn main() {
         Commands::Url { operation } => encoding_handler::handle_url(operation),
         Commands::Hex { operation } => encoding_handler::handle_hex(operation),
         Commands::Json { operation } => data_formats_handler::handle_json(operation),
+        Commands::Yaml { operation } => data_formats_handler::handle_yaml(operation),
         Commands::Xml { operation } => data_formats_handler::handle_xml(operation),
         Commands::Sql { operation } => data_formats_handler::handle_sql(operation),
         Commands::Hash { operation } => security_handler::handle_hash(operation),

@@ -31,6 +31,7 @@ Eventually planning to build a web version using WASM, making these same tools a
 - **UUID Generation**: Generate v4 and v7 UUIDs
 - **Encoding/Decoding**: Base64, URL and Hex
 - **JSON/XML/SQL Formatting**: Beautify, minify and sort JSON
+- **Format Conversion**: Convert YAML to JSON
 - **Security**: Hashing (MD5, SHA-1, SHA-256, SHA-512), HMAC (SHA-256, SHA-512)
 - **Random Data**: Generate random numbers and strings
 - **Date/Time**: Timestamp to date string

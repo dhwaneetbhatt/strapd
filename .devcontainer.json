@@ -6,13 +6,13 @@
         "ghcr.io/devcontainers/features/git:1": {},
         "ghcr.io/devcontainers/features/rust:1": {}
     },
-    "postCreateCommand": "make install-hooks build",
+    "postCreateCommand": "make install-hooks",
     "customizations": {
         "vscode": {
             "extensions": [
                 "rust-lang.rust-analyzer",
-                "ms-vscode.cpptools",
-                "tamasfe.even-better-toml"
+                "tamasfe.even-better-toml",
+                "vadimcn.vscode-lldb"
             ]
         }
     },

@@ -76,3 +76,14 @@ pub enum SqlOperation {
         input: Option<String>,
     },
 }
+#[derive(Subcommand, Debug)]
+pub enum YamlOperation {
+    #[command(aliases = ["transform"])]
+    Convert {
+        /// The string to convert (if not provided, reads from stdin)
+        input: Option<String>,
+
+        #[arg(short = 't', long = "to")]
+        to: String,
+    },
+}

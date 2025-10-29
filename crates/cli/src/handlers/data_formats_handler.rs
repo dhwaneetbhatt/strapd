@@ -1,8 +1,8 @@
 use crate::{
-    args::data_formats::{JsonOperation, SqlOperation, XmlOperation},
-    handlers::{CommandResult, get_input_string, text_result},
+    args::data_formats::{JsonOperation, SqlOperation, XmlOperation, YamlOperation},
+    handlers::{CommandResult, error_result, get_input_string, text_result},
 };
-use strapd_core::data_formats::{json, sql, xml};
+use strapd_core::data_formats::{json, sql, xml, yaml};
 
 pub fn handle_json(operation: &JsonOperation) -> CommandResult {
     match operation {
@@ -12,15 +12,39 @@ pub fn handle_json(operation: &JsonOperation) -> CommandResult {
             sort,
         } => {
             let input = get_input_string(input);
-            text_result(json::beautify(&input, *spaces, *sort)?)
+            match json::beautify(&input, *spaces, *sort) {
+                Ok(json) => text_result(json),
+                Err(e) => error_result(e),
+            }
         }
         JsonOperation::Minify { input, sort } => {
             let input = get_input_string(input);
-            text_result(json::minify(&input, *sort)?)
+            match json::minify(&input, *sort) {
+                Ok(json) => text_result(json),
+                Err(e) => error_result(e),
+            }
         }
         JsonOperation::Sort { input, format } => {
             let input = get_input_string(input);
-            text_result(json::sort(&input, *format)?)
+            match json::sort(&input, *format) {
+                Ok(json) => text_result(json),
+                Err(e) => error_result(e),
+            }
+        }
+    }
+}
+
+pub fn handle_yaml(operation: &YamlOperation) -> CommandResult {
+    match operation {
+        YamlOperation::Convert { input, to } => {
+            let input = get_input_string(input);
+            if *to != "json" {
+                return error_result("YAML can only be converted to json");
+            }
+            match yaml::convert_to_json(&input) {
+                Ok(json) => text_result(json),
+                Err(e) => error_result(&e),
+            }
         }
     }
 }
@@ -29,11 +53,17 @@ pub fn handle_xml(operation: &XmlOperation) -> CommandResult {
     match operation {
         XmlOperation::Beautify { input, spaces } => {
             let input = get_input_string(input);
-            text_result(xml::beautify(&input, *spaces)?)
+            match xml::beautify(&input, *spaces) {
+                Ok(xml) => text_result(xml),
+                Err(e) => error_result(&e),
+            }
         }
         XmlOperation::Minify { input } => {
             let input = get_input_string(input);
-            text_result(xml::minify(&input)?)
+            match xml::minify(&input) {
+                Ok(xml) => text_result(xml),
+                Err(e) => error_result(&e),
+            }
         }
     }
 }
