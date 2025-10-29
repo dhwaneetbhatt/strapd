@@ -31,16 +31,26 @@ pub fn handle_json(operation: &JsonOperation) -> CommandResult {
                 Err(e) => error_result(e),
             }
         }
+        JsonOperation::Convert { input, to } => {
+            if *to != "yaml" {
+                return error_result("JSON can only be converted to yaml");
+            }
+            let input = get_input_string(input);
+            match json::convert_to_yaml(&input) {
+                Ok(json) => text_result(json),
+                Err(e) => error_result(&e),
+            }
+        }
     }
 }
 
 pub fn handle_yaml(operation: &YamlOperation) -> CommandResult {
     match operation {
         YamlOperation::Convert { input, to } => {
-            let input = get_input_string(input);
             if *to != "json" {
                 return error_result("YAML can only be converted to json");
             }
+            let input = get_input_string(input);
             match yaml::convert_to_json(&input) {
                 Ok(json) => text_result(json),
                 Err(e) => error_result(&e),

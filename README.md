@@ -27,14 +27,14 @@ Eventually planning to build a web version using WASM, making these same tools a
 
 ## Current Features
 
-- **String Operations**: Case conversion, trimming, slugification, reversal, replace, text analysis
-- **UUID Generation**: Generate v4 and v7 UUIDs
-- **Encoding/Decoding**: Base64, URL and Hex
-- **JSON/XML/SQL Formatting**: Beautify, minify and sort JSON
-- **Format Conversion**: Convert YAML to JSON
-- **Security**: Hashing (MD5, SHA-1, SHA-256, SHA-512), HMAC (SHA-256, SHA-512)
-- **Random Data**: Generate random numbers and strings
-- **Date/Time**: Timestamp to date string
+- **String Tools**: case, trim, slugify, reverse, replace, analysis
+- **UUIDs**: v4, v7
+- **Encoding**: Base64, URL, Hex
+- **Data Formatting**: JSON, YAML, XML, SQL (beautify, minify, sort)
+- **Format Conversion**: YAML ⇄ JSON
+- **Security**: Hash (MD5, SHA-1, SHA-256, SHA-512), HMAC (SHA-256, SHA-512)
+- **Random**: numbers, strings
+- **Date/Time**: timestamps
 
 ## Requirements
 

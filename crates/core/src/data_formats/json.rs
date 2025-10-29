@@ -1,4 +1,5 @@
 use json::{self as json_builtin, JsonValue};
+use yaml_rust::{YamlEmitter, yaml::Hash, yaml::Yaml};
 
 pub fn beautify(input: &str, spaces: u8, sort: bool) -> Result<String, &'static str> {
     json_builtin::parse(input)
@@ -30,6 +31,16 @@ pub fn sort(input: &str, format: bool) -> Result<String, &'static str> {
         .map_err(|_| "Invalid json input")
 }
 
+pub fn convert_to_yaml(input: &str) -> Result<String, String> {
+    let parsed = json_builtin::parse(input).map_err(|e| format!("Invalid JSON input: {}", e))?;
+    let yaml_value = json_to_yaml(&parsed)?;
+    let mut output = String::new();
+    YamlEmitter::new(&mut output)
+        .dump(&yaml_value)
+        .map_err(|e| format!("Failed to emit YAML: {}", e))?;
+    Ok(output)
+}
+
 fn sort_json_keys(value: &JsonValue) -> JsonValue {
     match value {
         JsonValue::Object(_) => {
@@ -50,5 +61,34 @@ fn sort_json_keys(value: &JsonValue) -> JsonValue {
             JsonValue::Array(sorted_members)
         }
         _ => value.clone(),
+    }
+}
+
+fn json_to_yaml(value: &JsonValue) -> Result<Yaml, String> {
+    match value {
+        JsonValue::Object(_) => {
+            let mut hash = Hash::new();
+            for (key, val) in value.entries() {
+                let yaml_key = Yaml::String(key.to_string());
+                let yaml_val = json_to_yaml(val)?;
+                hash.insert(yaml_key, yaml_val);
+            }
+            Ok(Yaml::Hash(hash))
+        }
+        JsonValue::Array(_) => {
+            let array: Result<Vec<Yaml>, String> = value.members().map(json_to_yaml).collect();
+            Ok(Yaml::Array(array?))
+        }
+        JsonValue::String(s) => Ok(Yaml::String(s.to_string())),
+        JsonValue::Number(n) => {
+            // Try to parse as integer first, then fall back to real
+            match n.to_string().parse::<i64>() {
+                Ok(i) => Ok(Yaml::Integer(i)),
+                Err(_) => Ok(Yaml::Real(n.to_string())),
+            }
+        }
+        JsonValue::Boolean(b) => Ok(Yaml::Boolean(*b)),
+        JsonValue::Null => Ok(Yaml::Null),
+        JsonValue::Short(s) => Ok(Yaml::String(s.to_string())),
     }
 }

@@ -35,6 +35,14 @@ pub enum JsonOperation {
         #[arg(short = 'f', long = "format", default_value_t = false)]
         format: bool,
     },
+    #[command(aliases = ["transform"])]
+    Convert {
+        /// The string to convert (if not provided, reads from stdin)
+        input: Option<String>,
+
+        #[arg(short = 't', long = "to")]
+        to: String,
+    },
 }
 
 #[derive(Subcommand, Debug)]

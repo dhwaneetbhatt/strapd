@@ -1,4 +1,4 @@
-use strapd_core::data_formats::json::sort;
+use strapd_core::data_formats::json::{convert_to_yaml, sort};
 
 #[test]
 fn test_sort_simple_object() {
@@ -179,4 +179,215 @@ fn test_sort_unicode_keys() {
     assert!(keys.contains(&"zürich"));
     assert!(keys.contains(&"äpfel"));
     assert!(keys.contains(&"berlin"));
+}
+
+// Tests for convert_to_yaml function
+#[test]
+fn test_convert_simple_object_to_yaml() {
+    let input = r#"{"name": "John", "age": 30, "active": true}"#;
+    let result = convert_to_yaml(input).unwrap();
+
+    // Check that result contains YAML format
+    assert!(result.contains("name: John"));
+    assert!(result.contains("age: 30"));
+    assert!(result.contains("active: true"));
+}
+
+#[test]
+fn test_convert_nested_object_to_yaml() {
+    let input = r#"{"person": {"name": "John", "details": {"age": 30, "city": "NYC"}}}"#;
+    let result = convert_to_yaml(input).unwrap();
+
+    // Check nested structure
+    assert!(result.contains("person:"));
+    assert!(result.contains("name: John"));
+    assert!(result.contains("details:"));
+    assert!(result.contains("age: 30"));
+    assert!(result.contains("city: NYC"));
+}
+
+#[test]
+fn test_convert_array_to_yaml() {
+    let input = r#"{"numbers": [1, 2, 3], "strings": ["a", "b", "c"]}"#;
+    let result = convert_to_yaml(input).unwrap();
+
+    // Check array format
+    assert!(result.contains("numbers:"));
+    assert!(result.contains("- 1"));
+    assert!(result.contains("- 2"));
+    assert!(result.contains("- 3"));
+    assert!(result.contains("strings:"));
+    assert!(result.contains("- a"));
+    assert!(result.contains("- b"));
+    assert!(result.contains("- c"));
+}
+
+#[test]
+fn test_convert_mixed_types_to_yaml() {
+    let input =
+        r#"{"string": "hello", "number": 42, "float": 3.14, "boolean": true, "null_value": null}"#;
+    let result = convert_to_yaml(input).unwrap();
+
+    // Check all data types
+    assert!(result.contains("string: hello"));
+    assert!(result.contains("number: 42"));
+    assert!(result.contains("float: 3.14"));
+    assert!(result.contains("boolean: true"));
+    assert!(result.contains("null_value: ~") || result.contains("null_value: null"));
+}
+
+#[test]
+fn test_convert_array_of_objects_to_yaml() {
+    let input = r#"{"users": [{"name": "Alice", "age": 25}, {"name": "Bob", "age": 30}]}"#;
+    let result = convert_to_yaml(input).unwrap();
+
+    // Check array of objects format
+    assert!(result.contains("users:"));
+    assert!(result.contains("name: Alice"));
+    assert!(result.contains("age: 25"));
+    assert!(result.contains("name: Bob"));
+    assert!(result.contains("age: 30"));
+}
+
+#[test]
+fn test_convert_empty_object_to_yaml() {
+    let input = r#"{}"#;
+    let result = convert_to_yaml(input).unwrap();
+
+    // Empty object should produce valid YAML
+    assert!(result.contains("{}") || result.trim().is_empty() || result.contains("---"));
+}
+
+#[test]
+fn test_convert_empty_array_to_yaml() {
+    let input = r#"{"empty_list": []}"#;
+    let result = convert_to_yaml(input).unwrap();
+
+    // Empty array should be represented properly
+    assert!(result.contains("empty_list:"));
+    assert!(result.contains("[]") || result.contains("empty_list: []"));
+}
+
+#[test]
+fn test_convert_deeply_nested_to_yaml() {
+    let input = r#"{"level1": {"level2": {"level3": {"value": "deep"}}}}"#;
+    let result = convert_to_yaml(input).unwrap();
+
+    // Check deep nesting
+    assert!(result.contains("level1:"));
+    assert!(result.contains("level2:"));
+    assert!(result.contains("level3:"));
+    assert!(result.contains("value: deep"));
+}
+
+#[test]
+fn test_convert_top_level_array_to_yaml() {
+    let input = r#"[{"name": "item1"}, {"name": "item2"}]"#;
+    let result = convert_to_yaml(input).unwrap();
+
+    // Top-level array should be handled
+    assert!(result.contains("name: item1"));
+    assert!(result.contains("name: item2"));
+}
+
+#[test]
+fn test_convert_special_characters_to_yaml() {
+    let input =
+        r#"{"message": "Hello\nWorld", "quote": "She said \"hi\"", "backslash": "C:\\path"}"#;
+    let result = convert_to_yaml(input).unwrap();
+
+    // Special characters should be handled
+    assert!(result.contains("message:"));
+    assert!(result.contains("quote:"));
+    assert!(result.contains("backslash:"));
+}
+
+#[test]
+fn test_convert_unicode_to_yaml() {
+    let input = r#"{"greeting": "Hello 世界", "emoji": "🚀", "symbol": "α"}"#;
+    let result = convert_to_yaml(input).unwrap();
+
+    // Unicode should be preserved
+    assert!(result.contains("greeting:"));
+    assert!(result.contains("emoji:"));
+    assert!(result.contains("symbol:"));
+}
+
+#[test]
+fn test_convert_numbers_to_yaml() {
+    let input =
+        r#"{"integer": 42, "negative": -17, "zero": 0, "float": 3.14159, "scientific": 1.23e-4}"#;
+    let result = convert_to_yaml(input).unwrap();
+
+    // Different number formats should be handled
+    assert!(result.contains("integer: 42"));
+    assert!(result.contains("negative: -17"));
+    assert!(result.contains("zero: 0"));
+    assert!(result.contains("float: 3.14159"));
+    assert!(result.contains("scientific:"));
+}
+
+#[test]
+fn test_convert_invalid_json_to_yaml() {
+    let input = r#"{"invalid": json, "missing": "quote}"#;
+    let result = convert_to_yaml(input);
+
+    // Should return error for invalid JSON
+    assert!(result.is_err());
+    assert!(result.unwrap_err().contains("Invalid JSON input"));
+}
+
+#[test]
+fn test_convert_single_value_to_yaml() {
+    // Test primitive JSON values
+    let input = r#""just a string""#;
+    let result = convert_to_yaml(input).unwrap();
+    assert!(!result.is_empty());
+
+    let input = r#"42"#;
+    let result = convert_to_yaml(input).unwrap();
+    assert!(!result.is_empty());
+
+    let input = r#"true"#;
+    let result = convert_to_yaml(input).unwrap();
+    assert!(!result.is_empty());
+
+    let input = "null";
+    let result = convert_to_yaml(input).unwrap();
+    assert!(!result.is_empty());
+}
+
+#[test]
+fn test_convert_large_object_to_yaml() {
+    let input = r#"{
+        "config": {
+            "database": {
+                "host": "localhost",
+                "port": 5432,
+                "credentials": {
+                    "username": "admin",
+                    "password": "secret"
+                }
+            },
+            "features": ["auth", "logging", "metrics"],
+            "debug": true,
+            "version": "1.0.0"
+        }
+    }"#;
+    let result = convert_to_yaml(input).unwrap();
+
+    // Check various parts of the complex structure
+    assert!(result.contains("config:"));
+    assert!(result.contains("database:"));
+    assert!(result.contains("host: localhost"));
+    assert!(result.contains("port: 5432"));
+    assert!(result.contains("credentials:"));
+    assert!(result.contains("username: admin"));
+    assert!(result.contains("password: secret"));
+    assert!(result.contains("features:"));
+    assert!(result.contains("- auth"));
+    assert!(result.contains("- logging"));
+    assert!(result.contains("- metrics"));
+    assert!(result.contains("debug: true"));
+    assert!(result.contains("version: 1.0.0"));
 }
