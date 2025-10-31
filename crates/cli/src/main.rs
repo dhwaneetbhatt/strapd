@@ -5,8 +5,8 @@ mod args;
 mod handlers;
 use args::{Cli, Commands};
 use handlers::{
-    data_formats_handler, datetime_handler, encoding_handler, identifiers_handler, random_handler,
-    security_handler, string_handler,
+    clipboard_handler, data_formats_handler, datetime_handler, encoding_handler,
+    identifiers_handler, random_handler, security_handler, string_handler,
 };
 
 fn main() {
@@ -26,6 +26,8 @@ fn main() {
         Commands::Hmac { operation } => security_handler::handle_hmac(operation),
         Commands::Random { operation } => random_handler::handle(operation),
         Commands::Time { operation } => datetime_handler::handle(operation),
+        Commands::Copy { input } => clipboard_handler::handle_copy(input),
+        Commands::Paste {} => clipboard_handler::handle_paste(),
     };
 
     match result {

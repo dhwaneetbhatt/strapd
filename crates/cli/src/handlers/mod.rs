@@ -4,6 +4,7 @@ use std::{
     str::FromStr,
 };
 
+pub mod clipboard_handler;
 pub mod data_formats_handler;
 pub mod datetime_handler;
 pub mod encoding_handler;

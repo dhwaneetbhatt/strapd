@@ -35,6 +35,7 @@ Eventually planning to build a web version using WASM, making these same tools a
 - **Security**: Hash (MD5, SHA-1, SHA-256, SHA-512), HMAC (SHA-256, SHA-512)
 - **Random**: numbers, strings
 - **Date/Time**: timestamps
+- **Clipboard**: copy and paste
 
 ## Requirements
 

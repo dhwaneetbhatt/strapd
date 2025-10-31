@@ -72,4 +72,9 @@ pub enum Commands {
         #[clap(subcommand)]
         operation: datetime::TimeOperation,
     },
+    Copy {
+        /// The string to copy (if not provided, reads from stdin)
+        input: Option<String>,
+    },
+    Paste {},
 }
