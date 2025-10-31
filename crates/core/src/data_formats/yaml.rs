@@ -2,8 +2,7 @@ use json::JsonValue;
 use yaml_rust::{Yaml, YamlLoader};
 
 pub fn convert_to_json(input: &str) -> Result<String, String> {
-    let yaml =
-        YamlLoader::load_from_str(input).map_err(|e| format!("Invalid YAML input: {}", e))?;
+    let yaml = YamlLoader::load_from_str(input).map_err(|e| format!("Invalid YAML input: {e}"))?;
     let yaml = yaml.first().ok_or("Empty YAML document")?;
 
     let json_value = yaml_to_json_value(yaml)?;

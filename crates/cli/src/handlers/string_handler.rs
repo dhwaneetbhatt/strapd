@@ -84,12 +84,12 @@ pub fn handle(operation: &StringOperation) -> CommandResult {
             if *words {
                 let result = string::analysis::word_frequency(&input);
                 for (k, v) in result {
-                    output.push(format!("{}: {}", k, v));
+                    output.push(format!("{k}: {v}"));
                 }
             } else if *chars {
                 let result = string::analysis::char_frequency(&input);
                 for (k, v) in result {
-                    output.push(format!("{}: {}", k, v));
+                    output.push(format!("{k}: {v}"));
                 }
             }
             text_result(output.join("\n"))

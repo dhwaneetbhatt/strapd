@@ -32,12 +32,12 @@ pub fn sort(input: &str, format: bool) -> Result<String, &'static str> {
 }
 
 pub fn convert_to_yaml(input: &str) -> Result<String, String> {
-    let parsed = json_builtin::parse(input).map_err(|e| format!("Invalid JSON input: {}", e))?;
+    let parsed = json_builtin::parse(input).map_err(|e| format!("Invalid JSON input: {e}"))?;
     let yaml_value = json_to_yaml(&parsed)?;
     let mut output = String::new();
     YamlEmitter::new(&mut output)
         .dump(&yaml_value)
-        .map_err(|e| format!("Failed to emit YAML: {}", e))?;
+        .map_err(|e| format!("Failed to emit YAML: {e}"))?;
     Ok(output)
 }
 

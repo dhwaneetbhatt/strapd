@@ -41,7 +41,7 @@ fn main() {
                 .expect("Failed to write newline to stdout");
         }
         Err(error) => {
-            eprintln!("Error: {}", error);
+            eprintln!("Error: {error}");
             std::process::exit(1);
         }
     }

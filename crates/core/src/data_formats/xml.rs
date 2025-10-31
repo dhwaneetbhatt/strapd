@@ -23,9 +23,9 @@ fn format(input: &str, spaces: Option<u8>) -> Result<String, String> {
             Ok(Event::Eof) => break,
             Ok(event) => writer
                 .write_event(event)
-                .map_err(|e| format!("XML write error: {}", e))?,
-            Err(e) => return Err(format!("XML parse error: {}", e)),
+                .map_err(|e| format!("XML write error: {e}"))?,
+            Err(e) => return Err(format!("XML parse error: {e}")),
         }
     }
-    String::from_utf8(writer.into_inner()).map_err(|e| format!("UTF-8 conversion error: {}", e))
+    String::from_utf8(writer.into_inner()).map_err(|e| format!("UTF-8 conversion error: {e}"))
 }

@@ -5,5 +5,5 @@ pub fn encode(input: &str) -> String {
 pub fn decode(input: &str) -> Result<String, String> {
     urlencoding::decode(input)
         .map(|result| result.into_owned())
-        .map_err(|e| format!("Error decoding URL: {}", e))
+        .map_err(|e| format!("Error decoding URL: {e}"))
 }

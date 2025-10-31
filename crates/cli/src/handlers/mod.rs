@@ -47,7 +47,7 @@ pub fn get_input_bytes(input: &Option<String>) -> Result<Vec<u8>, String> {
             let mut buf = Vec::new();
             io::stdin()
                 .read_to_end(&mut buf)
-                .map_err(|e| format!("Failed to read from stdin: {}", e))?;
+                .map_err(|e| format!("Failed to read from stdin: {e}"))?;
             Ok(buf)
         }
     }
