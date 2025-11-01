@@ -149,7 +149,7 @@ make install-hooks # Install git pre-commit hooks
 
 ### Learning & Contributing
 
-I'm learning Rust as I build this project. I'm making use of AI to learn, write docs and tests, but I'm trying to type code by hand as much as possible without relying on AI for code generation. If something is not done the Rust way - help is appreciated from expert rustaceans.
+I'm learning Rust as I build this project. I'm making use of AI to learn, write frontend code, docs and tests. If something is not done the Rust way - help is appreciated from expert rustaceans.
 
 ### Contributing
 
