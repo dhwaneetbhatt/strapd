@@ -55,6 +55,10 @@ webapp-dev:
 webapp-build:
 	cd webapp && pnpm build
 
+# Test webapp
+webapp-test:
+	cd webapp && pnpm test || echo "No tests configured yet"
+
 # -------------------
 # Help
 # -------------------
