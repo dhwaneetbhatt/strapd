@@ -1,6 +1,10 @@
 # Makefile for strapd project
 
-.PHONY: fmt fmt-check lint build test install-hooks all help
+.PHONY: fmt fmt-check lint build test install-hooks all help wasm-build webapp-install webapp-dev webapp-build webapp-test
+
+# -------------------
+# Rust Core Utilities
+# -------------------
 
 # Format all Rust code
 fmt:
@@ -10,7 +14,7 @@ fmt:
 fmt-check:
 	cargo fmt -- --check
 
-# Run linter
+# Run linter (clippy)
 lint:
 	cargo clippy -- -D warnings
 
@@ -22,7 +26,7 @@ build:
 test:
 	cargo test
 
-# Install git hooks
+# Install git pre-commit hooks
 install-hooks:
 	cp scripts/pre-commit .git/hooks/pre-commit
 	chmod +x .git/hooks/pre-commit
@@ -31,14 +35,29 @@ install-hooks:
 # Format, build, and test
 all: fmt build test
 
-# Show available targets
+# -------------------
+# Webapp & WASM Tools
+# -------------------
+
+# Build WASM module for webapp
+wasm-build:
+	wasm-pack build crates/wasm --out-dir $(CURDIR)/webapp/wasm/pkg
+
+# Install webapp dependencies
+webapp-install:
+	cd webapp && pnpm install
+
+# Start webapp dev server
+webapp-dev:
+	cd webapp && pnpm dev
+
+# Build webapp
+webapp-build:
+	cd webapp && pnpm build
+
+# -------------------
+# Help
+# -------------------
 help:
 	@echo "Available targets:"
-	@echo "  fmt           - Format all Rust code"
-	@echo "  fmt-check     - Check if code is formatted correctly"
-	@echo "  lint          - Run linter (clippy)"
-	@echo "  build         - Build the project"
-	@echo "  test          - Run tests"
-	@echo "  install-hooks - Install git pre-commit hooks"
-	@echo "  all           - Format, build, and test"
-	@echo "  help          - Show this help message"
+	@grep -E '^[a-zA-Z_-]+:.*?##' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## ?"}; {printf "  %-16s %s\n", $$1, $$2}'
