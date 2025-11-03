@@ -1,6 +1,7 @@
 // String case operations
-import { wasmWrapper } from '../../wasm';
-import { ToolResult } from '../../../types';
+
+import type { ToolResult } from "../../../types";
+import { wasmWrapper } from "../../wasm";
 
 export const stringCaseOperations = {
   /**
@@ -8,15 +9,20 @@ export const stringCaseOperations = {
    */
   uppercase: (input: string): ToolResult => {
     if (!input.trim()) {
-      return { success: false, error: 'Input is required' };
+      return { success: false, error: "Input is required" };
     }
     return wasmWrapper.uppercase(input);
   },
 
-  // Placeholder for future operations
-  // lowercase: (input: string): ToolResult => {
-  //   return wasmWrapper.lowercase(input);
-  // },
+  /**
+   * Convert string to lowercase
+   */
+  lowercase: (input: string): ToolResult => {
+    if (!input.trim()) {
+      return { success: false, error: "Input is required" };
+    }
+    return wasmWrapper.lowercase(input);
+  },
 
   // capitalCase: (input: string): ToolResult => {
   //   return wasmWrapper.capitalCase(input);

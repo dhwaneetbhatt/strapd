@@ -8,7 +8,7 @@ export interface InputOutputState {
 
 // App preferences
 export interface UserPreferences {
-  theme: 'light' | 'dark' | 'system';
+  theme: "light" | "dark" | "system";
   favorites: string[]; // Tool IDs
   recent: string[]; // Tool IDs
   autoProcess: boolean;
@@ -24,7 +24,7 @@ export interface NavItem {
 }
 
 // API response wrapper
-export interface ApiResponse<T = any> {
+export interface ApiResponse<T = unknown> {
   success: boolean;
   data?: T;
   error?: string;

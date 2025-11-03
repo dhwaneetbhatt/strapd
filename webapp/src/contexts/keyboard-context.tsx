@@ -1,24 +1,31 @@
-import React, { createContext, useContext, useState } from 'react';
-import { appConfig } from '../config';
+import type React from "react";
+import { createContext, useContext, useState } from "react";
+import { appConfig } from "../config";
 
 interface KeyboardContextType {
   shortcutsEnabled: boolean;
   toggleShortcuts: () => void;
 }
 
-const KeyboardContext = createContext<KeyboardContextType | undefined>(undefined);
+const KeyboardContext = createContext<KeyboardContextType | undefined>(
+  undefined,
+);
 
 interface KeyboardProviderProps {
   children: React.ReactNode;
 }
 
-export const KeyboardProvider: React.FC<KeyboardProviderProps> = ({ children }) => {
+export const KeyboardProvider: React.FC<KeyboardProviderProps> = ({
+  children,
+}) => {
   const [shortcutsEnabled, setShortcutsEnabled] = useState(() => {
     const saved = localStorage.getItem(appConfig.storage.preferences);
     if (saved) {
       try {
         const preferences = JSON.parse(saved);
-        return preferences.keyboardShortcuts ?? appConfig.keyboard.enableShortcuts;
+        return (
+          preferences.keyboardShortcuts ?? appConfig.keyboard.enableShortcuts
+        );
       } catch {
         return appConfig.keyboard.enableShortcuts;
       }
@@ -45,7 +52,7 @@ export const KeyboardProvider: React.FC<KeyboardProviderProps> = ({ children }) 
         JSON.stringify({
           ...currentPreferences,
           keyboardShortcuts: newValue,
-        })
+        }),
       );
 
       return newValue;
@@ -67,7 +74,9 @@ export const KeyboardProvider: React.FC<KeyboardProviderProps> = ({ children }) 
 export const useKeyboardSettings = () => {
   const context = useContext(KeyboardContext);
   if (context === undefined) {
-    throw new Error('useKeyboardSettings must be used within a KeyboardProvider');
+    throw new Error(
+      "useKeyboardSettings must be used within a KeyboardProvider",
+    );
   }
   return context;
 };

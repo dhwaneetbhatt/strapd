@@ -1,20 +1,25 @@
-import React, { useState, useEffect, useRef, useMemo } from 'react';
 import {
+  ChevronDownIcon,
+  ChevronRightIcon,
+  HamburgerIcon,
+} from "@chakra-ui/icons";
+import {
+  Badge,
   Box,
-  VStack,
-  Text,
   Button,
   Collapse,
-  useDisclosure,
+  HStack,
   IconButton,
   Spacer,
-  HStack,
-  Badge,
+  Text,
   useColorModeValue,
-} from '@chakra-ui/react';
-import { ChevronDownIcon, ChevronRightIcon, HamburgerIcon } from '@chakra-ui/icons';
-import { Tool, ToolGroup } from '../../types';
-import { toolGroups } from '../../tools';
+  useDisclosure,
+  VStack,
+} from "@chakra-ui/react";
+import type React from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { toolGroups } from "../../tools";
+import type { Tool, ToolGroup } from "../../types";
 
 const FOCUS_DELAY = 100; // Configurable constant instead of magic number
 
@@ -41,11 +46,11 @@ const ToolGroupSection: React.FC<ToolGroupSectionProps> = ({
   groupStartIndex,
 }) => {
   const { isOpen, onToggle } = useDisclosure({ defaultIsOpen: true });
-  const hoverBg = useColorModeValue('gray.50', 'gray.700');
-  const activeBg = useColorModeValue('blue.50', 'blue.900');
-  const activeBorder = useColorModeValue('blue.200', 'blue.600');
-  const focusedBg = useColorModeValue('gray.100', 'gray.600');
-  const focusedBorder = useColorModeValue('gray.400', 'gray.500');
+  const hoverBg = useColorModeValue("gray.50", "gray.700");
+  const activeBg = useColorModeValue("blue.50", "blue.900");
+  const activeBorder = useColorModeValue("blue.200", "blue.600");
+  const focusedBg = useColorModeValue("gray.100", "gray.600");
+  const focusedBorder = useColorModeValue("gray.400", "gray.500");
 
   return (
     <Box w="full">
@@ -91,14 +96,24 @@ const ToolGroupSection: React.FC<ToolGroupSectionProps> = ({
                 h="auto"
                 fontWeight="normal"
                 onClick={() => onToolSelect(tool)}
-                bg={isSelected ? activeBg : isFocused ? focusedBg : 'transparent'}
+                bg={
+                  isSelected ? activeBg : isFocused ? focusedBg : "transparent"
+                }
                 borderLeft="2px solid"
-                borderColor={isSelected ? activeBorder : isFocused ? focusedBorder : 'transparent'}
+                borderColor={
+                  isSelected
+                    ? activeBorder
+                    : isFocused
+                      ? focusedBorder
+                      : "transparent"
+                }
                 _hover={{ bg: isSelected ? activeBg : hoverBg }}
                 borderRadius="md"
                 textAlign="left"
-                aria-current={isSelected ? 'page' : undefined}
-                aria-describedby={isFocused ? `tool-${tool.id}-description` : undefined}
+                aria-current={isSelected ? "page" : undefined}
+                aria-describedby={
+                  isFocused ? `tool-${tool.id}-description` : undefined
+                }
               >
                 <VStack align="start" spacing={0} flex={1}>
                   <Text fontSize="sm" fontWeight="medium">
@@ -108,7 +123,7 @@ const ToolGroupSection: React.FC<ToolGroupSectionProps> = ({
                     id={`tool-${tool.id}-description`}
                     fontSize="xs"
                     color="gray.500"
-                    _dark={{ color: 'gray.400' }}
+                    _dark={{ color: "gray.400" }}
                   >
                     {tool.description}
                   </Text>
@@ -128,23 +143,29 @@ export const Sidebar: React.FC<SidebarProps> = ({
   isOpen,
   onToggle,
 }) => {
-  const bg = useColorModeValue('white', 'gray.800');
-  const borderColor = useColorModeValue('gray.200', 'gray.700');
+  const bg = useColorModeValue("white", "gray.800");
+  const borderColor = useColorModeValue("gray.200", "gray.700");
 
   // Memoize all tools to avoid recalculation on every render
-  const allTools = useMemo(() => toolGroups.flatMap(group => group.tools), []);
+  const allTools = useMemo(
+    () => toolGroups.flatMap((group) => group.tools),
+    [],
+  );
   const [focusedToolIndex, setFocusedToolIndex] = useState(-1);
   const sidebarRef = useRef<HTMLDivElement>(null);
 
   // Memoize group start indices for keyboard navigation
   const groupStartIndices = useMemo(() => {
-    return toolGroups.reduce((acc, group, index) => {
-      const startIndex = toolGroups
-        .slice(0, index)
-        .reduce((sum, g) => sum + g.tools.length, 0);
-      acc[group.category] = startIndex;
-      return acc;
-    }, {} as Record<string, number>);
+    return toolGroups.reduce(
+      (acc, group, index) => {
+        const startIndex = toolGroups
+          .slice(0, index)
+          .reduce((sum, g) => sum + g.tools.length, 0);
+        acc[group.category] = startIndex;
+        return acc;
+      },
+      {} as Record<string, number>,
+    );
   }, []);
 
   // Reset focus when sidebar opens/closes
@@ -166,21 +187,23 @@ export const Sidebar: React.FC<SidebarProps> = ({
       if (!isOpen || focusedToolIndex === -1) return;
 
       switch (event.key) {
-        case 'ArrowDown':
+        case "ArrowDown":
           event.preventDefault();
-          setFocusedToolIndex(prev => Math.min(prev + 1, allTools.length - 1));
+          setFocusedToolIndex((prev) =>
+            Math.min(prev + 1, allTools.length - 1),
+          );
           break;
-        case 'ArrowUp':
+        case "ArrowUp":
           event.preventDefault();
-          setFocusedToolIndex(prev => Math.max(prev - 1, 0));
+          setFocusedToolIndex((prev) => Math.max(prev - 1, 0));
           break;
-        case 'Enter':
+        case "Enter":
           event.preventDefault();
           if (focusedToolIndex >= 0 && focusedToolIndex < allTools.length) {
             onToolSelect(allTools[focusedToolIndex]);
           }
           break;
-        case 'Escape':
+        case "Escape":
           event.preventDefault();
           onToggle();
           break;
@@ -188,8 +211,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
     };
 
     if (isOpen) {
-      window.addEventListener('keydown', handleKeyDown);
-      return () => window.removeEventListener('keydown', handleKeyDown);
+      window.addEventListener("keydown", handleKeyDown);
+      return () => window.removeEventListener("keydown", handleKeyDown);
     }
   }, [isOpen, focusedToolIndex, allTools, onToolSelect, onToggle]);
 
@@ -198,17 +221,17 @@ export const Sidebar: React.FC<SidebarProps> = ({
       {/* Sidebar */}
       <Box
         ref={sidebarRef}
-        w={{ base: isOpen ? '280px' : '0', md: isOpen ? '280px' : '60px' }}
+        w={{ base: isOpen ? "280px" : "0", md: isOpen ? "280px" : "60px" }}
         bg={bg}
         borderRight="1px"
         borderColor={borderColor}
         transition="width 0.2s"
         overflow="hidden"
-        position={{ base: 'fixed', md: 'relative' }}
-        left={{ base: 0, md: 'auto' }}
-        top={{ base: 0, md: 'auto' }}
-        h={{ base: '100vh', md: '100vh' }}
-        zIndex={{ base: 10, md: 'auto' }}
+        position={{ base: "fixed", md: "relative" }}
+        left={{ base: 0, md: "auto" }}
+        top={{ base: 0, md: "auto" }}
+        h={{ base: "100vh", md: "100vh" }}
+        zIndex={{ base: 10, md: "auto" }}
         flexShrink={0}
         tabIndex={-1}
         outline="none"
@@ -225,7 +248,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
           position="absolute"
           top={2}
           right={2}
-          display={{ base: 'none', md: 'flex' }}
+          display={{ base: "none", md: "flex" }}
           onClick={onToggle}
         />
 
@@ -236,24 +259,31 @@ export const Sidebar: React.FC<SidebarProps> = ({
           height="100%"
           overflowY="auto"
           sx={{
-            '&::-webkit-scrollbar': {
-              width: '6px',
+            "&::-webkit-scrollbar": {
+              width: "6px",
             },
-            '&::-webkit-scrollbar-track': {
-              background: 'transparent',
+            "&::-webkit-scrollbar-track": {
+              background: "transparent",
             },
-            '&::-webkit-scrollbar-thumb': {
-              background: 'gray.300',
-              borderRadius: '3px',
+            "&::-webkit-scrollbar-thumb": {
+              background: "gray.300",
+              borderRadius: "3px",
             },
-            '&::-webkit-scrollbar-thumb:hover': {
-              background: 'gray.400',
+            "&::-webkit-scrollbar-thumb:hover": {
+              background: "gray.400",
             },
           }}
         >
           {isOpen && (
             <VStack spacing={4} align="stretch">
-              <Text fontSize="xs" fontWeight="bold" color="gray.500" _dark={{ color: 'gray.400' }} textTransform="uppercase" letterSpacing="wide">
+              <Text
+                fontSize="xs"
+                fontWeight="bold"
+                color="gray.500"
+                _dark={{ color: "gray.400" }}
+                textTransform="uppercase"
+                letterSpacing="wide"
+              >
                 Developer Tools
               </Text>
 
@@ -282,7 +312,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
           h="100vh"
           bg="blackAlpha.600"
           zIndex={5}
-          display={{ base: 'block', md: 'none' }}
+          display={{ base: "block", md: "none" }}
           onClick={onToggle}
         />
       )}

@@ -1,12 +1,12 @@
 // Tool category types
 export type ToolCategory =
-  | 'string'
-  | 'encoding'
-  | 'security'
-  | 'dataFormats'
-  | 'identifiers'
-  | 'datetime'
-  | 'random';
+  | "string"
+  | "encoding"
+  | "security"
+  | "dataFormats"
+  | "identifiers"
+  | "datetime"
+  | "random";
 
 // Tool operation result
 export interface ToolResult {
@@ -16,7 +16,10 @@ export interface ToolResult {
 }
 
 // Tool operation function type
-export type ToolOperation = (input: string, options?: Record<string, any>) => ToolResult | Promise<ToolResult>;
+export type ToolOperation = (
+  input: string,
+  options?: Record<string, unknown>,
+) => ToolResult | Promise<ToolResult>;
 
 // Tool definition interface
 export interface Tool {
@@ -34,8 +37,8 @@ export interface Tool {
 export interface ToolOption {
   id: string;
   name: string;
-  type: 'boolean' | 'string' | 'number' | 'select';
-  defaultValue: any;
+  type: "boolean" | "string" | "number" | "select";
+  defaultValue: string | number | boolean;
   description: string;
   options?: string[]; // For select type
 }
@@ -45,7 +48,7 @@ export interface ToolExample {
   name: string;
   input: string;
   expectedOutput: string;
-  options?: Record<string, any>;
+  options?: Record<string, unknown>;
 }
 
 // Tool group for organization

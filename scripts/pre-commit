@@ -2,20 +2,36 @@
 
 # Pre-commit hook for strapd project
 # Runs formatting, linting, and tests before allowing commit
+# Only runs relevant checks based on changed files
 
 set -e
 
 echo "Running pre-commit checks..."
 
-# Format code
+# Check what files are being committed
+RUST_FILES=$(git diff --cached --name-only | grep -E '\.(rs|toml)$' | head -1)
+WEBAPP_FILES=$(git diff --cached --name-only | grep '^webapp/' | head -1)
+
+# Format code (always run since it's fast)
 echo "🎨 Checking code format..."
 make fmt-check
 
-# Run linter
+# Run linters based on changed files
 echo "🔍 Running linter..."
-make lint
+if [[ -n "$RUST_FILES" && -n "$WEBAPP_FILES" ]]; then
+    echo "  → Running both Rust and webapp linters (mixed changes detected)"
+    make lint
+elif [[ -n "$RUST_FILES" ]]; then
+    echo "  → Running Rust linter only (Rust files changed)"
+    make lint-rust
+elif [[ -n "$WEBAPP_FILES" ]]; then
+    echo "  → Running webapp linter only (webapp files changed)"
+    make webapp-lint
+else
+    echo "  → No Rust or webapp files changed, skipping linting"
+fi
 
-# Run tests
+# Run tests (always run for safety)
 echo "🧪 Running tests..."
 make test
 

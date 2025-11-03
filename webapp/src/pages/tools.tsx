@@ -1,14 +1,26 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { Flex, useDisclosure, IconButton, Box } from '@chakra-ui/react';
-import { HamburgerIcon } from '@chakra-ui/icons';
-import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
-import { Layout } from '../components/layout';
-import { Sidebar } from '../components/layout';
-import { ToolInterface, HelpModal, type ToolInterfaceHandle } from '../components/common';
-import { CommandPalette } from '../components/common';
-import { useCommandK, useCommandH, useHelpKey, useEscapeBlur, useCommandI, useCommandR } from '../hooks/use-keyboard';
-import { uppercaseTool } from '../tools/string-tools';
-import { getToolById } from '../tools';
+import { HamburgerIcon } from "@chakra-ui/icons";
+import { Box, Flex, IconButton, useDisclosure } from "@chakra-ui/react";
+import type React from "react";
+import { useEffect, useRef, useState } from "react";
+import { useNavigate, useParams, useSearchParams } from "react-router-dom";
+import {
+  CommandPalette,
+  HelpModal,
+  ToolInterface,
+  type ToolInterfaceHandle,
+} from "../components/common";
+import { Layout, Sidebar } from "../components/layout";
+import {
+  useCommandH,
+  useCommandI,
+  useCommandK,
+  useCommandR,
+  useEscapeBlur,
+  useHelpKey,
+} from "../hooks/use-keyboard";
+import { getToolById } from "../tools";
+import { uppercaseTool } from "../tools/string-tools";
+import type { Tool } from "../types";
 
 export const Tools: React.FC = () => {
   const { toolId } = useParams<{ toolId?: string }>();
@@ -34,19 +46,19 @@ export const Tools: React.FC = () => {
   }, [toolId, navigate]);
 
   const { isOpen: isSidebarOpen, onToggle: onSidebarToggle } = useDisclosure({
-    defaultIsOpen: false
+    defaultIsOpen: false,
   });
 
   const {
     isOpen: isCommandPaletteOpen,
     onOpen: onCommandPaletteOpen,
-    onClose: onCommandPaletteClose
+    onClose: onCommandPaletteClose,
   } = useDisclosure();
 
   const {
     isOpen: isHelpModalOpen,
     onOpen: onHelpModalOpen,
-    onClose: onHelpModalClose
+    onClose: onHelpModalClose,
   } = useDisclosure();
 
   // Set up CMD+K shortcut for search
@@ -72,7 +84,7 @@ export const Tools: React.FC = () => {
   });
 
   // Handle tool selection with auto-close sidebar and URL update
-  const handleToolSelect = (tool: any) => {
+  const handleToolSelect = (tool: Tool) => {
     setSelectedTool(tool);
     // Update URL to reflect selected tool
     navigate(`/tool/${tool.id}`, { replace: true });
@@ -90,7 +102,7 @@ export const Tools: React.FC = () => {
           aria-label="Toggle navigation"
           icon={<HamburgerIcon />}
           variant="ghost"
-          display={{ base: 'flex', md: 'none' }}
+          display={{ base: "flex", md: "none" }}
           position="absolute"
           top={4}
           left={4}
@@ -112,7 +124,7 @@ export const Tools: React.FC = () => {
             <ToolInterface
               ref={toolInterfaceRef}
               tool={selectedTool}
-              initialInput={searchParams.get('input') || ''}
+              initialInput={searchParams.get("input") || ""}
               onInputChange={(input: string) => {
                 if (input.trim()) {
                   setSearchParams({ input }, { replace: true });
@@ -132,10 +144,7 @@ export const Tools: React.FC = () => {
         />
 
         {/* Help Modal */}
-        <HelpModal
-          isOpen={isHelpModalOpen}
-          onClose={onHelpModalClose}
-        />
+        <HelpModal isOpen={isHelpModalOpen} onClose={onHelpModalClose} />
       </Box>
     </Layout>
   );

@@ -1,22 +1,22 @@
-import React from 'react';
+import { MoonIcon, SunIcon } from "@chakra-ui/icons";
 import {
   Box,
   Flex,
   Heading,
-  IconButton,
-  useColorMode,
-  useColorModeValue,
-  Spacer,
   HStack,
+  IconButton,
+  Spacer,
   Text,
   Tooltip,
-} from '@chakra-ui/react';
-import { MoonIcon, SunIcon } from '@chakra-ui/icons';
-import { FiGithub, FiTerminal } from 'react-icons/fi';
-import { RiKeyboardLine } from 'react-icons/ri';
-import { Link, useLocation } from 'react-router-dom';
-import { SearchBar } from '../common';
-import { appConfig } from '../../config';
+  useColorMode,
+  useColorModeValue,
+} from "@chakra-ui/react";
+import type React from "react";
+import { FiGithub, FiTerminal } from "react-icons/fi";
+import { RiKeyboardLine } from "react-icons/ri";
+import { Link, useLocation } from "react-router-dom";
+import { appConfig } from "../../config";
+import { SearchBar } from "../common";
 
 interface HeaderProps {
   onSearchOpen?: () => void;
@@ -25,10 +25,10 @@ interface HeaderProps {
 
 export const Header: React.FC<HeaderProps> = ({ onSearchOpen, onHelpOpen }) => {
   const { colorMode, toggleColorMode } = useColorMode();
-  const bg = useColorModeValue('white', 'gray.800');
-  const borderColor = useColorModeValue('gray.200', 'gray.700');
+  const bg = useColorModeValue("white", "gray.800");
+  const borderColor = useColorModeValue("gray.200", "gray.700");
   const location = useLocation();
-  const isCliPage = location.pathname === '/cli';
+  const isCliPage = location.pathname === "/cli";
 
   return (
     <Box
@@ -55,7 +55,7 @@ export const Header: React.FC<HeaderProps> = ({ onSearchOpen, onHelpOpen }) => {
             <Text
               fontSize="sm"
               color="gray.500"
-              display={{ base: 'none', lg: 'block' }}
+              display={{ base: "none", lg: "block" }}
             >
               {appConfig.description}
             </Text>
@@ -63,7 +63,7 @@ export const Header: React.FC<HeaderProps> = ({ onSearchOpen, onHelpOpen }) => {
 
           {/* Search Bar - only show on tools page */}
           {!isCliPage && onSearchOpen && (
-            <Box display={{ base: 'none', md: 'block' }}>
+            <Box display={{ base: "none", md: "block" }}>
               <SearchBar onFocus={onSearchOpen} />
             </Box>
           )}
@@ -83,7 +83,7 @@ export const Header: React.FC<HeaderProps> = ({ onSearchOpen, onHelpOpen }) => {
                 size="md"
                 onClick={onHelpOpen}
                 color="brand.500"
-                _dark={{ color: 'brand.300' }}
+                _dark={{ color: "brand.300" }}
               />
             </Tooltip>
           )}
@@ -95,10 +95,10 @@ export const Header: React.FC<HeaderProps> = ({ onSearchOpen, onHelpOpen }) => {
               to="/cli"
               aria-label="CLI Tool"
               icon={<FiTerminal />}
-              variant={isCliPage ? 'solid' : 'ghost'}
-              colorScheme={isCliPage ? 'brand' : undefined}
-              color={!isCliPage ? 'brand.500' : undefined}
-              _dark={{ color: !isCliPage ? 'brand.300' : undefined }}
+              variant={isCliPage ? "solid" : "ghost"}
+              colorScheme={isCliPage ? "brand" : undefined}
+              color={!isCliPage ? "brand.500" : undefined}
+              _dark={{ color: !isCliPage ? "brand.300" : undefined }}
               size="md"
             />
           </Tooltip>
@@ -115,15 +115,18 @@ export const Header: React.FC<HeaderProps> = ({ onSearchOpen, onHelpOpen }) => {
               target="_blank"
               rel="noopener noreferrer"
               color="brand.500"
-              _dark={{ color: 'brand.300' }}
+              _dark={{ color: "brand.300" }}
             />
           </Tooltip>
 
           {/* Dark mode toggle */}
-          <Tooltip label={`Switch to ${colorMode === 'light' ? 'dark' : 'light'} mode`} hasArrow>
+          <Tooltip
+            label={`Switch to ${colorMode === "light" ? "dark" : "light"} mode`}
+            hasArrow
+          >
             <IconButton
               aria-label="Toggle color mode"
-              icon={colorMode === 'light' ? <MoonIcon /> : <SunIcon />}
+              icon={colorMode === "light" ? <MoonIcon /> : <SunIcon />}
               onClick={toggleColorMode}
               variant="ghost"
               size="md"

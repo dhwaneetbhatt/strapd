@@ -10,8 +10,8 @@ env:
   CARGO_TERM_COLOR: always
 
 jobs:
-  test:
-    name: Test Suite
+  test-rust:
+    name: Test Rust
     runs-on: ubuntu-24.04
     steps:
       - name: Checkout code
@@ -33,14 +33,51 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-cargo-
 
+      - name: Install Rust dependencies
+        run: make rust-install
+
       - name: Check formatting
-        run: make fmt-check
+        run: make rust-fmt-check
 
-      - name: Build
-        run: make build
+      - name: Lint Rust
+        run: make rust-lint
 
-      - name: Run tests
-        run: make test
+      - name: Build Rust
+        run: make rust-build
 
-      - name: Run lint
-        run: make lint
+      - name: Test Rust
+        run: make rust-test
+
+  test-webapp:
+    name: Test Webapp
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v5
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: '22'
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - name: Cache pnpm dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.pnpm-store
+          key: ${{ runner.os }}-pnpm-${{ hashFiles('webapp/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-
+
+      - name: Install webapp dependencies
+        run: make webapp-install
+
+      - name: Check formatting
+        run: make webapp-fmt-check
+
+      - name: Lint webapp
+        run: make webapp-lint

@@ -1,5 +1,5 @@
 // Export all string operations
-import { stringCaseOperations } from './case';
+import { stringCaseOperations } from "./case";
 
 // Re-export for convenience
 export const stringUtils = {

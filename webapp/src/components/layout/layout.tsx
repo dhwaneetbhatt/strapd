@@ -1,6 +1,6 @@
-import React from 'react';
-import { Box, Flex } from '@chakra-ui/react';
-import { Header } from './header';
+import { Box, Flex } from "@chakra-ui/react";
+import type React from "react";
+import { Header } from "./header";
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -8,13 +8,15 @@ interface LayoutProps {
   onHelpOpen?: () => void;
 }
 
-export const Layout: React.FC<LayoutProps> = ({ children, onSearchOpen, onHelpOpen }) => {
+export const Layout: React.FC<LayoutProps> = ({
+  children,
+  onSearchOpen,
+  onHelpOpen,
+}) => {
   return (
     <Flex direction="column" minH="100vh">
       <Header onSearchOpen={onSearchOpen} onHelpOpen={onHelpOpen} />
-      <Box flex={1}>
-        {children}
-      </Box>
+      <Box flex={1}>{children}</Box>
     </Flex>
   );
 };

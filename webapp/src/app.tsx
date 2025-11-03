@@ -1,6 +1,6 @@
-import { HashRouter as Router, Routes, Route } from 'react-router-dom';
-import { KeyboardProvider } from './contexts/keyboard-context';
-import { Tools, CLI } from './pages';
+import { Route, HashRouter as Router, Routes } from "react-router-dom";
+import { KeyboardProvider } from "./contexts/keyboard-context";
+import { CLI, Tools } from "./pages";
 
 function App() {
   return (

@@ -5,6 +5,7 @@ import { ToolResult } from '../../types';
 // WASM module interface
 export interface WasmModule {
   uppercase: (input: string) => string;
+  lowercase: (input: string) => string;
   // Add more WASM functions as they become available
 }
 
@@ -52,8 +53,14 @@ export class WasmWrapper {
     );
   }
 
+  public lowercase(input: string): ToolResult {
+    return this.safeWasmCall(
+      () => this.wasmModule.lowercase(input),
+      'lowercase'
+    );
+  }
+
   // Add more operations as they become available
-  // public lowercase(input: string): ToolResult { ... }
   // public base64Encode(input: string): ToolResult { ... }
 }
 

@@ -1,41 +1,33 @@
 // Tool registry - central place for all tools
-import { Tool, ToolGroup } from '../types';
-import { stringToolsGroup } from './string-tools';
-import {
-  encodingToolsGroup,
-  securityToolsGroup,
-  dataFormatToolsGroup,
-  generatorToolsGroup,
-  datetimeToolsGroup
-} from './placeholder-tools';
+import type { Tool, ToolGroup } from "../types";
+import { stringToolsGroup, TOOL_REGISTRY } from "./string-tools";
 
 // All tool groups
-export const toolGroups: ToolGroup[] = [
-  stringToolsGroup,
-  encodingToolsGroup,
-  securityToolsGroup,
-  dataFormatToolsGroup,
-  generatorToolsGroup,
-  datetimeToolsGroup,
-];
+export const toolGroups: ToolGroup[] = [stringToolsGroup];
 
 // Flatten all tools for easy access
-export const allTools: Tool[] = toolGroups.flatMap(group => group.tools);
+export const allTools: Tool[] = toolGroups.flatMap((group) => group.tools);
+
+// Export the tool registry for component lookup
+export { TOOL_REGISTRY };
 
 // Tool lookup functions
 export const getToolById = (id: string): Tool | undefined => {
-  return allTools.find(tool => tool.id === id);
+  return allTools.find((tool) => tool.id === id);
 };
 
 export const getToolsByCategory = (category: string): Tool[] => {
-  return allTools.filter(tool => tool.category === category);
+  return allTools.filter((tool) => tool.category === category);
 };
 
 export const searchTools = (query: string): Tool[] => {
   const normalizedQuery = query.toLowerCase();
-  return allTools.filter(tool =>
-    tool.name.toLowerCase().includes(normalizedQuery) ||
-    tool.description.toLowerCase().includes(normalizedQuery) ||
-    tool.aliases?.some(alias => alias.toLowerCase().includes(normalizedQuery))
+  return allTools.filter(
+    (tool) =>
+      tool.name.toLowerCase().includes(normalizedQuery) ||
+      tool.description.toLowerCase().includes(normalizedQuery) ||
+      tool.aliases?.some((alias) =>
+        alias.toLowerCase().includes(normalizedQuery),
+      ),
   );
 };

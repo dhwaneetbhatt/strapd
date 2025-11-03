@@ -1,3 +1,4 @@
 // Export all configuration
-export { default as theme } from './theme';
-export { appConfig, type AppConfig } from './app';
+
+export { type AppConfig, appConfig } from "./app";
+export { default as theme } from "./theme";
