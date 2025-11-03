@@ -1,7 +1,7 @@
 // String tools definitions
 import { Tool, ToolGroup } from '../types';
 import { stringUtils } from '../lib/utils/string';
-import { lowercaseTool, capitalCaseTool, reverseTool } from './placeholderTools';
+import { lowercaseTool, capitalCaseTool, reverseTool } from './placeholder-tools';
 
 // Define individual string tools
 export const uppercaseTool: Tool = {
@@ -11,18 +11,6 @@ export const uppercaseTool: Tool = {
   category: 'string',
   aliases: ['upper', 'uc', 'caps'],
   operation: stringUtils.case.uppercase,
-  examples: [
-    {
-      name: 'Basic conversion',
-      input: 'hello world',
-      expectedOutput: 'HELLO WORLD',
-    },
-    {
-      name: 'Mixed case',
-      input: 'Hello World',
-      expectedOutput: 'HELLO WORLD',
-    },
-  ],
 };
 
 // Export all string tools as a group

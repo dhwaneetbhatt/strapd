@@ -1,2 +1,2 @@
-export { CLI } from './CLI';
-export { Tools } from './Tools';
+export { CLI } from './cli';
+export { Tools } from './tools';

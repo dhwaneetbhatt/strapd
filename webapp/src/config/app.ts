@@ -20,6 +20,11 @@ export const appConfig = {
     autoProcess: true, // Auto-process as user types
   },
 
+  // Keyboard settings
+  keyboard: {
+    enableShortcuts: true, // Global keyboard shortcuts toggle
+  },
+
   // Local storage keys
   storage: {
     theme: 'strapd-theme',

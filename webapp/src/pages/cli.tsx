@@ -1,4 +1,3 @@
-import React from 'react';
 import {
   Box,
   Container,
@@ -16,7 +15,7 @@ import {
 } from '@chakra-ui/react';
 import { ExternalLinkIcon } from '@chakra-ui/icons';
 import { FiGithub, FiDownload, FiZap, FiGlobe, FiTarget, FiRefreshCw } from 'react-icons/fi';
-import { Layout } from '../components/layout/Layout';
+import { Layout } from '../components/layout';
 
 interface FeatureCardProps {
   icon: React.ComponentType;

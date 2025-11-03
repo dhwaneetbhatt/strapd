@@ -11,7 +11,6 @@ import {
   Badge,
   useColorModeValue,
   Kbd,
-  Flex,
   Spacer,
 } from '@chakra-ui/react';
 import { SearchIcon } from '@chakra-ui/icons';

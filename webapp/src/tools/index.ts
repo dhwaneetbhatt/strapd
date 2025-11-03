@@ -1,13 +1,13 @@
 // Tool registry - central place for all tools
 import { Tool, ToolGroup } from '../types';
-import { stringToolsGroup } from './stringTools';
+import { stringToolsGroup } from './string-tools';
 import {
   encodingToolsGroup,
   securityToolsGroup,
   dataFormatToolsGroup,
   generatorToolsGroup,
   datetimeToolsGroup
-} from './placeholderTools';
+} from './placeholder-tools';
 
 // All tool groups
 export const toolGroups: ToolGroup[] = [

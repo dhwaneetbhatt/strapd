@@ -41,7 +41,7 @@ all: fmt build test
 
 # Build WASM module for webapp
 wasm-build:
-	wasm-pack build crates/wasm --out-dir $(CURDIR)/webapp/wasm/pkg
+	RUSTFLAGS="--cfg getrandom_backend=\"wasm_js\"" wasm-pack build crates/wasm --out-dir $(CURDIR)/webapp/wasm
 
 # Install webapp dependencies
 webapp-install:

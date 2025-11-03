@@ -9,19 +9,21 @@ import {
   Spacer,
   HStack,
   Text,
-  Button,
+  Tooltip,
 } from '@chakra-ui/react';
 import { MoonIcon, SunIcon } from '@chakra-ui/icons';
 import { FiGithub, FiTerminal } from 'react-icons/fi';
+import { RiKeyboardLine } from 'react-icons/ri';
 import { Link, useLocation } from 'react-router-dom';
 import { SearchBar } from '../common';
 import { appConfig } from '../../config';
 
 interface HeaderProps {
   onSearchOpen?: () => void;
+  onHelpOpen?: () => void;
 }
 
-export const Header: React.FC<HeaderProps> = ({ onSearchOpen }) => {
+export const Header: React.FC<HeaderProps> = ({ onSearchOpen, onHelpOpen }) => {
   const { colorMode, toggleColorMode } = useColorMode();
   const bg = useColorModeValue('white', 'gray.800');
   const borderColor = useColorModeValue('gray.200', 'gray.700');
@@ -71,41 +73,62 @@ export const Header: React.FC<HeaderProps> = ({ onSearchOpen }) => {
 
         {/* Navigation and Action buttons */}
         <HStack spacing={2}>
+          {/* Keyboard shortcuts help */}
+          {onHelpOpen && (
+            <Tooltip label="Keyboard Shortcuts" hasArrow>
+              <IconButton
+                aria-label="Show keyboard shortcuts"
+                icon={<RiKeyboardLine />}
+                variant="ghost"
+                size="md"
+                onClick={onHelpOpen}
+                color="brand.500"
+                _dark={{ color: 'brand.300' }}
+              />
+            </Tooltip>
+          )}
+
           {/* CLI button */}
-          <IconButton
-            as={Link}
-            to="/cli"
-            aria-label="CLI Tool"
-            icon={<FiTerminal />}
-            variant={isCliPage ? 'solid' : 'ghost'}
-            colorScheme={isCliPage ? 'brand' : undefined}
-            color={!isCliPage ? 'brand.500' : undefined}
-            _dark={{ color: !isCliPage ? 'brand.300' : undefined }}
-            size="md"
-          />
+          <Tooltip label="CLI Installation Guide" hasArrow>
+            <IconButton
+              as={Link}
+              to="/cli"
+              aria-label="CLI Tool"
+              icon={<FiTerminal />}
+              variant={isCliPage ? 'solid' : 'ghost'}
+              colorScheme={isCliPage ? 'brand' : undefined}
+              color={!isCliPage ? 'brand.500' : undefined}
+              _dark={{ color: !isCliPage ? 'brand.300' : undefined }}
+              size="md"
+            />
+          </Tooltip>
 
           {/* GitHub link */}
-          <IconButton
-            aria-label="View on GitHub"
-            icon={<FiGithub />}
-            variant="ghost"
-            size="md"
-            as="a"
-            href={appConfig.links.github}
-            target="_blank"
-            rel="noopener noreferrer"
-            color="brand.500"
-            _dark={{ color: 'brand.300' }}
-          />
+          <Tooltip label="View on GitHub" hasArrow>
+            <IconButton
+              aria-label="View on GitHub"
+              icon={<FiGithub />}
+              variant="ghost"
+              size="md"
+              as="a"
+              href={appConfig.links.github}
+              target="_blank"
+              rel="noopener noreferrer"
+              color="brand.500"
+              _dark={{ color: 'brand.300' }}
+            />
+          </Tooltip>
 
           {/* Dark mode toggle */}
-          <IconButton
-            aria-label="Toggle color mode"
-            icon={colorMode === 'light' ? <MoonIcon /> : <SunIcon />}
-            onClick={toggleColorMode}
-            variant="ghost"
-            size="md"
-          />
+          <Tooltip label={`Switch to ${colorMode === 'light' ? 'dark' : 'light'} mode`} hasArrow>
+            <IconButton
+              aria-label="Toggle color mode"
+              icon={colorMode === 'light' ? <MoonIcon /> : <SunIcon />}
+              onClick={toggleColorMode}
+              variant="ghost"
+              size="md"
+            />
+          </Tooltip>
         </HStack>
       </Flex>
     </Box>
