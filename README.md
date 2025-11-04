@@ -16,14 +16,7 @@ CLI tools aren't much better: `jq` for JSON, `base64` for encoding, `uuidgen` fo
 
 LLMs are overkill and not best suited for these tasks — they're slow, costly, and unnecessary. I wanted something fast, offline, and simple.
 
-So I built `strapd`: one tool with simple commands and lots of intuitive aliases. Type commands however feels natural.
-
-- **Fast** — Written in Rust, runs quickly
-- **Portable** — Linux, macOS, Windows, single binary, no dependencies
-- **Focused** — Designed for developer tasks, not everything
-- **Flexible** — Multiple aliases so commands feel natural
-
-Eventually planning to build a web version using WASM, making these same tools available in browsers.
+So I built `strapd`: one tool with simple commands and lots of intuitive aliases. It is primarily targeted for CLI, but also provides a webapp interface for those who prefer GUIs. The webapp uses the same core library as the CLI using WASM, ensuring consistency.
 
 ## Current Features
 
@@ -35,12 +28,7 @@ Eventually planning to build a web version using WASM, making these same tools a
 - **Security**: Hash (MD5, SHA-1, SHA-256, SHA-512), HMAC (SHA-256, SHA-512)
 - **Random**: numbers, strings
 - **Date/Time**: timestamps
-- **Clipboard**: copy and paste
-
-## Requirements
-
-- **For building from source**: Rust 1.70+ and Cargo
-- **Supported platforms**: Linux, macOS, Windows
+- **Clipboard**: copy and paste (CLI only)
 
 ## Installation
 

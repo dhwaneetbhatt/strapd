@@ -71,7 +71,7 @@ export const CLI: React.FC = () => {
                 bgClip="text"
                 mb={4}
               >
-                strapd CLI 🛠️
+                strapd cli 🛠️
               </Heading>
               <Text
                 fontSize="xl"
@@ -226,7 +226,7 @@ echo "hello world" | strapd str upper`}
             {/* Features List */}
             <Box>
               <Heading size="lg" mb={6} color="text.primary">
-                Features (more coming soon) ✨
+                Features ✨
               </Heading>
 
               <SimpleGrid columns={{ base: 1, lg: 2 }} spacing={4}>

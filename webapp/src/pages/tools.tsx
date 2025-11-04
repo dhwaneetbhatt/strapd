@@ -5,14 +5,7 @@ import { useEffect, useState } from "react";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { CommandPalette, HelpModal, ToolInterface } from "../components/common";
 import { Layout, Sidebar } from "../components/layout";
-import {
-  useCommandH,
-  useCommandI,
-  useCommandK,
-  useCommandR,
-  useEscapeBlur,
-  useHelpKey,
-} from "../hooks/use-keyboard";
+import { useCommandI, useCommandR, useEscapeBlur } from "../hooks/use-keyboard";
 import { getToolById } from "../tools";
 import { uppercaseTool } from "../tools/string-tools";
 import type { Tool } from "../types";
@@ -23,19 +16,19 @@ export const Tools: React.FC = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const [selectedTool, setSelectedTool] = useState(uppercaseTool);
 
-  // Handle URL-based tool selection and default tool redirect
+  // Handle URL-based tool selection and redirect logic
   useEffect(() => {
     if (toolId) {
       const tool = getToolById(toolId);
       if (tool) {
         setSelectedTool(tool);
       } else {
-        // Tool not found, redirect to default tool
-        navigate(`/tool/${uppercaseTool.id}`, { replace: true });
+        // Tool not found, redirect to home page
+        navigate("/", { replace: true });
       }
     } else {
-      // No tool in URL, redirect to default tool
-      navigate(`/tool/${uppercaseTool.id}`, { replace: true });
+      // No tool in URL, redirect to home page
+      navigate("/", { replace: true });
     }
   }, [toolId, navigate]);
 
@@ -55,19 +48,10 @@ export const Tools: React.FC = () => {
     onClose: onHelpModalClose,
   } = useDisclosure();
 
-  // Set up CMD+K shortcut for search
-  useCommandK(onCommandPaletteOpen);
-
-  // Set up CMD+H shortcut for sidebar toggle
-  useCommandH(onSidebarToggle);
-
-  // Set up "." key shortcut for help modal
-  useHelpKey(onHelpModalOpen);
-
-  // Set up Esc key to remove focus from inputs
+  // Set up Esc key to remove focus from inputs (tool-specific)
   useEscapeBlur();
 
-  // Set up CMD+I to focus input
+  // Set up CMD+I to focus input (tool-specific)
   useCommandI(() => {
     const input = document.querySelector(
       '[data-testid="tool-default-input"]',
@@ -75,7 +59,7 @@ export const Tools: React.FC = () => {
     input?.focus();
   });
 
-  // Set up CMD+R to reset/clear
+  // Set up CMD+R to reset/clear (tool-specific)
   useCommandR(() => {
     const clearButton = document.querySelector(
       '[data-testid="tool-clear-button"]',
@@ -95,7 +79,11 @@ export const Tools: React.FC = () => {
   };
 
   return (
-    <Layout onSearchOpen={onCommandPaletteOpen} onHelpOpen={onHelpModalOpen}>
+    <Layout
+      onSearchOpen={onCommandPaletteOpen}
+      onHelpOpen={onHelpModalOpen}
+      onSidebarToggle={onSidebarToggle}
+    >
       <Box position="relative">
         {/* Mobile sidebar toggle button */}
         <IconButton
