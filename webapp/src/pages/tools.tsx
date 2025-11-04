@@ -1,14 +1,9 @@
 import { HamburgerIcon } from "@chakra-ui/icons";
 import { Box, Flex, IconButton, useDisclosure } from "@chakra-ui/react";
 import type React from "react";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
-import {
-  CommandPalette,
-  HelpModal,
-  ToolInterface,
-  type ToolInterfaceHandle,
-} from "../components/common";
+import { CommandPalette, HelpModal, ToolInterface } from "../components/common";
 import { Layout, Sidebar } from "../components/layout";
 import {
   useCommandH,
@@ -27,7 +22,6 @@ export const Tools: React.FC = () => {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const [selectedTool, setSelectedTool] = useState(uppercaseTool);
-  const toolInterfaceRef = useRef<ToolInterfaceHandle>(null);
 
   // Handle URL-based tool selection and default tool redirect
   useEffect(() => {
@@ -75,12 +69,18 @@ export const Tools: React.FC = () => {
 
   // Set up CMD+I to focus input
   useCommandI(() => {
-    toolInterfaceRef.current?.focusInput();
+    const input = document.querySelector(
+      '[data-testid="tool-default-input"]',
+    ) as HTMLTextAreaElement;
+    input?.focus();
   });
 
   // Set up CMD+R to reset/clear
   useCommandR(() => {
-    toolInterfaceRef.current?.clearAll();
+    const clearButton = document.querySelector(
+      '[data-testid="tool-clear-button"]',
+    ) as HTMLButtonElement;
+    clearButton?.click();
   });
 
   // Handle tool selection with auto-close sidebar and URL update
@@ -122,7 +122,6 @@ export const Tools: React.FC = () => {
           {/* Main Tool Interface */}
           <Flex flex={1} p={8}>
             <ToolInterface
-              ref={toolInterfaceRef}
               tool={selectedTool}
               initialInput={searchParams.get("input") || ""}
               onInputChange={(input: string) => {

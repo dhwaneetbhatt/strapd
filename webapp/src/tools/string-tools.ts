@@ -1,6 +1,7 @@
 // String tools definitions
 
 import {
+  CapitalcaseToolComponent,
   LowercaseToolComponent,
   UppercaseToolComponent,
 } from "../components/tools";
@@ -29,6 +30,18 @@ const lowercaseToolDefinition: ToolDefinition = {
   operation: (inputs) => stringUtils.case.lowercase(String(inputs.text || "")),
 };
 
+const capitalcaseToolDefinition: ToolDefinition = {
+  id: "string-capitalcase",
+  name: "Capital Case",
+  description:
+    "Convert text to capital case (first letter of each word capitalized)",
+  category: "string",
+  aliases: ["capital", "cc"],
+  component: CapitalcaseToolComponent,
+  operation: (inputs) =>
+    stringUtils.case.capitalcase(String(inputs.text || "")),
+};
+
 // Create Tool wrappers for compatibility with existing system
 export const uppercaseTool: Tool = {
   id: uppercaseToolDefinition.id,
@@ -50,17 +63,28 @@ export const lowercaseTool: Tool = {
     lowercaseToolDefinition.operation({ text: input }),
 };
 
+export const capitalCaseTool: Tool = {
+  id: capitalcaseToolDefinition.id,
+  name: capitalcaseToolDefinition.name,
+  description: capitalcaseToolDefinition.description,
+  category: capitalcaseToolDefinition.category,
+  aliases: capitalcaseToolDefinition.aliases,
+  operation: (input: string) =>
+    capitalcaseToolDefinition.operation({ text: input }),
+};
+
 // Export all string tools as a group
 export const stringToolsGroup: ToolGroup = {
   category: "string",
   name: "Text Tools",
   description: "String manipulation and transformation utilities",
   icon: "📝",
-  tools: [uppercaseTool, lowercaseTool],
+  tools: [uppercaseTool, lowercaseTool, capitalCaseTool],
 };
 
 // Tool registry for component lookup
 export const TOOL_REGISTRY: Record<string, ToolDefinition> = {
   [uppercaseToolDefinition.id]: uppercaseToolDefinition,
   [lowercaseToolDefinition.id]: lowercaseToolDefinition,
+  [capitalcaseToolDefinition.id]: capitalcaseToolDefinition,
 };

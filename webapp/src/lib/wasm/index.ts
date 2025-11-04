@@ -1,15 +1,12 @@
-// WASM module wrapper
 import * as wasm from 'strapd_wasm';
 import { ToolResult } from '../../types';
 
-// WASM module interface
 export interface WasmModule {
-  uppercase: (input: string) => string;
-  lowercase: (input: string) => string;
-  // Add more WASM functions as they become available
+  string_to_uppercase: (input: string) => string;
+  string_to_lowercase: (input: string) => string;
+  string_to_capitalcase: (input: string) => string;
 }
 
-// Wrapper class for WASM operations with error handling
 export class WasmWrapper {
   private static instance: WasmWrapper;
   private wasmModule: WasmModule;
@@ -25,7 +22,6 @@ export class WasmWrapper {
     return WasmWrapper.instance;
   }
 
-  // Safe wrapper for WASM functions
   private safeWasmCall<T>(
     fn: () => T,
     functionName: string
@@ -46,22 +42,27 @@ export class WasmWrapper {
   }
 
   // String operations
-  public uppercase(input: string): ToolResult {
+  public string_to_uppercase(input: string): ToolResult {
     return this.safeWasmCall(
-      () => this.wasmModule.uppercase(input),
-      'uppercase'
+      () => this.wasmModule.string_to_uppercase(input),
+      'string_to_uppercase'
     );
   }
 
-  public lowercase(input: string): ToolResult {
+  public string_to_lowercase(input: string): ToolResult {
     return this.safeWasmCall(
-      () => this.wasmModule.lowercase(input),
-      'lowercase'
+      () => this.wasmModule.string_to_lowercase(input),
+      'string_to_lowercase'
     );
   }
 
-  // Add more operations as they become available
-  // public base64Encode(input: string): ToolResult { ... }
+  public string_to_capitalcase(input: string): ToolResult {
+    return this.safeWasmCall(
+      () => this.wasmModule.string_to_capitalcase(input),
+      'string_to_capitalcase'
+    );
+  }
+
 }
 
 // Export singleton instance

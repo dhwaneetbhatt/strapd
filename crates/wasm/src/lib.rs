@@ -1,7 +1,3 @@
-use strapd_core::string;
-use wasm_bindgen::prelude::*;
+pub mod string_ops;
 
-#[wasm_bindgen]
-pub fn uppercase(input: &str) -> String {
-    string::case::to_uppercase(input)
-}
+pub use string_ops::*;

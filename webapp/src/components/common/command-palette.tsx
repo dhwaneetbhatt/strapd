@@ -14,23 +14,9 @@ import {
 } from "@chakra-ui/react";
 import type React from "react";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { getCategoryIcon } from "../../constants/category-icons";
 import { searchTools } from "../../tools";
 import type { Tool } from "../../types";
-
-// Category icon mapping for cleaner icon selection
-const CATEGORY_ICONS = {
-  string: "📝",
-  encoding: "🔄",
-  security: "🔐",
-  dataFormats: "📋",
-  identifiers: "🎲",
-  datetime: "⏰",
-  random: "🎲",
-} as const;
-
-const getIconForCategory = (category: string): string => {
-  return CATEGORY_ICONS[category as keyof typeof CATEGORY_ICONS] ?? "🔧";
-};
 
 interface CommandPaletteProps {
   isOpen: boolean;
@@ -62,7 +48,7 @@ const SearchResult: React.FC<SearchResultProps> = ({
       transition="all 0.2s"
     >
       <HStack spacing={3}>
-        <Text fontSize="lg">{getIconForCategory(tool.category)}</Text>
+        <Text fontSize="lg">{getCategoryIcon(tool.category)}</Text>
         <VStack align="start" spacing={0} flex={1}>
           <Text fontWeight="medium" fontSize="sm">
             {tool.name}

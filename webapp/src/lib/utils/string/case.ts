@@ -11,7 +11,7 @@ export const stringCaseOperations = {
     if (!input.trim()) {
       return { success: false, error: "Input is required" };
     }
-    return wasmWrapper.uppercase(input);
+    return wasmWrapper.string_to_uppercase(input);
   },
 
   /**
@@ -21,10 +21,16 @@ export const stringCaseOperations = {
     if (!input.trim()) {
       return { success: false, error: "Input is required" };
     }
-    return wasmWrapper.lowercase(input);
+    return wasmWrapper.string_to_lowercase(input);
   },
 
-  // capitalCase: (input: string): ToolResult => {
-  //   return wasmWrapper.capitalCase(input);
-  // },
+  /**
+   * Convert string to capital case (first letter of each word capitalized)
+   */
+  capitalcase: (input: string): ToolResult => {
+    if (!input.trim()) {
+      return { success: false, error: "Input is required" };
+    }
+    return wasmWrapper.string_to_capitalcase(input);
+  },
 };

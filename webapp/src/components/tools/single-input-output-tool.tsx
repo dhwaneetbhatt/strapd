@@ -60,6 +60,7 @@ export const SingleInputOutputTool: React.FC<SingleInputOutputToolProps> = ({
             <Spacer />
           </HStack>
           <Textarea
+            data-testid="tool-default-input"
             value={String(inputs.text || "")}
             onChange={(e) => {
               updateInput("text", e.target.value);

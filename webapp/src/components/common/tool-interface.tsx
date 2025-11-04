@@ -1,5 +1,6 @@
 import { Box, Divider, Heading, HStack, Text, VStack } from "@chakra-ui/react";
-import { forwardRef, useImperativeHandle } from "react";
+import type React from "react";
+import { getCategoryIcon } from "../../constants/category-icons";
 import { TOOL_REGISTRY } from "../../tools";
 import type { Tool } from "../../types";
 
@@ -9,33 +10,13 @@ interface ToolInterfaceProps {
   onInputChange?: (input: string) => void;
 }
 
-export interface ToolInterfaceHandle {
-  focusInput: () => void;
-  clearAll: () => void;
-}
-
-export const ToolInterface = forwardRef<
-  ToolInterfaceHandle,
-  ToolInterfaceProps
->(({ tool, initialInput, onInputChange }, ref) => {
+export const ToolInterface: React.FC<ToolInterfaceProps> = ({
+  tool,
+  initialInput,
+  onInputChange,
+}) => {
   // Look up the tool in the registry
   const toolDefinition = TOOL_REGISTRY[tool.id];
-
-  // Expose methods to parent component via ref
-  useImperativeHandle(
-    ref,
-    () => ({
-      focusInput: () => {
-        // For now, we don't have access to the child component's methods
-        // This could be enhanced by implementing refs in tool components
-      },
-      clearAll: () => {
-        // For now, we don't have access to the child component's methods
-        // This could be enhanced by implementing refs in tool components
-      },
-    }),
-    [],
-  );
 
   // Handle input changes and convert to the format expected by onInputChange
   const handleInputChange = (inputs: Record<string, unknown>) => {
@@ -64,7 +45,7 @@ export const ToolInterface = forwardRef<
       {/* Tool Header */}
       <VStack align="stretch" spacing={4} mb={6}>
         <HStack spacing={3}>
-          <Text fontSize="2xl">{tool.category === "string" ? "📝" : "🔧"}</Text>
+          <Text fontSize="2xl">{getCategoryIcon(tool.category)}</Text>
           <Heading size="lg" color="text.primary">
             {tool.name}
           </Heading>
@@ -82,6 +63,4 @@ export const ToolInterface = forwardRef<
       />
     </Box>
   );
-});
-
-ToolInterface.displayName = "ToolInterface";
+};

@@ -1,6 +1,6 @@
 import type React from "react";
-import type { BaseToolProps } from "./base-tool";
-import { SingleInputOutputTool } from "./single-input-output-tool";
+import type { BaseToolProps } from "../base-tool";
+import { SingleInputOutputTool } from "../single-input-output-tool";
 
 export const LowercaseToolComponent: React.FC<BaseToolProps> = (props) => {
   return (

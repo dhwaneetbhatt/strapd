@@ -153,6 +153,7 @@ export const BaseToolLayout: React.FC<{
           </Button>
         )}
         <Button
+          data-testid="tool-clear-button"
           variant="outline"
           onClick={onClear}
           size="md"
