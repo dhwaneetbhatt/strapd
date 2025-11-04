@@ -1,4 +1,4 @@
-import { Box, Text } from "@chakra-ui/react";
+import { Box, Divider, Heading, HStack, Text, VStack } from "@chakra-ui/react";
 import { forwardRef, useImperativeHandle } from "react";
 import { TOOL_REGISTRY } from "../../tools";
 import type { Tool } from "../../types";
@@ -46,10 +46,10 @@ export const ToolInterface = forwardRef<
   if (!toolDefinition) {
     return (
       <Box w="full" maxW="6xl" mx="auto" p={8} textAlign="center">
-        <Text color="red.500" fontSize="lg">
+        <Text color="text.error" fontSize="lg">
           Tool not found: {tool.id}
         </Text>
-        <Text color="gray.600" mt={2}>
+        <Text color="text.secondary" mt={2}>
           This tool may not be implemented yet or has been removed.
         </Text>
       </Box>
@@ -61,38 +61,19 @@ export const ToolInterface = forwardRef<
 
   return (
     <Box w="full" maxW="6xl" mx="auto">
-      {/* Tool Description */}
-      <Box
-        p={4}
-        bg="blue.50"
-        _dark={{ bg: "blue.900" }}
-        borderRadius="md"
-        borderLeft="4px solid"
-        borderColor="brand.500"
-        mb={6}
-      >
-        <Text fontSize="2xl" display="inline" mr={3}>
-          {tool.category === "string" ? "📝" : "🔧"}
+      {/* Tool Header */}
+      <VStack align="stretch" spacing={4} mb={6}>
+        <HStack spacing={3}>
+          <Text fontSize="2xl">{tool.category === "string" ? "📝" : "🔧"}</Text>
+          <Heading size="lg" color="text.primary">
+            {tool.name}
+          </Heading>
+        </HStack>
+        <Text fontSize="md" color="text.secondary">
+          {tool.description}
         </Text>
-        <Text
-          fontSize="lg"
-          fontWeight="semibold"
-          color="brand.700"
-          _dark={{ color: "brand.300" }}
-          display="inline"
-          mr={2}
-        >
-          {tool.name}
-        </Text>
-        <Text
-          fontSize="sm"
-          color="gray.600"
-          _dark={{ color: "gray.400" }}
-          display="inline"
-        >
-          - {tool.description}
-        </Text>
-      </Box>
+        <Divider />
+      </VStack>
 
       <ToolComponent
         tool={toolDefinition}

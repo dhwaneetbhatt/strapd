@@ -54,12 +54,7 @@ export const SingleInputOutputTool: React.FC<SingleInputOutputToolProps> = ({
         {/* Input Section */}
         <VStack flex={1} align="stretch" spacing={3}>
           <HStack minH="8">
-            <Text
-              fontSize="sm"
-              fontWeight="medium"
-              color="gray.700"
-              _dark={{ color: "gray.300" }}
-            >
+            <Text fontSize="sm" fontWeight="medium" color="text.secondary">
               {inputLabel}
             </Text>
             <Spacer />
@@ -85,12 +80,7 @@ export const SingleInputOutputTool: React.FC<SingleInputOutputToolProps> = ({
         {/* Output Section */}
         <VStack flex={1} align="stretch" spacing={3}>
           <HStack minH="8">
-            <Text
-              fontSize="sm"
-              fontWeight="medium"
-              color="gray.700"
-              _dark={{ color: "gray.300" }}
-            >
+            <Text fontSize="sm" fontWeight="medium" color="text.secondary">
               {outputLabel}
             </Text>
             <Spacer />
@@ -116,8 +106,7 @@ export const SingleInputOutputTool: React.FC<SingleInputOutputToolProps> = ({
             fontFamily="mono"
             fontSize="sm"
             isReadOnly
-            bg="gray.50"
-            _dark={{ bg: "gray.700" }}
+            bg="tool.output.bg"
             aria-label={`Output from ${tool.name}`}
             aria-live="polite"
           />

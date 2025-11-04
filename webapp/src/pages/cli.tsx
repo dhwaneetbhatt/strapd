@@ -11,7 +11,6 @@ import {
   Icon,
   SimpleGrid,
   Text,
-  useColorModeValue,
   VStack,
 } from "@chakra-ui/react";
 import {
@@ -35,42 +34,33 @@ const FeatureCard: React.FC<FeatureCardProps> = ({
   title,
   description,
 }) => {
-  const bg = useColorModeValue("white", "gray.800");
-  const borderColor = useColorModeValue("gray.200", "gray.700");
-
   return (
     <Box
-      bg={bg}
+      bg="surface.raised"
       p={6}
       borderRadius="lg"
       border="1px solid"
-      borderColor={borderColor}
+      borderColor="border.base"
       _hover={{ transform: "translateY(-2px)", shadow: "md" }}
       transition="all 0.2s"
     >
       <VStack align="start" spacing={3}>
         <HStack>
-          <Icon as={icon} boxSize={6} color="brand.500" />
-          <Heading size="md" color="brand.600" _dark={{ color: "brand.300" }}>
+          <Icon as={icon} boxSize={6} color="text.brand" />
+          <Heading size="md" color="text.brand">
             {title}
           </Heading>
         </HStack>
-        <Text color="gray.600" _dark={{ color: "gray.400" }}>
-          {description}
-        </Text>
+        <Text color="text.secondary">{description}</Text>
       </VStack>
     </Box>
   );
 };
 
 export const CLI: React.FC = () => {
-  const bg = useColorModeValue("gray.50", "gray.900");
-  const cardBg = useColorModeValue("white", "gray.800");
-  const borderColor = useColorModeValue("gray.200", "gray.700");
-
   return (
     <Layout>
-      <Box minH="calc(100vh - 80px)" bg={bg}>
+      <Box minH="calc(100vh - 80px)" bg="surface.base">
         <Container maxW="4xl" py={12}>
           <VStack spacing={12} align="stretch">
             {/* Hero Section */}
@@ -85,8 +75,7 @@ export const CLI: React.FC = () => {
               </Heading>
               <Text
                 fontSize="xl"
-                color="gray.600"
-                _dark={{ color: "gray.400" }}
+                color="text.secondary"
                 maxW="2xl"
                 mx="auto"
                 mb={6}
@@ -154,36 +143,31 @@ export const CLI: React.FC = () => {
 
             {/* Installation Section */}
             <Box id="installation">
-              <Heading
-                size="lg"
-                mb={6}
-                color="gray.800"
-                _dark={{ color: "gray.100" }}
-              >
+              <Heading size="lg" mb={6} color="text.primary">
                 Installation 📥
               </Heading>
 
               <VStack spacing={6} align="stretch">
                 <Box
-                  bg={cardBg}
+                  bg="surface.raised"
                   p={6}
                   borderRadius="lg"
                   border="1px solid"
-                  borderColor={borderColor}
+                  borderColor="border.base"
                 >
-                  <Heading
-                    size="md"
-                    mb={4}
-                    color="brand.600"
-                    _dark={{ color: "brand.300" }}
-                  >
+                  <Heading size="md" mb={4} color="text.brand">
                     🔧 From Source
                   </Heading>
-                  <Box bg="gray.900" p={4} borderRadius="md" overflow="auto">
+                  <Box
+                    bg="surface.muted"
+                    p={4}
+                    borderRadius="md"
+                    overflow="auto"
+                  >
                     <Code
                       display="block"
                       whiteSpace="pre"
-                      color="green.300"
+                      color="green.500"
                       bg="transparent"
                       fontSize="sm"
                     >
@@ -198,25 +182,25 @@ sudo cp target/release/strapd /usr/local/bin/`}
                 </Box>
 
                 <Box
-                  bg={cardBg}
+                  bg="surface.raised"
                   p={6}
                   borderRadius="lg"
                   border="1px solid"
-                  borderColor={borderColor}
+                  borderColor="border.base"
                 >
-                  <Heading
-                    size="md"
-                    mb={4}
-                    color="brand.600"
-                    _dark={{ color: "brand.300" }}
-                  >
+                  <Heading size="md" mb={4} color="text.brand">
                     🚀 Quick Examples
                   </Heading>
-                  <Box bg="gray.900" p={4} borderRadius="md" overflow="auto">
+                  <Box
+                    bg="surface.muted"
+                    p={4}
+                    borderRadius="md"
+                    overflow="auto"
+                  >
                     <Code
                       display="block"
                       whiteSpace="pre"
-                      color="cyan.300"
+                      color="cyan.500"
                       bg="transparent"
                       fontSize="sm"
                     >
@@ -241,12 +225,7 @@ echo "hello world" | strapd str upper`}
 
             {/* Features List */}
             <Box>
-              <Heading
-                size="lg"
-                mb={6}
-                color="gray.800"
-                _dark={{ color: "gray.100" }}
-              >
+              <Heading size="lg" mb={6} color="text.primary">
                 Features (more coming soon) ✨
               </Heading>
 
@@ -276,27 +255,19 @@ echo "hello world" | strapd str upper`}
                 ].map((feature) => (
                   <Box
                     key={feature.title}
-                    bg={cardBg}
+                    bg="surface.raised"
                     p={4}
                     borderRadius="md"
                     border="1px solid"
-                    borderColor={borderColor}
+                    borderColor="border.base"
                   >
                     <HStack>
                       <Text fontSize="xl">{feature.icon}</Text>
                       <Box>
-                        <Text
-                          fontWeight="semibold"
-                          color="brand.600"
-                          _dark={{ color: "brand.300" }}
-                        >
+                        <Text fontWeight="semibold" color="text.brand">
                           {feature.title}
                         </Text>
-                        <Text
-                          fontSize="sm"
-                          color="gray.600"
-                          _dark={{ color: "gray.400" }}
-                        >
+                        <Text fontSize="sm" color="text.secondary">
                           {feature.desc}
                         </Text>
                       </Box>
@@ -310,7 +281,7 @@ echo "hello world" | strapd str upper`}
 
             {/* Footer */}
             <Box textAlign="center" py={8}>
-              <Text color="gray.600" _dark={{ color: "gray.400" }}>
+              <Text color="text.secondary">
                 Licensed under the Apache License 2.0 |{" "}
                 <Button
                   as="a"

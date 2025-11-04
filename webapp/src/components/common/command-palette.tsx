@@ -10,13 +10,27 @@ import {
   ModalOverlay,
   Spacer,
   Text,
-  useColorModeValue,
   VStack,
 } from "@chakra-ui/react";
 import type React from "react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { searchTools } from "../../tools";
 import type { Tool } from "../../types";
+
+// Category icon mapping for cleaner icon selection
+const CATEGORY_ICONS = {
+  string: "📝",
+  encoding: "🔄",
+  security: "🔐",
+  dataFormats: "📋",
+  identifiers: "🎲",
+  datetime: "⏰",
+  random: "🎲",
+} as const;
+
+const getIconForCategory = (category: string): string => {
+  return CATEGORY_ICONS[category as keyof typeof CATEGORY_ICONS] ?? "🔧";
+};
 
 interface CommandPaletteProps {
   isOpen: boolean;
@@ -35,45 +49,25 @@ const SearchResult: React.FC<SearchResultProps> = ({
   isSelected,
   onSelect,
 }) => {
-  const bg = useColorModeValue("gray.50", "gray.700");
-  const selectedBg = useColorModeValue("blue.50", "blue.900");
-  const selectedBorder = useColorModeValue("blue.200", "blue.600");
-
   return (
     <Box
       p={3}
       cursor="pointer"
       onClick={() => onSelect(tool)}
-      bg={isSelected ? selectedBg : "transparent"}
+      bg={isSelected ? "bg.selected" : "transparent"}
       borderLeft="2px solid"
-      borderColor={isSelected ? selectedBorder : "transparent"}
+      borderColor={isSelected ? "sidebar.border.active" : "transparent"}
       borderRadius="md"
-      _hover={{ bg: isSelected ? selectedBg : bg }}
+      _hover={{ bg: isSelected ? "bg.selected.hover" : "bg.hover" }}
       transition="all 0.2s"
     >
       <HStack spacing={3}>
-        <Text fontSize="lg">
-          {tool.category === "string"
-            ? "📝"
-            : tool.category === "encoding"
-              ? "🔄"
-              : tool.category === "security"
-                ? "🔐"
-                : tool.category === "dataFormats"
-                  ? "📋"
-                  : tool.category === "identifiers"
-                    ? "🎲"
-                    : tool.category === "datetime"
-                      ? "⏰"
-                      : tool.category === "random"
-                        ? "🎲"
-                        : "🔧"}
-        </Text>
+        <Text fontSize="lg">{getIconForCategory(tool.category)}</Text>
         <VStack align="start" spacing={0} flex={1}>
           <Text fontWeight="medium" fontSize="sm">
             {tool.name}
           </Text>
-          <Text fontSize="xs" color="gray.500" _dark={{ color: "gray.400" }}>
+          <Text fontSize="xs" color="text.subtle">
             {tool.description}
           </Text>
         </VStack>
@@ -152,24 +146,26 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} size="2xl">
-      <ModalOverlay bg="blackAlpha.600" />
-      <ModalContent mx={4} mt="10vh" mb={0} borderRadius="lg" overflow="hidden">
+      <ModalOverlay bg="overlay.base" />
+      <ModalContent
+        mx={4}
+        mt="10vh"
+        mb={0}
+        borderRadius="lg"
+        overflow="hidden"
+        bg="modal.bg"
+      >
         {/* Search Input */}
-        <HStack
-          p={4}
-          borderBottom="1px"
-          borderColor="gray.200"
-          _dark={{ borderColor: "gray.700" }}
-        >
-          <SearchIcon color="gray.400" />
+        <HStack p={4} borderBottom="1px" borderColor="border.base">
+          <SearchIcon color="search.icon" />
           <Input
             ref={inputRef}
-            placeholder="Search tools... (type to filter)"
+            placeholder="Search tools..."
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             variant="unstyled"
             fontSize="lg"
-            _placeholder={{ color: "gray.400" }}
+            _placeholder={{ color: "text.subtle" }}
           />
           <HStack spacing={1}>
             <Kbd fontSize="xs">⌘</Kbd>
@@ -182,30 +178,18 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
           {query.trim() === "" ? (
             // Show help when no query
             <Box p={6} textAlign="center">
-              <Text color="gray.500" _dark={{ color: "gray.400" }}>
+              <Text color="text.subtle">
                 Start typing to search through all tools...
               </Text>
-              <Text
-                fontSize="sm"
-                color="gray.400"
-                _dark={{ color: "gray.500" }}
-                mt={2}
-              >
+              <Text fontSize="sm" color="text.muted" mt={2}>
                 Use ↑↓ arrow keys to navigate, Enter to select, Escape to close
               </Text>
             </Box>
           ) : results.length === 0 ? (
             // No results
             <Box p={6} textAlign="center">
-              <Text color="gray.500" _dark={{ color: "gray.400" }}>
-                No tools found for "{query}"
-              </Text>
-              <Text
-                fontSize="sm"
-                color="gray.400"
-                _dark={{ color: "gray.500" }}
-                mt={2}
-              >
+              <Text color="text.subtle">No tools found for "{query}"</Text>
+              <Text fontSize="sm" color="text.muted" mt={2}>
                 Try searching for "uppercase", "base64", "json", etc.
               </Text>
             </Box>
@@ -226,18 +210,8 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
 
         {/* Footer */}
         {results.length > 0 && (
-          <Box
-            p={3}
-            borderTop="1px"
-            borderColor="gray.200"
-            _dark={{ borderColor: "gray.700" }}
-          >
-            <HStack
-              justify="space-between"
-              fontSize="xs"
-              color="gray.500"
-              _dark={{ color: "gray.400" }}
-            >
+          <Box p={3} borderTop="1px" borderColor="border.base">
+            <HStack justify="space-between" fontSize="xs" color="text.subtle">
               <Text>
                 {results.length} result{results.length !== 1 ? "s" : ""} found
               </Text>

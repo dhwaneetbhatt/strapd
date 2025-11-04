@@ -12,7 +12,6 @@ import {
   IconButton,
   Spacer,
   Text,
-  useColorModeValue,
   useDisclosure,
   VStack,
 } from "@chakra-ui/react";
@@ -46,11 +45,6 @@ const ToolGroupSection: React.FC<ToolGroupSectionProps> = ({
   groupStartIndex,
 }) => {
   const { isOpen, onToggle } = useDisclosure({ defaultIsOpen: true });
-  const hoverBg = useColorModeValue("gray.50", "gray.700");
-  const activeBg = useColorModeValue("blue.50", "blue.900");
-  const activeBorder = useColorModeValue("blue.200", "blue.600");
-  const focusedBg = useColorModeValue("gray.100", "gray.600");
-  const focusedBorder = useColorModeValue("gray.400", "gray.500");
 
   return (
     <Box w="full">
@@ -64,7 +58,7 @@ const ToolGroupSection: React.FC<ToolGroupSectionProps> = ({
         fontWeight="medium"
         onClick={onToggle}
         leftIcon={isOpen ? <ChevronDownIcon /> : <ChevronRightIcon />}
-        _hover={{ bg: hoverBg }}
+        _hover={{ bg: "sidebar.item.hover" }}
       >
         <HStack spacing={2} flex={1}>
           <Text>{group.icon}</Text>
@@ -97,17 +91,23 @@ const ToolGroupSection: React.FC<ToolGroupSectionProps> = ({
                 fontWeight="normal"
                 onClick={() => onToolSelect(tool)}
                 bg={
-                  isSelected ? activeBg : isFocused ? focusedBg : "transparent"
+                  isSelected
+                    ? "sidebar.item.active"
+                    : isFocused
+                      ? "sidebar.item.focused"
+                      : "transparent"
                 }
                 borderLeft="2px solid"
                 borderColor={
                   isSelected
-                    ? activeBorder
+                    ? "sidebar.border.active"
                     : isFocused
-                      ? focusedBorder
+                      ? "sidebar.border.focused"
                       : "transparent"
                 }
-                _hover={{ bg: isSelected ? activeBg : hoverBg }}
+                _hover={{
+                  bg: isSelected ? "sidebar.item.active" : "sidebar.item.hover",
+                }}
                 borderRadius="md"
                 textAlign="left"
                 aria-current={isSelected ? "page" : undefined}
@@ -122,8 +122,7 @@ const ToolGroupSection: React.FC<ToolGroupSectionProps> = ({
                   <Text
                     id={`tool-${tool.id}-description`}
                     fontSize="xs"
-                    color="gray.500"
-                    _dark={{ color: "gray.400" }}
+                    color="text.subtle"
                   >
                     {tool.description}
                   </Text>
@@ -143,9 +142,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
   isOpen,
   onToggle,
 }) => {
-  const bg = useColorModeValue("white", "gray.800");
-  const borderColor = useColorModeValue("gray.200", "gray.700");
-
   // Memoize all tools to avoid recalculation on every render
   const allTools = useMemo(
     () => toolGroups.flatMap((group) => group.tools),
@@ -222,9 +218,9 @@ export const Sidebar: React.FC<SidebarProps> = ({
       <Box
         ref={sidebarRef}
         w={{ base: isOpen ? "280px" : "0", md: isOpen ? "280px" : "60px" }}
-        bg={bg}
+        bg="sidebar.bg"
         borderRight="1px"
-        borderColor={borderColor}
+        borderColor="sidebar.border"
         transition="width 0.2s"
         overflow="hidden"
         position={{ base: "fixed", md: "relative" }}
@@ -266,11 +262,11 @@ export const Sidebar: React.FC<SidebarProps> = ({
               background: "transparent",
             },
             "&::-webkit-scrollbar-thumb": {
-              background: "gray.300",
+              background: "border.base",
               borderRadius: "3px",
             },
             "&::-webkit-scrollbar-thumb:hover": {
-              background: "gray.400",
+              background: "border.hover",
             },
           }}
         >
@@ -279,12 +275,11 @@ export const Sidebar: React.FC<SidebarProps> = ({
               <Text
                 fontSize="xs"
                 fontWeight="bold"
-                color="gray.500"
-                _dark={{ color: "gray.400" }}
+                color="text.subtle"
                 textTransform="uppercase"
                 letterSpacing="wide"
               >
-                Developer Tools
+                Text Tools
               </Text>
 
               {toolGroups.map((group) => (
@@ -310,7 +305,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
           left={0}
           w="100vw"
           h="100vh"
-          bg="blackAlpha.600"
+          bg="overlay.base"
           zIndex={5}
           display={{ base: "block", md: "none" }}
           onClick={onToggle}

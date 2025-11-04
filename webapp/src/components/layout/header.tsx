@@ -9,7 +9,6 @@ import {
   Text,
   Tooltip,
   useColorMode,
-  useColorModeValue,
 } from "@chakra-ui/react";
 import type React from "react";
 import { FiGithub, FiTerminal } from "react-icons/fi";
@@ -25,17 +24,15 @@ interface HeaderProps {
 
 export const Header: React.FC<HeaderProps> = ({ onSearchOpen, onHelpOpen }) => {
   const { colorMode, toggleColorMode } = useColorMode();
-  const bg = useColorModeValue("white", "gray.800");
-  const borderColor = useColorModeValue("gray.200", "gray.700");
   const location = useLocation();
   const isCliPage = location.pathname === "/cli";
 
   return (
     <Box
       as="header"
-      bg={bg}
+      bg="header.bg"
       borderBottom="1px"
-      borderColor={borderColor}
+      borderColor="header.border"
       px={6}
       py={4}
       position="sticky"
@@ -48,13 +45,13 @@ export const Header: React.FC<HeaderProps> = ({ onSearchOpen, onHelpOpen }) => {
         <HStack spacing={6}>
           <HStack spacing={3}>
             <Link to="/">
-              <Heading size="lg" color="brand.600" _hover={{ opacity: 0.8 }}>
+              <Heading size="lg" color="text.brand" _hover={{ opacity: 0.8 }}>
                 {appConfig.name}
               </Heading>
             </Link>
             <Text
               fontSize="sm"
-              color="gray.500"
+              color="text.muted"
               display={{ base: "none", lg: "block" }}
             >
               {appConfig.description}
@@ -82,8 +79,7 @@ export const Header: React.FC<HeaderProps> = ({ onSearchOpen, onHelpOpen }) => {
                 variant="ghost"
                 size="md"
                 onClick={onHelpOpen}
-                color="brand.500"
-                _dark={{ color: "brand.300" }}
+                color="text.brand.subtle"
               />
             </Tooltip>
           )}
@@ -97,8 +93,7 @@ export const Header: React.FC<HeaderProps> = ({ onSearchOpen, onHelpOpen }) => {
               icon={<FiTerminal />}
               variant={isCliPage ? "solid" : "ghost"}
               colorScheme={isCliPage ? "brand" : undefined}
-              color={!isCliPage ? "brand.500" : undefined}
-              _dark={{ color: !isCliPage ? "brand.300" : undefined }}
+              color={!isCliPage ? "text.brand.subtle" : undefined}
               size="md"
             />
           </Tooltip>
@@ -114,8 +109,7 @@ export const Header: React.FC<HeaderProps> = ({ onSearchOpen, onHelpOpen }) => {
               href={appConfig.links.github}
               target="_blank"
               rel="noopener noreferrer"
-              color="brand.500"
-              _dark={{ color: "brand.300" }}
+              color="text.brand.subtle"
             />
           </Tooltip>
 

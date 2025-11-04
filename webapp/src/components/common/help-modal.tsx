@@ -15,7 +15,6 @@ import {
   ModalOverlay,
   Switch,
   Text,
-  useColorModeValue,
   VStack,
 } from "@chakra-ui/react";
 import type React from "react";
@@ -34,12 +33,12 @@ interface ShortcutItemProps {
 const ShortcutItem: React.FC<ShortcutItemProps> = ({ keys, description }) => {
   return (
     <HStack justify="space-between" w="full">
-      <Text fontSize="sm" color="gray.600" _dark={{ color: "gray.400" }}>
+      <Text fontSize="sm" color="text.subtle">
         {description}
       </Text>
       <HStack spacing={1}>
         {keys.map((key) => (
-          <Kbd key={key} fontSize="xs">
+          <Kbd key={key} fontSize="xs" bg="kbd.bg" color="kbd.color">
             {key}
           </Kbd>
         ))}
@@ -49,13 +48,12 @@ const ShortcutItem: React.FC<ShortcutItemProps> = ({ keys, description }) => {
 };
 
 export const HelpModal: React.FC<HelpModalProps> = ({ isOpen, onClose }) => {
-  const bg = useColorModeValue("white", "gray.800");
   const { shortcutsEnabled, toggleShortcuts } = useKeyboardSettings();
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} size="md">
-      <ModalOverlay bg="blackAlpha.600" />
-      <ModalContent bg={bg} mx={4}>
+      <ModalOverlay bg="overlay.base" />
+      <ModalContent bg="modal.bg" mx={4}>
         <ModalHeader>
           <Text fontSize="lg" fontWeight="bold">
             ⌨️ Keyboard Shortcuts
@@ -70,7 +68,7 @@ export const HelpModal: React.FC<HelpModalProps> = ({ isOpen, onClose }) => {
               p={4}
               borderWidth="1px"
               borderRadius="md"
-              borderColor={useColorModeValue("gray.200", "gray.600")}
+              borderColor="border.subtle"
             >
               <FormControl
                 display="flex"
@@ -89,15 +87,11 @@ export const HelpModal: React.FC<HelpModalProps> = ({ isOpen, onClose }) => {
                   id="keyboard-shortcuts-toggle"
                   isChecked={shortcutsEnabled}
                   onChange={toggleShortcuts}
-                  colorScheme="brand"
+                  colorScheme="blackAlpha"
+                  size="md"
                 />
               </FormControl>
-              <Text
-                fontSize="xs"
-                color="gray.500"
-                _dark={{ color: "gray.400" }}
-                mt={2}
-              >
+              <Text fontSize="xs" color="text.muted" mt={2}>
                 Toggle all keyboard shortcuts on or off
               </Text>
             </Box>
@@ -118,8 +112,7 @@ export const HelpModal: React.FC<HelpModalProps> = ({ isOpen, onClose }) => {
               <Text
                 fontSize="sm"
                 fontWeight="semibold"
-                color="brand.600"
-                _dark={{ color: "brand.300" }}
+                color="text.brand"
                 mb={3}
               >
                 Search & Navigation
@@ -150,8 +143,7 @@ export const HelpModal: React.FC<HelpModalProps> = ({ isOpen, onClose }) => {
               <Text
                 fontSize="sm"
                 fontWeight="semibold"
-                color="brand.600"
-                _dark={{ color: "brand.300" }}
+                color="text.brand"
                 mb={3}
               >
                 Sidebar Navigation
@@ -170,8 +162,7 @@ export const HelpModal: React.FC<HelpModalProps> = ({ isOpen, onClose }) => {
               <Text
                 fontSize="sm"
                 fontWeight="semibold"
-                color="brand.600"
-                _dark={{ color: "brand.300" }}
+                color="text.brand"
                 mb={3}
               >
                 Search Palette
@@ -193,32 +184,19 @@ export const HelpModal: React.FC<HelpModalProps> = ({ isOpen, onClose }) => {
               <Text
                 fontSize="sm"
                 fontWeight="semibold"
-                color="brand.600"
-                _dark={{ color: "brand.300" }}
+                color="text.brand"
                 mb={3}
               >
                 Tips
               </Text>
               <VStack spacing={2} align="stretch">
-                <Text
-                  fontSize="xs"
-                  color="gray.500"
-                  _dark={{ color: "gray.400" }}
-                >
+                <Text fontSize="xs" color="text.muted">
                   • Input box auto-focuses when you select a tool
                 </Text>
-                <Text
-                  fontSize="xs"
-                  color="gray.500"
-                  _dark={{ color: "gray.400" }}
-                >
+                <Text fontSize="xs" color="text.muted">
                   • Sidebar auto-closes after tool selection
                 </Text>
-                <Text
-                  fontSize="xs"
-                  color="gray.500"
-                  _dark={{ color: "gray.400" }}
-                >
+                <Text fontSize="xs" color="text.muted">
                   • Use Ctrl instead of ⌘ on Windows/Linux
                 </Text>
               </VStack>
