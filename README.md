@@ -4,8 +4,6 @@ A CLI tool for developers with common utilities like string manipulation, data f
 
 > **Note**: This project is under active development. More utilities and features will be added regularly.
 
-[![CI](https://github.com/dhwaneetbhatt/strapd/workflows/CI/badge.svg)](https://github.com/dhwaneetbhatt/strapd/actions)
-
 ## Why strapd?
 
 The name `strapd` is a play on "strapped" — like having a utility belt. It's meant to be a go-to toolkit for common developer tasks.
@@ -30,7 +28,9 @@ So I built `strapd`: one tool with simple commands and lots of intuitive aliases
 - **Date/Time**: timestamps
 - **Clipboard**: copy and paste (CLI only)
 
-## Installation
+Head over to the [webapp](https://dhwaneetbhatt.com/strapd/) for an interactive experience!
+
+## CLI Installation
 
 ### Quick Install
 
@@ -44,14 +44,9 @@ curl -fsSL https://raw.githubusercontent.com/dhwaneetbhatt/strapd/main/scripts/i
 Invoke-RestMethod -Uri "https://raw.githubusercontent.com/dhwaneetbhatt/strapd/main/scripts/install.ps1" | Invoke-Expression
 ```
 
-The installation scripts automatically detect your platform (OS and architecture) and download the appropriate binary.
-
 ### Manual Download
 
-Download pre-built binaries from [Releases](https://github.com/dhwaneetbhatt/strapd/releases). Available for:
-- Linux (x86_64, aarch64)
-- macOS (x86_64, aarch64)
-- Windows (x86_64, aarch64)
+Download pre-built binaries from [Releases](https://github.com/dhwaneetbhatt/strapd/releases).
 
 ### From Source
 
@@ -100,15 +95,12 @@ Use `strapd copy` and `strapd paste` to work with clipboard to build easy workfl
 strapd copy | strapd str upper | strapd paste
 ```
 
-## Development
+## Development and Contributing
 
-### Setup
-
-```bash
-git clone https://github.com/dhwaneetbhatt/strapd.git
-cd strapd
-make install-hooks  # Install pre-commit hooks
-```
+1. Fork and clone the repository
+2. Install hooks: `make install-hooks`
+3. Make changes and commit (hooks run automatically)
+4. Submit a pull request
 
 ### Available Commands
 
@@ -123,17 +115,6 @@ make fmt           # Format code
 make install-hooks # Install git pre-commit hooks
 make help          # Show all available commands
 ```
-
-### Learning & Contributing
-
-I'm learning Rust as I build this project. I'm making use of AI to learn, write frontend code, docs and tests. If something is not done the Rust way - help is appreciated from expert rustaceans.
-
-### Contributing
-
-1. Fork and clone the repository
-2. Install hooks: `make install-hooks`
-3. Make changes and commit (hooks run automatically)
-4. Submit a pull request
 
 ## License
 

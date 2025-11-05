@@ -18,7 +18,7 @@ import {
   FiGithub,
   FiGlobe,
   FiRefreshCw,
-  FiTarget,
+  FiThumbsUp,
   FiZap,
 } from "react-icons/fi";
 import { Layout } from "../components/layout";
@@ -128,9 +128,9 @@ export const CLI: React.FC = () => {
                 description="Linux, macOS, Windows, single binary, no dependencies"
               />
               <FeatureCard
-                icon={FiTarget}
-                title="Focused"
-                description="Designed specifically for developer tasks, not everything"
+                icon={FiThumbsUp}
+                title="Easy "
+                description="Designed specifically for ease of use in terminal workflows"
               />
               <FeatureCard
                 icon={FiRefreshCw}
@@ -148,6 +148,93 @@ export const CLI: React.FC = () => {
               </Heading>
 
               <VStack spacing={6} align="stretch">
+                {/* Quick Install Section */}
+                <Box
+                  bg="surface.raised"
+                  p={6}
+                  borderRadius="lg"
+                  border="1px solid"
+                  borderColor="border.base"
+                >
+                  <Heading size="md" mb={4} color="text.brand">
+                    ⚡ Quick Install
+                  </Heading>
+                  <VStack spacing={4} align="stretch">
+                    <Box>
+                      <Text fontWeight="semibold" mb={2} color="text.primary">
+                        Linux & macOS
+                      </Text>
+                      <Box
+                        bg="surface.muted"
+                        p={4}
+                        borderRadius="md"
+                        overflow="auto"
+                      >
+                        <Code
+                          display="block"
+                          whiteSpace="pre"
+                          color="green.600"
+                          bg="transparent"
+                          fontSize="sm"
+                        >
+                          {`curl -fsSL https://raw.githubusercontent.com/dhwaneetbhatt/strapd/main/scripts/install.sh | bash`}
+                        </Code>
+                      </Box>
+                    </Box>
+                    <Box>
+                      <Text fontWeight="semibold" mb={2} color="text.primary">
+                        Windows
+                      </Text>
+                      <Box
+                        bg="surface.muted"
+                        p={4}
+                        borderRadius="md"
+                        overflow="auto"
+                      >
+                        <Code
+                          display="block"
+                          whiteSpace="pre"
+                          color="blue.600"
+                          bg="transparent"
+                          fontSize="sm"
+                        >
+                          {`Invoke-RestMethod -Uri "https://raw.githubusercontent.com/dhwaneetbhatt/strapd/main/scripts/install.ps1" | Invoke-Expression`}
+                        </Code>
+                      </Box>
+                    </Box>
+                  </VStack>
+                </Box>
+
+                {/* Manual Download Section */}
+                <Box
+                  bg="surface.raised"
+                  p={6}
+                  borderRadius="lg"
+                  border="1px solid"
+                  borderColor="border.base"
+                >
+                  <Heading size="md" mb={4} color="text.brand">
+                    📦 Manual Download
+                  </Heading>
+                  <Text color="text.secondary" mb={4}>
+                    Download pre-built binaries from{" "}
+                    <Button
+                      as="a"
+                      href="https://github.com/dhwaneetbhatt/strapd/releases"
+                      target="_blank"
+                      variant="link"
+                      color="brand.500"
+                      rightIcon={<ExternalLinkIcon />}
+                      p={0}
+                      h="auto"
+                      minH="auto"
+                    >
+                      Releases
+                    </Button>
+                  </Text>
+                </Box>
+
+                {/* From Source Section */}
                 <Box
                   bg="surface.raised"
                   p={6}
@@ -167,16 +254,14 @@ export const CLI: React.FC = () => {
                     <Code
                       display="block"
                       whiteSpace="pre"
-                      color="green.500"
+                      color="green.600"
                       bg="transparent"
                       fontSize="sm"
                     >
                       {`git clone https://github.com/dhwaneetbhatt/strapd.git
 cd strapd
-cargo build --release
-
-# Add to PATH
-sudo cp target/release/strapd /usr/local/bin/`}
+make cli-release
+sudo ln -s $(pwd)/target/release/strapd /usr/local/bin/strapd`}
                     </Code>
                   </Box>
                 </Box>
@@ -200,21 +285,18 @@ sudo cp target/release/strapd /usr/local/bin/`}
                     <Code
                       display="block"
                       whiteSpace="pre"
-                      color="cyan.500"
+                      color="cyan.600"
                       bg="transparent"
                       fontSize="sm"
                     >
                       {`# Convert text to uppercase
 strapd str upper "hello world"
 
-# Generate a UUID
-strapd uuid v4
-
-# Create a URL slug
-echo "Hello, World!" | strapd str slugify
-
 # Pipe from stdin
-echo "hello world" | strapd str upper`}
+echo "Hello, World!" | strapd str upper
+
+# Use clipboard
+strapd copy | strapd str upper | strapd paste`}
                     </Code>
                   </Box>
                 </Box>
