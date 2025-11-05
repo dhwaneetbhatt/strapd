@@ -3,7 +3,7 @@ export const appConfig = {
   // App metadata
   name: "strapd",
   description: "Developer toolkit for common utilities",
-  version: "0.1.0",
+  version: "0.1.1",
 
   // UI settings
   ui: {

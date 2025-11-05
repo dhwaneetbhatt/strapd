@@ -882,7 +882,7 @@ dependencies = [
 
 [[package]]
 name = "strapd"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "clap",
  "copypasta",
@@ -891,7 +891,7 @@ dependencies = [
 
 [[package]]
 name = "strapd-core"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "base64",
  "chrono",
@@ -911,7 +911,7 @@ dependencies = [
 
 [[package]]
 name = "strapd-wasm"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "getrandom",
  "strapd-core",
