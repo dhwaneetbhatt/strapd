@@ -1,0 +1,94 @@
+name: Release CLI
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Tag to release'
+        required: true
+
+env:
+  MIN_SUPPORTED_RUST_VERSION: "1.70.0"
+  CARGO_TERM_COLOR: always
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    name: Build ${{ matrix.platform.target }} (${{ matrix.platform.os }})
+    runs-on: ${{ matrix.platform.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        platform:
+          - { target: aarch64-unknown-linux-gnu, os: ubuntu-24.04, name: strapd-linux-aarch64.tar.gz }
+          - { target: x86_64-unknown-linux-gnu, os: ubuntu-24.04, name: strapd-linux-x86_64.tar.gz }
+          - { target: x86_64-apple-darwin, os: macos-15-intel, name: strapd-macos-x86_64.tar.gz }
+          - { target: aarch64-apple-darwin, os: macos-15, name: strapd-macos-aarch64.tar.gz }
+          - { target: x86_64-pc-windows-msvc, os: windows-2025, name: strapd-windows-x86_64.zip }
+          - { target: aarch64-pc-windows-msvc, os: windows-2025, name: strapd-windows-aarch64.zip }
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v5
+
+      - name: Build Rust ${{ matrix.platform.target }} binary
+        uses: houseabsolute/actions-rust-cross@v1
+        with:
+          command: build
+          target: ${{ matrix.platform.target }}
+          toolchain: stable
+          args: -p strapd --locked --release
+          strip: true
+
+      - name: Package binary (linux/macos)
+        if: matrix.platform.os != 'windows-2025'
+        run: |
+          cd target/${{ matrix.platform.target }}/release
+          tar czf ${{ matrix.platform.name }} strapd
+          rm strapd
+
+      - name: Package binary (windows)
+        if: matrix.platform.os == 'windows-2025'
+        run: |
+          cd target/${{ matrix.platform.target }}/release
+          7z a ${{ matrix.platform.name }} strapd.exe
+          rm strapd.exe
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v5
+        with:
+          name: ${{ matrix.platform.name }}
+          path: target/${{ matrix.platform.target }}/release/${{ matrix.platform.name }}
+
+  release:
+    name: Create Release
+    runs-on: ubuntu-24.04
+    needs: build
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v5
+
+      - name: Download all artifacts
+        uses: actions/download-artifact@v5
+        with:
+          path: artifacts
+
+      - name: Move artifacts to release directory
+        run: |
+          mkdir -p release
+          find artifacts -type f -exec mv {} release/ \;
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.event.inputs.tag || github.ref_name }}
+          name: Release ${{ github.event.inputs.tag || github.ref_name }}
+          files: release/*
+          draft: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

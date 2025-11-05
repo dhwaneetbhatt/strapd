@@ -1,6 +1,32 @@
 # Makefile for strapd project
 
-.PHONY: all rust-fmt rust-fmt-check rust-lint rust-install rust-build rust-test wasm-build webapp-install webapp-fmt webapp-fmt-check webapp-lint webapp-dev webapp-build webapp-test help lint fmt fmt-check test install-hooks
+.PHONY: all rust-fmt rust-fmt-check rust-lint rust-install rust-build cli-build cli-release rust-test wasm-build webapp-install webapp-fmt webapp-fmt-check webapp-lint webapp-dev webapp-build webapp-test help lint fmt fmt-check test install-hooks
+
+# -------------------
+# Help
+# -------------------
+help:
+	@echo "Available targets:"
+	@echo "  rust-fmt          - Format all Rust code"
+	@echo "  rust-fmt-check    - Check Rust code formatting"
+	@echo "  rust-lint         - Run Rust linter (clippy)"
+	@echo "  rust-install      - Install Rust dependencies"
+	@echo "  cli-build         - Build CLI crate (debug)"
+	@echo "  cli-release       - Build CLI crate (release)"
+	@echo "  rust-test         - Run Rust tests"
+	@echo "  wasm-build        - Build WASM module for webapp"
+	@echo "  webapp-install    - Install webapp dependencies"
+	@echo "  webapp-fmt        - Format webapp code"
+	@echo "  webapp-fmt-check  - Check webapp code formatting"
+	@echo "  webapp-lint       - Lint webapp code"
+	@echo "  webapp-dev        - Start webapp development server"
+	@echo "  webapp-build      - Build webapp"
+	@echo "  webapp-test       - Run webapp tests"
+	@echo "  lint              - Run all linters"
+	@echo "  fmt               - Format all code"
+	@echo "  fmt-check         - Check formatting for all code"
+	@echo "  test              - Run all tests"
+	@echo "  install-hooks     - Install git pre-commit hooks"
 
 # -------------------
 # Rust
@@ -22,9 +48,17 @@ rust-lint:
 rust-install:
 	cargo fetch
 
-# Build the project
+# Build all Rust crates (debug)
 rust-build:
 	cargo build
+
+# Build only the CLI crate (debug)
+cli-build:
+	cargo build -p strapd
+
+# Build only the CLI crate (release)
+cli-release:
+	cargo build -p strapd --release
 
 # Run tests
 rust-test:
@@ -65,13 +99,6 @@ webapp-build:
 # Test webapp
 webapp-test:
 	cd webapp && pnpm test || echo "No tests configured yet"
-
-# -------------------
-# Help
-# -------------------
-help:
-	@echo "Available targets:"
-	@grep -E '^[a-zA-Z_-]+:.*?##' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## ?"}; {printf "  %-16s %s\n", $$1, $$2}'
 
 # -------------------
 # Combined targets

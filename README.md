@@ -32,31 +32,34 @@ So I built `strapd`: one tool with simple commands and lots of intuitive aliases
 
 ## Installation
 
-### Pre-built Binaries (Coming Soon)
+### Quick Install
 
-Download from [Releases](https://github.com/dhwaneetbhatt/strapd/releases)
-
-### Via Cargo (When Published)
-
+#### Linux & macOS
 ```bash
-cargo install strapd
+curl -fsSL https://raw.githubusercontent.com/dhwaneetbhatt/strapd/main/scripts/install.sh | bash
 ```
+
+#### Windows
+```powershell
+Invoke-RestMethod -Uri "https://raw.githubusercontent.com/dhwaneetbhatt/strapd/main/scripts/install.ps1" | Invoke-Expression
+```
+
+The installation scripts automatically detect your platform (OS and architecture) and download the appropriate binary.
+
+### Manual Download
+
+Download pre-built binaries from [Releases](https://github.com/dhwaneetbhatt/strapd/releases). Available for:
+- Linux (x86_64, aarch64)
+- macOS (x86_64, aarch64)
+- Windows (x86_64, aarch64)
 
 ### From Source
 
 ```bash
 git clone https://github.com/dhwaneetbhatt/strapd.git
 cd strapd
-cargo build --release
-```
-
-The binary will be available at `target/release/strapd`.
-
-### Adding to PATH
-
-```bash
-# Copy to a directory in PATH
-sudo cp target/release/strapd /usr/local/bin/
+make cli-release
+sudo ln -s $(pwd)/target/release/strapd /usr/local/bin/strapd
 ```
 
 ## Quick Start
@@ -72,14 +75,12 @@ strapd uuid v4
 echo "Hello, World!" | strapd str slugify
 ```
 
-## Usage
-
 ### Discovering Commands
 
 ```bash
 strapd --help              # See all available commands
 strapd string --help       # See string operations
-strapd uuid --help         # See UUID operations
+strapd string case --help  # See string case operations
 ```
 
 ### Flexible Input
@@ -91,28 +92,12 @@ echo "hello world" | strapd str upper
 cat file.txt | strapd string slugify
 ```
 
-## Library Usage
+### Clipboard Integration
 
-Add `strapd-core` to `Cargo.toml`:
+Use `strapd copy` and `strapd paste` to work with clipboard to build easy workflows:
 
-```toml
-[dependencies]
-strapd-core = "0.1.0"
-```
-
-Example usage:
-
-```rust
-use strapd_core::{string, identifiers};
-
-// String operations
-let uppercase = string::case::to_uppercase("hello");
-let slug = string::transform::slugify("Hello World!", '-');
-let trimmed = string::whitespace::trim("  text  ", false, false, false);
-
-// UUID generation
-let uuid_v4 = identifiers::uuid::generate_v4(1);
-let uuid_v7 = identifiers::uuid::generate_v7(1);
+```bash
+strapd copy | strapd str upper | strapd paste
 ```
 
 ## Development
@@ -128,11 +113,15 @@ make install-hooks  # Install pre-commit hooks
 ### Available Commands
 
 ```bash
-make build         # Build the project
+make cli-build     # Build CLI (debug)
+make cli-release   # Build CLI (release)
+make wasm-build    # Build WASM module
+make webapp-build  # Build webapp
 make test          # Run tests
 make lint          # Run clippy linter
 make fmt           # Format code
 make install-hooks # Install git pre-commit hooks
+make help          # Show all available commands
 ```
 
 ### Learning & Contributing
