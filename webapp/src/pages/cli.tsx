@@ -148,63 +148,6 @@ export const CLI: React.FC = () => {
               </Heading>
 
               <VStack spacing={6} align="stretch">
-                {/* Quick Install Section */}
-                <Box
-                  bg="surface.raised"
-                  p={6}
-                  borderRadius="lg"
-                  border="1px solid"
-                  borderColor="border.base"
-                >
-                  <Heading size="md" mb={4} color="text.brand">
-                    ⚡ Quick Install
-                  </Heading>
-                  <VStack spacing={4} align="stretch">
-                    <Box>
-                      <Text fontWeight="semibold" mb={2} color="text.primary">
-                        Linux & macOS
-                      </Text>
-                      <Box
-                        bg="surface.muted"
-                        p={4}
-                        borderRadius="md"
-                        overflow="auto"
-                      >
-                        <Code
-                          display="block"
-                          whiteSpace="pre"
-                          color="green.600"
-                          bg="transparent"
-                          fontSize="sm"
-                        >
-                          {`curl -fsSL https://raw.githubusercontent.com/dhwaneetbhatt/strapd/main/scripts/install.sh | bash`}
-                        </Code>
-                      </Box>
-                    </Box>
-                    <Box>
-                      <Text fontWeight="semibold" mb={2} color="text.primary">
-                        Windows
-                      </Text>
-                      <Box
-                        bg="surface.muted"
-                        p={4}
-                        borderRadius="md"
-                        overflow="auto"
-                      >
-                        <Code
-                          display="block"
-                          whiteSpace="pre"
-                          color="blue.600"
-                          bg="transparent"
-                          fontSize="sm"
-                        >
-                          {`Invoke-RestMethod -Uri "https://raw.githubusercontent.com/dhwaneetbhatt/strapd/main/scripts/install.ps1" | Invoke-Expression`}
-                        </Code>
-                      </Box>
-                    </Box>
-                  </VStack>
-                </Box>
-
                 {/* Manual Download Section */}
                 <Box
                   bg="surface.raised"

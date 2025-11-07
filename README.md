@@ -32,18 +32,6 @@ Head over to the [webapp](https://dhwaneetbhatt.com/strapd/) for an interactive 
 
 ## CLI Installation
 
-### Quick Install
-
-#### Linux & macOS
-```bash
-curl -fsSL https://raw.githubusercontent.com/dhwaneetbhatt/strapd/main/scripts/install.sh | bash
-```
-
-#### Windows
-```powershell
-Invoke-RestMethod -Uri "https://raw.githubusercontent.com/dhwaneetbhatt/strapd/main/scripts/install.ps1" | Invoke-Expression
-```
-
 ### Manual Download
 
 Download pre-built binaries from [Releases](https://github.com/dhwaneetbhatt/strapd/releases).
