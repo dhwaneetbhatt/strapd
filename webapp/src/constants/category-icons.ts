@@ -5,7 +5,7 @@ export const CATEGORY_ICONS = {
   encoding: "🔄",
   security: "🔐",
   dataFormats: "📋",
-  identifiers: "🎲",
+  identifiers: "🆔",
   datetime: "⏰",
   random: "🎲",
 } as const;

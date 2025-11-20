@@ -119,13 +119,6 @@ const ToolGroupSection: React.FC<ToolGroupSectionProps> = ({
                   <Text fontSize="sm" fontWeight="medium">
                     {tool.name}
                   </Text>
-                  <Text
-                    id={`tool-${tool.id}-description`}
-                    fontSize="xs"
-                    color="text.subtle"
-                  >
-                    {tool.description}
-                  </Text>
                 </VStack>
               </Button>
             );

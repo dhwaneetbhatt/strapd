@@ -1,76 +1,229 @@
 // String tools definitions
 
 import {
-  CapitalcaseToolComponent,
-  LowercaseToolComponent,
-  UppercaseToolComponent,
+  AnalysisToolComponent,
+  CaseConverterToolComponent,
+  ReplaceToolComponent,
+  ReverseToolComponent,
+  SlugifyToolComponent,
+  WhitespaceToolComponent,
 } from "../components/tools";
 import type { ToolDefinition } from "../components/tools/base-tool";
+import { CATEGORY_ICONS } from "../constants/category-icons";
 import { stringUtils } from "../lib/utils/string";
 import type { Tool, ToolGroup } from "../types";
 
-// Define individual string tools with components
-const uppercaseToolDefinition: ToolDefinition = {
-  id: "string-uppercase",
-  name: "Uppercase",
-  description: "Convert text to uppercase letters",
-  category: "string",
-  aliases: ["upper", "uc", "caps"],
-  component: UppercaseToolComponent,
-  operation: (inputs) => stringUtils.case.uppercase(String(inputs.text || "")),
+// Type definitions for tools with multiple outputs
+type CaseConverterResult = {
+  uppercase?: string;
+  lowercase?: string;
+  capitalcase?: string;
 };
 
-const lowercaseToolDefinition: ToolDefinition = {
-  id: "string-lowercase",
-  name: "Lowercase",
-  description: "Convert text to lowercase letters",
-  category: "string",
-  aliases: ["lower", "lc"],
-  component: LowercaseToolComponent,
-  operation: (inputs) => stringUtils.case.lowercase(String(inputs.text || "")),
+type AnalysisResult = {
+  lines?: number;
+  words?: number;
+  chars?: number;
+  bytes?: number;
 };
 
-const capitalcaseToolDefinition: ToolDefinition = {
-  id: "string-capitalcase",
-  name: "Capital Case",
-  description:
-    "Convert text to capital case (first letter of each word capitalized)",
+// Define consolidated case tool
+const caseConverterToolDefinition: ToolDefinition<CaseConverterResult> = {
+  id: "string-case-converter",
+  name: "Case Converter",
+  description: "Convert text to different cases",
   category: "string",
-  aliases: ["capital", "cc"],
-  component: CapitalcaseToolComponent,
+  aliases: ["case", "convert", "upper", "lower", "capital"],
+  component: CaseConverterToolComponent,
+  operation: (inputs) => {
+    const text = String(inputs.text || "");
+    if (!text.trim()) {
+      return { success: false, error: "Input is required" };
+    }
+
+    const upper = stringUtils.case.uppercase(text);
+    const lower = stringUtils.case.lowercase(text);
+    const capital = stringUtils.case.capitalcase(text);
+
+    return {
+      success: true,
+      uppercase: upper.result,
+      lowercase: lower.result,
+      capitalcase: capital.result,
+      result: upper.result, // Default result
+    };
+  },
+};
+
+// Analysis Tool
+const analysisToolDefinition: ToolDefinition<AnalysisResult> = {
+  id: "string-analysis",
+  name: "Text Analysis",
+  description: "Count lines, words, chars and bytes",
+  category: "string",
+  aliases: ["count", "stats", "length", "analysis"],
+  component: AnalysisToolComponent,
+  operation: (inputs) => {
+    const text = String(inputs.text || "");
+
+    const lines = stringUtils.analysis.countLines(text);
+    const words = stringUtils.analysis.countWords(text);
+    const chars = stringUtils.analysis.countChars(text);
+    const bytes = stringUtils.analysis.countBytes(text);
+
+    // Parse the string results to numbers
+    const linesNum = Number(lines.result);
+    const wordsNum = Number(words.result);
+    const charsNum = Number(chars.result);
+    const bytesNum = Number(bytes.result);
+
+    return {
+      success: true,
+      lines: linesNum,
+      words: wordsNum,
+      chars: charsNum,
+      bytes: bytesNum,
+      result: `Lines: ${linesNum}\nWords: ${wordsNum}\nChars: ${charsNum}\nBytes: ${bytesNum}`,
+    };
+  },
+};
+
+// Transform Tools
+const reverseToolDefinition: ToolDefinition = {
+  id: "string-reverse",
+  name: "Reverse Text",
+  description: "Reverse the text",
+  category: "string",
+  aliases: ["reverse", "flip", "backwards"],
+  component: ReverseToolComponent,
   operation: (inputs) =>
-    stringUtils.case.capitalcase(String(inputs.text || "")),
+    stringUtils.transform.reverse(String(inputs.text || "")),
 };
 
-// Create Tool wrappers for compatibility with existing system
-export const uppercaseTool: Tool = {
-  id: uppercaseToolDefinition.id,
-  name: uppercaseToolDefinition.name,
-  description: uppercaseToolDefinition.description,
-  category: uppercaseToolDefinition.category,
-  aliases: uppercaseToolDefinition.aliases,
-  operation: (input: string) =>
-    uppercaseToolDefinition.operation({ text: input }),
+const replaceToolDefinition: ToolDefinition = {
+  id: "string-replace",
+  name: "Find & Replace",
+  description: "Replace occurrences of text with another text",
+  category: "string",
+  aliases: ["replace", "substitute", "find"],
+  component: ReplaceToolComponent,
+  operation: (inputs) =>
+    stringUtils.transform.replace(
+      String(inputs.text || ""),
+      String(inputs.search || ""),
+      String(inputs.replacement || ""),
+    ),
 };
 
-export const lowercaseTool: Tool = {
-  id: lowercaseToolDefinition.id,
-  name: lowercaseToolDefinition.name,
-  description: lowercaseToolDefinition.description,
-  category: lowercaseToolDefinition.category,
-  aliases: lowercaseToolDefinition.aliases,
-  operation: (input: string) =>
-    lowercaseToolDefinition.operation({ text: input }),
+const slugifyToolDefinition: ToolDefinition = {
+  id: "string-slugify",
+  name: "Slugify",
+  description: "Convert text into a URL-friendly slug",
+  category: "string",
+  aliases: ["slug", "url", "kebab"],
+  component: SlugifyToolComponent,
+  operation: (inputs) =>
+    stringUtils.transform.slugify(
+      String(inputs.text || ""),
+      String(inputs.separator || "-"),
+    ),
 };
 
-export const capitalCaseTool: Tool = {
-  id: capitalcaseToolDefinition.id,
-  name: capitalcaseToolDefinition.name,
-  description: capitalcaseToolDefinition.description,
-  category: capitalcaseToolDefinition.category,
-  aliases: capitalcaseToolDefinition.aliases,
-  operation: (input: string) =>
-    capitalcaseToolDefinition.operation({ text: input }),
+// Whitespace Tool
+const whitespaceToolDefinition: ToolDefinition = {
+  id: "string-whitespace",
+  name: "Trim",
+  description: "Trim whitespace from text",
+  category: "string",
+  aliases: ["trim", "space", "clean"],
+  component: WhitespaceToolComponent,
+  operation: (inputs) => {
+    const text = String(inputs.text || "");
+    const left = Boolean(inputs.left);
+    const right = Boolean(inputs.right);
+    const all = Boolean(inputs.all);
+
+    // Smart mapping to handle core's mutually exclusive logic
+    // Core logic: if left { trim_start } else if right { trim_end } else if all { collapse } else { trim }
+
+    if (all) {
+      // 'all' implies full trim + collapse. We must bypass left/right checks.
+      return stringUtils.whitespace.trim(text, false, false, true);
+    }
+
+    if (left && right) {
+      // Want both trimmed. Trigger 'else' block in core by sending all false.
+      return stringUtils.whitespace.trim(text, false, false, false);
+    }
+
+    if (left) {
+      // Only left
+      return stringUtils.whitespace.trim(text, true, false, false);
+    }
+
+    if (right) {
+      // Only right
+      return stringUtils.whitespace.trim(text, false, true, false);
+    }
+
+    // Neither left nor right nor all. Return original text.
+    return { success: true, result: text };
+  },
+};
+
+// Create Tool wrappers
+export const caseConverterTool: Tool<CaseConverterResult> = {
+  id: caseConverterToolDefinition.id,
+  name: caseConverterToolDefinition.name,
+  description: caseConverterToolDefinition.description,
+  category: caseConverterToolDefinition.category,
+  aliases: caseConverterToolDefinition.aliases,
+  operation: (inputs) => caseConverterToolDefinition.operation(inputs),
+};
+
+export const analysisTool: Tool<AnalysisResult> = {
+  id: analysisToolDefinition.id,
+  name: analysisToolDefinition.name,
+  description: analysisToolDefinition.description,
+  category: analysisToolDefinition.category,
+  aliases: analysisToolDefinition.aliases,
+  operation: (inputs) => analysisToolDefinition.operation(inputs),
+};
+
+export const reverseTool: Tool = {
+  id: reverseToolDefinition.id,
+  name: reverseToolDefinition.name,
+  description: reverseToolDefinition.description,
+  category: reverseToolDefinition.category,
+  aliases: reverseToolDefinition.aliases,
+  operation: (inputs) => reverseToolDefinition.operation(inputs),
+};
+
+export const replaceTool: Tool = {
+  id: replaceToolDefinition.id,
+  name: replaceToolDefinition.name,
+  description: replaceToolDefinition.description,
+  category: replaceToolDefinition.category,
+  aliases: replaceToolDefinition.aliases,
+  operation: (inputs) => replaceToolDefinition.operation(inputs),
+};
+
+export const slugifyTool: Tool = {
+  id: slugifyToolDefinition.id,
+  name: slugifyToolDefinition.name,
+  description: slugifyToolDefinition.description,
+  category: slugifyToolDefinition.category,
+  aliases: slugifyToolDefinition.aliases,
+  operation: (inputs) => slugifyToolDefinition.operation(inputs),
+};
+
+export const whitespaceTool: Tool = {
+  id: whitespaceToolDefinition.id,
+  name: whitespaceToolDefinition.name,
+  description: whitespaceToolDefinition.description,
+  category: whitespaceToolDefinition.category,
+  aliases: whitespaceToolDefinition.aliases,
+  operation: (inputs) => whitespaceToolDefinition.operation(inputs),
 };
 
 // Export all string tools as a group
@@ -78,13 +231,23 @@ export const stringToolsGroup: ToolGroup = {
   category: "string",
   name: "Text Tools",
   description: "String manipulation and transformation utilities",
-  icon: "📝",
-  tools: [uppercaseTool, lowercaseTool, capitalCaseTool],
+  icon: CATEGORY_ICONS.string,
+  tools: [
+    caseConverterTool,
+    analysisTool,
+    reverseTool,
+    replaceTool,
+    slugifyTool,
+    whitespaceTool,
+  ],
 };
 
 // Tool registry for component lookup
 export const TOOL_REGISTRY: Record<string, ToolDefinition> = {
-  [uppercaseToolDefinition.id]: uppercaseToolDefinition,
-  [lowercaseToolDefinition.id]: lowercaseToolDefinition,
-  [capitalcaseToolDefinition.id]: capitalcaseToolDefinition,
+  [caseConverterToolDefinition.id]: caseConverterToolDefinition,
+  [analysisToolDefinition.id]: analysisToolDefinition,
+  [reverseToolDefinition.id]: reverseToolDefinition,
+  [replaceToolDefinition.id]: replaceToolDefinition,
+  [slugifyToolDefinition.id]: slugifyToolDefinition,
+  [whitespaceToolDefinition.id]: whitespaceToolDefinition,
 };

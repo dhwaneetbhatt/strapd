@@ -7,16 +7,16 @@ import {
   VStack,
 } from "@chakra-ui/react";
 import type React from "react";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useState } from "react";
 import { appConfig } from "../../config";
 import type { Tool, ToolResult } from "../../types";
 
 // Tool definition interface with component
-export interface ToolDefinition extends Omit<Tool, "operation"> {
+export interface ToolDefinition<T = object> extends Omit<Tool<T>, "operation"> {
   component: React.ComponentType<BaseToolProps>;
   operation: (
     inputs: Record<string, unknown>,
-  ) => ToolResult | Promise<ToolResult>;
+  ) => ToolResult<T> | Promise<ToolResult<T>>;
 }
 
 export interface BaseToolProps {
@@ -44,8 +44,6 @@ export const useBaseTool = (
     error: undefined,
   });
 
-  const debounceTimerRef = useRef<number>();
-
   const processInputs = useCallback(async () => {
     setState((prev) => ({ ...prev, isProcessing: true, error: undefined }));
 
@@ -67,34 +65,6 @@ export const useBaseTool = (
       }));
     }
   }, [tool, state.inputs]);
-
-  // Auto-process with debounce when inputs change
-  useEffect(() => {
-    if (!appConfig.tools.autoProcess) return;
-
-    // Clear previous debounce timer
-    if (debounceTimerRef.current) {
-      clearTimeout(debounceTimerRef.current);
-    }
-
-    // Only auto-process if there's actual input text
-    const hasInput = state.inputs.text && String(state.inputs.text).trim();
-    if (!hasInput) {
-      setState((prev) => ({ ...prev, outputs: {}, error: undefined }));
-      return;
-    }
-
-    // Debounce the auto-processing
-    debounceTimerRef.current = setTimeout(() => {
-      processInputs();
-    }, appConfig.tools.debounceDelay);
-
-    return () => {
-      if (debounceTimerRef.current) {
-        clearTimeout(debounceTimerRef.current);
-      }
-    };
-  }, [state.inputs, processInputs]);
 
   const updateInput = useCallback((key: string, value: unknown) => {
     setState((prev) => ({

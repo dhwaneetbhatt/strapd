@@ -7,14 +7,14 @@ import { CommandPalette, HelpModal, ToolInterface } from "../components/common";
 import { Layout, Sidebar } from "../components/layout";
 import { useCommandI, useCommandR, useEscapeBlur } from "../hooks/use-keyboard";
 import { getToolById } from "../tools";
-import { uppercaseTool } from "../tools/string-tools";
+import { caseConverterTool } from "../tools/string-tools";
 import type { Tool } from "../types";
 
 export const Tools: React.FC = () => {
   const { toolId } = useParams<{ toolId?: string }>();
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
-  const [selectedTool, setSelectedTool] = useState(uppercaseTool);
+  const [selectedTool, setSelectedTool] = useState(caseConverterTool);
 
   // Handle URL-based tool selection and redirect logic
   useEffect(() => {
@@ -33,7 +33,8 @@ export const Tools: React.FC = () => {
   }, [toolId, navigate]);
 
   const { isOpen: isSidebarOpen, onToggle: onSidebarToggle } = useDisclosure({
-    defaultIsOpen: false,
+    defaultIsOpen:
+      typeof window !== "undefined" ? window.innerWidth >= 768 : false,
   });
 
   const {
@@ -73,7 +74,7 @@ export const Tools: React.FC = () => {
     // Update URL to reflect selected tool
     navigate(`/tool/${tool.id}`, { replace: true });
     // Auto-close sidebar after selection (especially useful on mobile)
-    if (isSidebarOpen) {
+    if (window.innerWidth < 768 && isSidebarOpen) {
       onSidebarToggle();
     }
   };

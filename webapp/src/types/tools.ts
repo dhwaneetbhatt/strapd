@@ -8,27 +8,26 @@ export type ToolCategory =
   | "datetime"
   | "random";
 
-// Tool operation result
-export interface ToolResult {
+// Tool operation result - generic type for type-safe tool outputs
+export type ToolResult<T = object> = {
   success: boolean;
   result?: string;
   error?: string;
-}
+} & T;
 
 // Tool operation function type
-export type ToolOperation = (
-  input: string,
-  options?: Record<string, unknown>,
-) => ToolResult | Promise<ToolResult>;
+export type ToolOperation<T = object> = (
+  inputs: Record<string, unknown>,
+) => ToolResult<T> | Promise<ToolResult<T>>;
 
-// Tool definition interface
-export interface Tool {
+// Tool definition
+export interface Tool<T = object> {
   id: string;
   name: string;
   description: string;
   category: ToolCategory;
   aliases?: string[];
-  operation: ToolOperation;
+  operation: ToolOperation<T>;
   options?: ToolOption[];
   examples?: ToolExample[];
 }

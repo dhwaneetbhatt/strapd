@@ -41,7 +41,7 @@ export const ToolInterface: React.FC<ToolInterfaceProps> = ({
   const ToolComponent = toolDefinition.component;
 
   return (
-    <Box w="full" maxW="6xl" mx="auto">
+    <Box w="full">
       {/* Tool Header */}
       <VStack align="stretch" spacing={4} mb={6}>
         <HStack spacing={3}>

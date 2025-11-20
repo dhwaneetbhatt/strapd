@@ -1,15 +1,25 @@
 // Tool registry - central place for all tools
 import type { Tool, ToolGroup } from "../types";
-import { stringToolsGroup, TOOL_REGISTRY } from "./string-tools";
+import {
+  TOOL_REGISTRY as IDENTIFIER_TOOL_REGISTRY,
+  identifierToolsGroup,
+} from "./identifier-tools";
+import {
+  TOOL_REGISTRY as STRING_TOOL_REGISTRY,
+  stringToolsGroup,
+} from "./string-tools";
 
 // All tool groups
-export const toolGroups: ToolGroup[] = [stringToolsGroup];
+export const toolGroups: ToolGroup[] = [stringToolsGroup, identifierToolsGroup];
 
 // Flatten all tools for easy access
 export const allTools: Tool[] = toolGroups.flatMap((group) => group.tools);
 
 // Export the tool registry for component lookup
-export { TOOL_REGISTRY };
+export const TOOL_REGISTRY = {
+  ...STRING_TOOL_REGISTRY,
+  ...IDENTIFIER_TOOL_REGISTRY,
+};
 
 // Tool lookup functions
 export const getToolById = (id: string): Tool | undefined => {

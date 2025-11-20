@@ -1,7 +1,6 @@
 import { HamburgerIcon } from "@chakra-ui/icons";
 import {
   Box,
-  Container,
   Flex,
   Grid,
   GridItem,
@@ -19,15 +18,16 @@ import { CommandPalette, HelpModal } from "../components/common";
 import { Layout, Sidebar } from "../components/layout";
 import { getCategoryIcon } from "../constants/category-icons";
 import { toolGroups } from "../tools";
-import { uppercaseTool } from "../tools/string-tools";
+import { caseConverterTool } from "../tools/string-tools";
 import type { Tool } from "../types";
 
 export const Home: React.FC = () => {
   const navigate = useNavigate();
-  const [selectedTool, setSelectedTool] = useState(uppercaseTool);
+  const [selectedTool, setSelectedTool] = useState(caseConverterTool);
 
   const { isOpen: isSidebarOpen, onToggle: onSidebarToggle } = useDisclosure({
-    defaultIsOpen: false,
+    defaultIsOpen:
+      typeof window !== "undefined" ? window.innerWidth >= 768 : false,
   });
 
   const {
@@ -51,7 +51,7 @@ export const Home: React.FC = () => {
     navigate(`/tool/${tool.id}`);
     onCommandPaletteClose();
     // Auto-close sidebar after selection (especially useful on mobile)
-    if (isSidebarOpen) {
+    if (window.innerWidth < 768 && isSidebarOpen) {
       onSidebarToggle();
     }
   };
@@ -86,8 +86,8 @@ export const Home: React.FC = () => {
           />
 
           {/* Main Home Content */}
-          <Flex flex={1} p={8}>
-            <Container maxW="6xl">
+          <Flex flex={1} p={8} w="full">
+            <Box w="full">
               <VStack spacing={8} align="stretch">
                 {/* Tool Categories */}
                 {toolGroups.map((group) => (
@@ -168,7 +168,7 @@ export const Home: React.FC = () => {
                   </Box>
                 ))}
               </VStack>
-            </Container>
+            </Box>
           </Flex>
         </Flex>
       </Box>

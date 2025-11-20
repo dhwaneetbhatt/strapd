@@ -9,6 +9,7 @@ import {
   VStack,
 } from "@chakra-ui/react";
 import type React from "react";
+import { useAutoProcess } from "../../hooks/use-tool-processing";
 import { BaseToolLayout, type BaseToolProps, useBaseTool } from "./base-tool";
 
 interface SingleInputOutputToolProps extends BaseToolProps {
@@ -36,6 +37,9 @@ export const SingleInputOutputTool: React.FC<SingleInputOutputToolProps> = ({
     processInputs,
     clearAll,
   } = useBaseTool(tool, initialInputs);
+
+  // Auto-process as user types
+  useAutoProcess(processInputs, inputs);
 
   const { hasCopied, onCopy } = useClipboard(String(outputs.result || ""));
 

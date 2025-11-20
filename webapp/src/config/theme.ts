@@ -192,16 +192,16 @@ const theme = extendTheme({
         _dark: "#264f78",
       },
       "sidebar.item.focused": {
-        default: "#f0f0f0", // Focus state
-        _dark: "#2a2d2e",
+        default: "#e0e0e0", // Darker focus state for better visibility
+        _dark: "#37373d",
       },
       "sidebar.border.active": {
         default: "#007acc", // VS Code blue accent
         _dark: "#007acc",
       },
       "sidebar.border.focused": {
-        default: "#d4d4d4", // Subtle focus border
-        _dark: "#464647",
+        default: "#999999", // Stronger focus border
+        _dark: "#666666",
       },
 
       // Header component
