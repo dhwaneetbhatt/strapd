@@ -1,6 +1,10 @@
 // Tool registry - central place for all tools
 import type { Tool, ToolGroup } from "../types";
 import {
+  TOOL_REGISTRY as ENCODING_TOOL_REGISTRY,
+  encodingToolsGroup,
+} from "./encoding-tools";
+import {
   TOOL_REGISTRY as IDENTIFIER_TOOL_REGISTRY,
   identifierToolsGroup,
 } from "./identifier-tools";
@@ -10,7 +14,11 @@ import {
 } from "./string-tools";
 
 // All tool groups
-export const toolGroups: ToolGroup[] = [stringToolsGroup, identifierToolsGroup];
+export const toolGroups: ToolGroup[] = [
+  stringToolsGroup,
+  encodingToolsGroup,
+  identifierToolsGroup,
+];
 
 // Flatten all tools for easy access
 export const allTools: Tool[] = toolGroups.flatMap((group) => group.tools);
@@ -19,6 +27,7 @@ export const allTools: Tool[] = toolGroups.flatMap((group) => group.tools);
 export const TOOL_REGISTRY = {
   ...STRING_TOOL_REGISTRY,
   ...IDENTIFIER_TOOL_REGISTRY,
+  ...ENCODING_TOOL_REGISTRY,
 };
 
 // Tool lookup functions

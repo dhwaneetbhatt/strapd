@@ -1,15 +1,7 @@
-import { CheckIcon, CopyIcon } from "@chakra-ui/icons";
-import {
-  Button,
-  HStack,
-  Spacer,
-  Text,
-  Textarea,
-  useClipboard,
-  VStack,
-} from "@chakra-ui/react";
+import { HStack, Spacer, Text, Textarea, VStack } from "@chakra-ui/react";
 import type React from "react";
 import { useAutoProcess } from "../../../hooks/use-tool-processing";
+import { CopyButton } from "../../common/copy-button";
 import { BaseToolLayout, type BaseToolProps, useBaseTool } from "../base-tool";
 
 const OutputSection: React.FC<{
@@ -17,8 +9,6 @@ const OutputSection: React.FC<{
   value: string;
   placeholder?: string;
 }> = ({ label, value, placeholder }) => {
-  const { hasCopied, onCopy } = useClipboard(value);
-
   return (
     <VStack align="stretch" spacing={2}>
       <HStack minH="8">
@@ -26,28 +16,14 @@ const OutputSection: React.FC<{
           {label}
         </Text>
         <Spacer />
-        <Button
-          size="xs"
-          variant="ghost"
-          leftIcon={hasCopied ? <CheckIcon /> : <CopyIcon />}
-          onClick={onCopy}
-          colorScheme={hasCopied ? "green" : "brand"}
-          isDisabled={!value}
-          opacity={value ? 1 : 0.5}
-        >
-          {hasCopied ? "Copied!" : "Copy"}
-        </Button>
+        <CopyButton value={value} />
       </HStack>
       <Textarea
+        variant="output"
         value={value}
         placeholder={placeholder}
-        size="sm"
-        resize="vertical"
         rows={3}
-        fontFamily="mono"
-        fontSize="sm"
         isReadOnly
-        bg="tool.output.bg"
       />
     </VStack>
   );
@@ -89,18 +65,13 @@ export const CaseConverterToolComponent: React.FC<BaseToolProps> = ({
           </HStack>
           <Textarea
             data-testid="tool-default-input"
+            variant="toolInput"
             value={String(inputs.text || "")}
             onChange={(e) => {
               updateInput("text", e.target.value);
               onInputChange?.({ text: e.target.value });
             }}
             placeholder="Enter text to convert..."
-            size="lg"
-            resize="vertical"
-            rows={12}
-            fontFamily="mono"
-            fontSize="sm"
-            h="full"
           />
         </VStack>
 

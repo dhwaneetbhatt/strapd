@@ -1,5 +1,7 @@
+pub mod encoding_ops;
 pub mod identifier_ops;
 pub mod string_ops;
 
+pub use encoding_ops::*;
 pub use identifier_ops::*;
 pub use string_ops::*;

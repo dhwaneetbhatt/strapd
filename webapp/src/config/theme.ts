@@ -264,15 +264,81 @@ const theme = extendTheme({
       defaultProps: {
         colorScheme: "brand",
       },
+      variants: {
+        copy: {
+          bg: "transparent",
+          color: "gray.600",
+          _dark: {
+            color: "gray.400",
+          },
+          _hover: {
+            bg: "blackAlpha.100",
+            _dark: {
+              bg: "whiteAlpha.200",
+            },
+          },
+          _active: {
+            bg: "blackAlpha.200",
+            _dark: {
+              bg: "whiteAlpha.300",
+            },
+          },
+          _disabled: {
+            opacity: 0.5,
+          },
+          fontSize: "xs",
+          h: "6",
+          minW: "6",
+          px: 2,
+        },
+      },
     },
     Textarea: {
       defaultProps: {
         focusBorderColor: "brand.500",
+        fontFamily: "mono",
+        fontSize: "sm",
+      },
+      variants: {
+        toolInput: {
+          size: "lg",
+          resize: "vertical",
+          rows: 12,
+          fontFamily: "mono",
+          fontSize: "sm",
+          h: "full",
+        },
+        toolOutput: {
+          size: "lg",
+          resize: "vertical",
+          rows: 12,
+          fontFamily: "mono",
+          fontSize: "sm",
+          h: "full",
+          bg: "tool.output.bg",
+        },
+        input: {
+          size: "sm",
+          resize: "vertical",
+          rows: 8,
+          fontFamily: "mono",
+          fontSize: "sm",
+        },
+        output: {
+          size: "sm",
+          resize: "vertical",
+          rows: 8,
+          fontFamily: "mono",
+          fontSize: "sm",
+          bg: "tool.output.bg",
+        },
       },
     },
     Input: {
       defaultProps: {
         focusBorderColor: "brand.500",
+        fontFamily: "mono",
+        fontSize: "sm",
       },
     },
   },
@@ -294,6 +360,15 @@ const theme = extendTheme({
         _focus: {
           borderColor: "form.border.focus",
           bg: "form.focus.bg !important",
+        },
+        _placeholder: {
+          color: "gray.400",
+          opacity: 1,
+          fontFamily: "mono",
+          fontSize: "sm",
+          _dark: {
+            color: "gray.500",
+          },
         },
       },
     }),

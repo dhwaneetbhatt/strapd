@@ -20,6 +20,12 @@ export interface WasmModule {
   // Whitespace
   string_trim: (input: string, left: boolean, right: boolean, all: boolean) => string;
 
+  // Encoding
+  base64_encode: (input: string) => string;
+  base64_decode: (input: string) => string;
+  url_encode: (input: string) => string;
+  url_decode: (input: string) => string;
+
   // Identifiers
   uuid_generate_v4: (count: number) => string;
   uuid_generate_v7: (count: number) => string;
@@ -137,6 +143,35 @@ export class WasmWrapper {
     return this.safeWasmCall(
       () => this.wasmModule.string_trim(input, left, right, all),
       'string_trim'
+    );
+  }
+
+  // Encoding
+  public base64_encode(input: string): ToolResult {
+    return this.safeWasmCall(
+      () => this.wasmModule.base64_encode(input),
+      'base64_encode'
+    );
+  }
+
+  public base64_decode(input: string): ToolResult {
+    return this.safeWasmCall(
+      () => this.wasmModule.base64_decode(input),
+      'base64_decode'
+    );
+  }
+
+  public url_encode(input: string): ToolResult {
+    return this.safeWasmCall(
+      () => this.wasmModule.url_encode(input),
+      'url_encode'
+    );
+  }
+
+  public url_decode(input: string): ToolResult {
+    return this.safeWasmCall(
+      () => this.wasmModule.url_decode(input),
+      'url_decode'
     );
   }
 

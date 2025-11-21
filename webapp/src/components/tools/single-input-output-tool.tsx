@@ -1,15 +1,7 @@
-import { CheckIcon, CopyIcon } from "@chakra-ui/icons";
-import {
-  Button,
-  HStack,
-  Spacer,
-  Text,
-  Textarea,
-  useClipboard,
-  VStack,
-} from "@chakra-ui/react";
+import { HStack, Spacer, Text, Textarea, VStack } from "@chakra-ui/react";
 import type React from "react";
 import { useAutoProcess } from "../../hooks/use-tool-processing";
+import { CopyButton } from "../common/copy-button";
 import { BaseToolLayout, type BaseToolProps, useBaseTool } from "./base-tool";
 
 interface SingleInputOutputToolProps extends BaseToolProps {
@@ -41,12 +33,6 @@ export const SingleInputOutputTool: React.FC<SingleInputOutputToolProps> = ({
   // Auto-process as user types
   useAutoProcess(processInputs, inputs);
 
-  const { hasCopied, onCopy } = useClipboard(String(outputs.result || ""));
-
-  const handleCopy = () => {
-    onCopy();
-  };
-
   return (
     <BaseToolLayout
       onProcess={processInputs}
@@ -65,17 +51,13 @@ export const SingleInputOutputTool: React.FC<SingleInputOutputToolProps> = ({
           </HStack>
           <Textarea
             data-testid="tool-default-input"
+            variant="toolInput"
             value={String(inputs.text || "")}
             onChange={(e) => {
               updateInput("text", e.target.value);
               onInputChange?.({ text: e.target.value });
             }}
             placeholder={inputPlaceholder}
-            size="lg"
-            resize="vertical"
-            rows={8}
-            fontFamily="mono"
-            fontSize="sm"
             aria-label={`Input for ${tool.name}`}
             aria-describedby="tool-description"
             tabIndex={0}
@@ -89,29 +71,13 @@ export const SingleInputOutputTool: React.FC<SingleInputOutputToolProps> = ({
               {outputLabel}
             </Text>
             <Spacer />
-            <Button
-              size="sm"
-              variant="ghost"
-              leftIcon={hasCopied ? <CheckIcon /> : <CopyIcon />}
-              onClick={handleCopy}
-              colorScheme={hasCopied ? "green" : "brand"}
-              isDisabled={!outputs.result}
-              opacity={outputs.result ? 1 : 0.5}
-              tabIndex={0}
-            >
-              {hasCopied ? "Copied!" : "Copy"}
-            </Button>
+            <CopyButton value={String(outputs.result || "")} />
           </HStack>
           <Textarea
+            variant="toolOutput"
             value={String(outputs.result || "")}
             placeholder={outputPlaceholder}
-            size="lg"
-            resize="vertical"
-            rows={8}
-            fontFamily="mono"
-            fontSize="sm"
             isReadOnly
-            bg="tool.output.bg"
             aria-label={`Output from ${tool.name}`}
             aria-live="polite"
           />

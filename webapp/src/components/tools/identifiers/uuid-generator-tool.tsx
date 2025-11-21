@@ -14,7 +14,9 @@ import {
   VStack,
 } from "@chakra-ui/react";
 import type React from "react";
+import { useEffect } from "react";
 import { useProcessOnChange } from "../../../hooks/use-tool-processing";
+import { CopyButton } from "../../common/copy-button";
 import { BaseToolLayout, type BaseToolProps, useBaseTool } from "../base-tool";
 
 export const UuidGeneratorToolComponent: React.FC<BaseToolProps> = ({
@@ -35,6 +37,10 @@ export const UuidGeneratorToolComponent: React.FC<BaseToolProps> = ({
     count: 1,
     ...initialInputs,
   });
+
+  useEffect(() => {
+    processInputs();
+  }, [processInputs]);
 
   // Process only when version or count changes
   useProcessOnChange(processInputs, [inputs.version, inputs.count]);
@@ -91,15 +97,14 @@ export const UuidGeneratorToolComponent: React.FC<BaseToolProps> = ({
               Generated UUIDs
             </Text>
             <Spacer />
+            <CopyButton value={String(outputs.result || "")} />
           </HStack>
           <Textarea
+            variant="toolOutput"
             value={String(outputs.result || "")}
             placeholder="UUIDs will appear here..."
             rows={12}
-            fontFamily="mono"
-            fontSize="sm"
             isReadOnly
-            bg="tool.output.bg"
           />
         </VStack>
       </VStack>

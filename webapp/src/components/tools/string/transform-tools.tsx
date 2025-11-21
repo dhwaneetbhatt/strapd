@@ -3,6 +3,7 @@ import {
   FormLabel,
   HStack,
   Input,
+  Spacer,
   Switch,
   Text,
   Textarea,
@@ -10,6 +11,7 @@ import {
 } from "@chakra-ui/react";
 import type React from "react";
 import { useAutoProcess } from "../../../hooks/use-tool-processing";
+import { CopyButton } from "../../common/copy-button";
 import { BaseToolLayout, type BaseToolProps, useBaseTool } from "../base-tool";
 import { SingleInputOutputTool } from "../single-input-output-tool";
 
@@ -71,30 +73,35 @@ export const ReplaceToolComponent: React.FC<BaseToolProps> = ({
 
         <HStack spacing={6} align="start">
           <VStack flex={1} align="stretch" spacing={3}>
-            <Text fontSize="sm" fontWeight="medium" color="text.secondary">
-              Input Text
-            </Text>
+            <HStack minH="8">
+              <Text fontSize="sm" fontWeight="medium" color="text.secondary">
+                Input Text
+              </Text>
+              <Spacer />
+            </HStack>
             <Textarea
               data-testid="tool-default-input"
+              variant="input"
               value={String(inputs.text || "")}
               onChange={(e) => {
                 updateInput("text", e.target.value);
                 onInputChange?.({ text: e.target.value });
               }}
               placeholder="Enter text..."
-              rows={8}
             />
           </VStack>
           <VStack flex={1} align="stretch" spacing={3}>
-            <Text fontSize="sm" fontWeight="medium" color="text.secondary">
-              Result
-            </Text>
+            <HStack minH="8">
+              <Text fontSize="sm" fontWeight="medium" color="text.secondary">
+                Result
+              </Text>
+              <Spacer />
+              <CopyButton value={String(outputs.result || "")} />
+            </HStack>
             <Textarea
+              variant="output"
               value={String(outputs.result || "")}
               placeholder="Result..."
-              rows={8}
-              isReadOnly
-              bg="tool.output.bg"
             />
           </VStack>
         </HStack>
@@ -131,30 +138,35 @@ export const SlugifyToolComponent: React.FC<BaseToolProps> = ({
       <VStack spacing={6} align="stretch">
         <HStack spacing={6} align="start">
           <VStack flex={1} align="stretch" spacing={3}>
-            <Text fontSize="sm" fontWeight="medium" color="text.secondary">
-              Input Text
-            </Text>
+            <HStack minH="8">
+              <Text fontSize="sm" fontWeight="medium" color="text.secondary">
+                Input Text
+              </Text>
+              <Spacer />
+            </HStack>
             <Textarea
               data-testid="tool-default-input"
+              variant="input"
               value={String(inputs.text || "")}
               onChange={(e) => {
                 updateInput("text", e.target.value);
                 onInputChange?.({ text: e.target.value });
               }}
               placeholder="Enter text to slugify..."
-              rows={8}
             />
           </VStack>
           <VStack flex={1} align="stretch" spacing={3}>
-            <Text fontSize="sm" fontWeight="medium" color="text.secondary">
-              Slug
-            </Text>
+            <HStack minH="8">
+              <Text fontSize="sm" fontWeight="medium" color="text.secondary">
+                Slug
+              </Text>
+              <Spacer />
+              <CopyButton value={String(outputs.result || "")} />
+            </HStack>
             <Textarea
+              variant="output"
               value={String(outputs.result || "")}
               placeholder="Slugified text..."
-              rows={8}
-              isReadOnly
-              bg="tool.output.bg"
             />
           </VStack>
         </HStack>
@@ -229,30 +241,35 @@ export const WhitespaceToolComponent: React.FC<BaseToolProps> = ({
 
         <HStack spacing={6} align="start">
           <VStack flex={1} align="stretch" spacing={3}>
-            <Text fontSize="sm" fontWeight="medium" color="text.secondary">
-              Input Text
-            </Text>
+            <HStack minH="8">
+              <Text fontSize="sm" fontWeight="medium" color="text.secondary">
+                Input Text
+              </Text>
+              <Spacer />
+            </HStack>
             <Textarea
               data-testid="tool-default-input"
+              variant="input"
               value={String(inputs.text || "")}
               onChange={(e) => {
                 updateInput("text", e.target.value);
                 onInputChange?.({ text: e.target.value });
               }}
               placeholder="Enter text to trim..."
-              rows={8}
             />
           </VStack>
           <VStack flex={1} align="stretch" spacing={3}>
-            <Text fontSize="sm" fontWeight="medium" color="text.secondary">
-              Result
-            </Text>
+            <HStack minH="8">
+              <Text fontSize="sm" fontWeight="medium" color="text.secondary">
+                Result
+              </Text>
+              <Spacer />
+              <CopyButton value={String(outputs.result || "")} />
+            </HStack>
             <Textarea
+              variant="output"
               value={String(outputs.result || "")}
               placeholder="Trimmed text..."
-              rows={8}
-              isReadOnly
-              bg="tool.output.bg"
             />
           </VStack>
         </HStack>
