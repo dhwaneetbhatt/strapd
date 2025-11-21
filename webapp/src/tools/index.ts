@@ -1,4 +1,5 @@
 // Tool registry - central place for all tools
+import { fuzzySearch } from "../lib/utils/search";
 import type { Tool, ToolGroup } from "../types";
 import {
   TOOL_REGISTRY as ENCODING_TOOL_REGISTRY,
@@ -40,13 +41,24 @@ export const getToolsByCategory = (category: string): Tool[] => {
 };
 
 export const searchTools = (query: string): Tool[] => {
-  const normalizedQuery = query.toLowerCase();
-  return allTools.filter(
+  const normalizedQuery = query.toLowerCase().trim();
+
+  if (!normalizedQuery) return [];
+
+  // First try exact/substring matches (faster, higher priority)
+  const exactMatches = allTools.filter(
     (tool) =>
       tool.name.toLowerCase().includes(normalizedQuery) ||
-      tool.description.toLowerCase().includes(normalizedQuery) ||
       tool.aliases?.some((alias) =>
         alias.toLowerCase().includes(normalizedQuery),
       ),
   );
+
+  if (exactMatches.length > 0) {
+    return exactMatches;
+  }
+
+  // Fall back to fuzzy search for better discovery
+  const fuzzyResults = fuzzySearch(query, allTools);
+  return fuzzyResults.map(({ item }) => item);
 };
