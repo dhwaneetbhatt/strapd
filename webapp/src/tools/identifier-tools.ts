@@ -2,6 +2,7 @@
 
 import { UuidGeneratorToolComponent } from "../components/tools";
 import type { ToolDefinition } from "../components/tools/base-tool";
+import { UlidGeneratorToolComponent } from "../components/tools/identifiers/ulid-generator-tool";
 import { CATEGORY_ICONS } from "../constants/category-icons";
 import { identifierOperations } from "../lib/utils/identifiers";
 import type { Tool, ToolGroup } from "../types";
@@ -35,16 +36,40 @@ export const uuidGeneratorTool: Tool = {
   operation: (inputs) => uuidGeneratorToolDefinition.operation(inputs),
 };
 
+// ULID Generator Tool
+const ulidGeneratorToolDefinition: ToolDefinition = {
+  id: "identifier-ulid-generator",
+  name: "ULID Generator",
+  description: "Generate ULIDs",
+  category: "identifiers",
+  aliases: ["ulid", "sortable-id"],
+  component: UlidGeneratorToolComponent,
+  operation: (inputs) => {
+    const count = Number(inputs.count || 1);
+    return identifierOperations.ulid(count);
+  },
+};
+
+export const ulidGeneratorTool: Tool = {
+  id: ulidGeneratorToolDefinition.id,
+  name: ulidGeneratorToolDefinition.name,
+  description: ulidGeneratorToolDefinition.description,
+  category: ulidGeneratorToolDefinition.category,
+  aliases: ulidGeneratorToolDefinition.aliases,
+  operation: (inputs) => ulidGeneratorToolDefinition.operation(inputs),
+};
+
 // Export all identifier tools as a group
 export const identifierToolsGroup: ToolGroup = {
   category: "identifiers",
   name: "Identifiers",
   description: "Generate unique identifiers",
   icon: CATEGORY_ICONS.identifiers,
-  tools: [uuidGeneratorTool],
+  tools: [uuidGeneratorTool, ulidGeneratorTool],
 };
 
 // Tool registry for component lookup
 export const TOOL_REGISTRY: Record<string, ToolDefinition> = {
   [uuidGeneratorToolDefinition.id]: uuidGeneratorToolDefinition,
+  [ulidGeneratorToolDefinition.id]: ulidGeneratorToolDefinition,
 };

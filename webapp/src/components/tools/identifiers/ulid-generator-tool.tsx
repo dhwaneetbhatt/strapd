@@ -7,7 +7,6 @@ import {
   NumberInput,
   NumberInputField,
   NumberInputStepper,
-  Select,
   Spacer,
   Text,
   Textarea,
@@ -19,7 +18,7 @@ import { useProcessOnChange } from "../../../hooks/use-tool-processing";
 import { CopyButton } from "../../common/copy-button";
 import { BaseToolLayout, type BaseToolProps, useBaseTool } from "../base-tool";
 
-export const UuidGeneratorToolComponent: React.FC<BaseToolProps> = ({
+export const UlidGeneratorToolComponent: React.FC<BaseToolProps> = ({
   tool,
   initialInputs,
   onInputChange,
@@ -33,7 +32,6 @@ export const UuidGeneratorToolComponent: React.FC<BaseToolProps> = ({
     processInputs,
     clearAll,
   } = useBaseTool(tool, {
-    version: "v4",
     count: 1,
     ...initialInputs,
   });
@@ -43,8 +41,8 @@ export const UuidGeneratorToolComponent: React.FC<BaseToolProps> = ({
     processInputs();
   }, []);
 
-  // Process only when version or count changes
-  useProcessOnChange(processInputs, [inputs.version, inputs.count]);
+  // Process only when count changes
+  useProcessOnChange(processInputs, [inputs.count]);
 
   return (
     <BaseToolLayout
@@ -55,21 +53,6 @@ export const UuidGeneratorToolComponent: React.FC<BaseToolProps> = ({
     >
       <VStack spacing={6} align="stretch">
         <HStack spacing={4}>
-          <FormControl maxW="xs">
-            <FormLabel>UUID Version</FormLabel>
-            <Select
-              value={String(inputs.version || "v4")}
-              onChange={(e) => {
-                updateInput("version", e.target.value);
-                onInputChange?.({ ...inputs, version: e.target.value });
-              }}
-              bg="form.bg"
-            >
-              <option value="v4">UUID v4 (Random)</option>
-              <option value="v7">UUID v7 (Timestamp-based)</option>
-            </Select>
-          </FormControl>
-
           <FormControl maxW="xs">
             <FormLabel>Count</FormLabel>
             <NumberInput
@@ -95,7 +78,7 @@ export const UuidGeneratorToolComponent: React.FC<BaseToolProps> = ({
         <VStack align="stretch" spacing={3}>
           <HStack minH="8">
             <Text fontSize="sm" fontWeight="medium" color="text.secondary">
-              Generated UUIDs
+              Generated ULIDs
             </Text>
             <Spacer />
             <CopyButton value={String(outputs.result || "")} />
@@ -103,7 +86,7 @@ export const UuidGeneratorToolComponent: React.FC<BaseToolProps> = ({
           <Textarea
             variant="toolOutput"
             value={String(outputs.result || "")}
-            placeholder="UUIDs will appear here..."
+            placeholder="ULIDs will appear here..."
             rows={12}
             isReadOnly
           />

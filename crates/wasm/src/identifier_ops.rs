@@ -10,3 +10,8 @@ pub fn uuid_generate_v4(count: usize) -> String {
 pub fn uuid_generate_v7(count: usize) -> String {
     identifiers::uuid::generate_v7(count)
 }
+
+#[wasm_bindgen]
+pub fn ulid_generate(count: usize) -> String {
+    identifiers::ulid::generate(count)
+}

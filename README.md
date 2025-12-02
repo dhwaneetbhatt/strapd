@@ -19,7 +19,7 @@ So I built `strapd`: one tool with simple commands and lots of intuitive aliases
 ## Current Features
 
 - **String Tools**: case, trim, slugify, reverse, replace, analysis
-- **UUIDs**: v4, v7
+- **Identifiers**: UUIDs (v4, v7), ULIDs
 - **Encoding**: Base64, URL, Hex
 - **Data Formatting**: JSON, YAML, XML, SQL (beautify, minify, sort)
 - **Format Conversion**: YAML ⇄ JSON

@@ -8,4 +8,7 @@ export const identifierOperations = {
   uuidV7: (count: number): ToolResult => {
     return wasmWrapper.uuid_generate_v7(count);
   },
+  ulid: (count: number): ToolResult => {
+    return wasmWrapper.ulid_generate(count);
+  },
 };

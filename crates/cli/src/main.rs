@@ -15,6 +15,7 @@ fn main() {
     let result = match &cli.command {
         Commands::String { operation } => string_handler::handle(operation),
         Commands::Uuid { operation } => identifiers_handler::handle_uuid(operation),
+        Commands::Ulid { number } => identifiers_handler::handle_ulid(*number),
         Commands::Base64 { operation } => encoding_handler::handle_base64(operation),
         Commands::Url { operation } => encoding_handler::handle_url(operation),
         Commands::Hex { operation } => encoding_handler::handle_hex(operation),

@@ -29,6 +29,7 @@ export interface WasmModule {
   // Identifiers
   uuid_generate_v4: (count: number) => string;
   uuid_generate_v7: (count: number) => string;
+  ulid_generate: (count: number) => string;
 }
 
 export class WasmWrapper {
@@ -187,6 +188,13 @@ export class WasmWrapper {
     return this.safeWasmCall(
       () => this.wasmModule.uuid_generate_v7(count),
       'uuid_generate_v7'
+    );
+  }
+
+  public ulid_generate(count: number): ToolResult {
+    return this.safeWasmCall(
+      () => this.wasmModule.ulid_generate(count),
+      'ulid_generate'
     );
   }
 }

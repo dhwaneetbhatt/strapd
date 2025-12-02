@@ -261,7 +261,11 @@ strapd copy | strapd str upper | strapd paste`}
                     title: "String Tools",
                     desc: "case, trim, slugify, reverse, replace, analysis",
                   },
-                  { icon: "🆔", title: "UUIDs", desc: "v4, v7" },
+                  {
+                    icon: "🆔",
+                    title: "Identifiers",
+                    desc: "UUIDs (v4, v7), ULIDs",
+                  },
                   { icon: "🔐", title: "Encoding", desc: "Base64, URL, Hex" },
                   {
                     icon: "📊",

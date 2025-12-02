@@ -27,6 +27,11 @@ pub enum Commands {
         #[clap(subcommand)]
         operation: identifiers::UuidOperation,
     },
+    Ulid {
+        /// Number of ULIDs to generate (if not provided, defaults to 1)
+        #[arg(default_value_t = 1)]
+        number: usize,
+    },
     Base64 {
         #[clap(subcommand)]
         operation: encoding::Base64Operation,

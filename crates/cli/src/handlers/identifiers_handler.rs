@@ -10,3 +10,7 @@ pub fn handle_uuid(operation: &UuidOperation) -> CommandResult {
         UuidOperation::V7 { number } => text_result(identifiers::uuid::generate_v7(*number)),
     }
 }
+
+pub fn handle_ulid(number: usize) -> CommandResult {
+    text_result(identifiers::ulid::generate(number))
+}
