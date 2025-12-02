@@ -1,4 +1,8 @@
-import { Base64ToolComponent, UrlToolComponent } from "../components/tools";
+import {
+  Base64ToolComponent,
+  HexToolComponent,
+  UrlToolComponent,
+} from "../components/tools";
 import type { ToolDefinition } from "../components/tools/base-tool";
 import { CATEGORY_ICONS } from "../constants/category-icons";
 import { encodingOperations } from "../lib/utils/encoding";
@@ -62,17 +66,47 @@ export const urlTool: Tool = {
   operation: (inputs) => urlToolDefinition.operation(inputs),
 };
 
+// Hex Tool
+const hexToolDefinition: ToolDefinition = {
+  id: "encoding-hex",
+  name: "Hex",
+  description: "Encode and decode hexadecimal text",
+  category: "encoding",
+  aliases: ["hex", "hexencode", "hexdecode"],
+  component: HexToolComponent,
+  operation: (inputs) => {
+    const text = String(inputs.text || "");
+    const mode = String(inputs.mode || "encode");
+
+    if (mode === "decode") {
+      return encodingOperations.hexDecode(text);
+    }
+
+    return encodingOperations.hexEncode(text);
+  },
+};
+
+export const hexTool: Tool = {
+  id: hexToolDefinition.id,
+  name: hexToolDefinition.name,
+  description: hexToolDefinition.description,
+  category: hexToolDefinition.category,
+  aliases: hexToolDefinition.aliases,
+  operation: (inputs) => hexToolDefinition.operation(inputs),
+};
+
 // Export all encoding tools as a group
 export const encodingToolsGroup: ToolGroup = {
   category: "encoding",
   name: "Encoders / Decoders",
   description: "Data encoding and decoding utilities",
   icon: CATEGORY_ICONS.encoding,
-  tools: [base64Tool, urlTool],
+  tools: [base64Tool, urlTool, hexTool],
 };
 
 // Tool registry for component lookup
 export const TOOL_REGISTRY: Record<string, ToolDefinition> = {
   [base64ToolDefinition.id]: base64ToolDefinition,
   [urlToolDefinition.id]: urlToolDefinition,
+  [hexToolDefinition.id]: hexToolDefinition,
 };

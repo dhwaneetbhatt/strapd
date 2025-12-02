@@ -25,6 +25,8 @@ export interface WasmModule {
   base64_decode: (input: string) => string;
   url_encode: (input: string) => string;
   url_decode: (input: string) => string;
+  hex_encode: (input: string) => string;
+  hex_decode: (input: string) => string;
 
   // Identifiers
   uuid_generate_v4: (count: number) => string;
@@ -173,6 +175,20 @@ export class WasmWrapper {
     return this.safeWasmCall(
       () => this.wasmModule.url_decode(input),
       'url_decode'
+    );
+  }
+
+  public hex_encode(input: string): ToolResult {
+    return this.safeWasmCall(
+      () => this.wasmModule.hex_encode(input),
+      'hex_encode'
+    );
+  }
+
+  public hex_decode(input: string): ToolResult {
+    return this.safeWasmCall(
+      () => this.wasmModule.hex_decode(input),
+      'hex_decode'
     );
   }
 

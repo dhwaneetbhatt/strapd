@@ -14,4 +14,10 @@ export const encodingOperations = {
   urlDecode: (input: string): ToolResult => {
     return wasmWrapper.url_decode(input);
   },
+  hexEncode: (input: string): ToolResult => {
+    return wasmWrapper.hex_encode(input);
+  },
+  hexDecode: (input: string): ToolResult => {
+    return wasmWrapper.hex_decode(input);
+  },
 };

@@ -26,3 +26,16 @@ pub fn url_decode(input: &str) -> String {
         Err(e) => format!("Error: {}", e),
     }
 }
+
+#[wasm_bindgen]
+pub fn hex_encode(input: &str) -> String {
+    encoding::hex::encode(&input.as_bytes().to_vec())
+}
+
+#[wasm_bindgen]
+pub fn hex_decode(input: &str) -> String {
+    match encoding::hex::decode(input) {
+        Ok(bytes) => String::from_utf8_lossy(&bytes).to_string(),
+        Err(e) => format!("Error: {}", e),
+    }
+}
