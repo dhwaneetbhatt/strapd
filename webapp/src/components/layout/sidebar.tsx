@@ -175,6 +175,11 @@ export const Sidebar: React.FC<SidebarProps> = ({
     const handleKeyDown = (event: KeyboardEvent) => {
       if (!isOpen || focusedToolIndex === -1) return;
 
+      // Don't handle keyboard events if a modal is open (e.g., command palette)
+      // Check for Chakra UI modal overlay which indicates a modal is active
+      const isModalOpen = document.querySelector('[role="dialog"]') !== null;
+      if (isModalOpen) return;
+
       switch (event.key) {
         case "ArrowDown":
           event.preventDefault();
