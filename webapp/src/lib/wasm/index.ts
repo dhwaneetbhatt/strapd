@@ -32,6 +32,12 @@ export interface WasmModule {
   uuid_generate_v4: (count: number) => string;
   uuid_generate_v7: (count: number) => string;
   ulid_generate: (count: number) => string;
+  
+  // Security
+  hash_md5: (input: string) => string;
+  hash_sha1: (input: string) => string;
+  hash_sha256: (input: string) => string;
+  hash_sha512: (input: string) => string;
 }
 
 export class WasmWrapper {
@@ -211,6 +217,35 @@ export class WasmWrapper {
     return this.safeWasmCall(
       () => this.wasmModule.ulid_generate(count),
       'ulid_generate'
+    );
+  }
+
+  // Security
+  public hash_md5(input: string): ToolResult {
+    return this.safeWasmCall(
+      () => this.wasmModule.hash_md5(input),
+      'hash_md5'
+    );
+  }
+
+  public hash_sha1(input: string): ToolResult {
+    return this.safeWasmCall(
+      () => this.wasmModule.hash_sha1(input),
+      'hash_sha1'
+    );
+  }
+
+  public hash_sha256(input: string): ToolResult {
+    return this.safeWasmCall(
+      () => this.wasmModule.hash_sha256(input),
+      'hash_sha256'
+    );
+  }
+
+  public hash_sha512(input: string): ToolResult {
+    return this.safeWasmCall(
+      () => this.wasmModule.hash_sha512(input),
+      'hash_sha512'
     );
   }
 }

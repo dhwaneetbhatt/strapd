@@ -12,26 +12,14 @@ export const useAutoProcess = (
 ) => {
   const debounceTimerRef = useRef<number>();
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: inputs is needed to trigger re-processing when input values change
   useEffect(() => {
     // Clear previous debounce timer
     if (debounceTimerRef.current) {
       clearTimeout(debounceTimerRef.current);
     }
 
-    // Check if there's any meaningful input
-    const hasInput =
-      Object.keys(inputs).length > 0 &&
-      Object.values(inputs).some((value) => {
-        if (typeof value === "string") return value.trim();
-        if (typeof value === "number") return !Number.isNaN(value);
-        return value !== null && value !== undefined;
-      });
-
-    if (!hasInput) {
-      return;
-    }
-
-    // Debounce the auto-processing
+    // Debounce the auto-processing (always process, even with empty input)
     debounceTimerRef.current = setTimeout(() => {
       processInputs();
     }, delay);

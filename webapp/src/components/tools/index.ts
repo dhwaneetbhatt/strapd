@@ -8,6 +8,7 @@ export { Base64ToolComponent } from "./encoding/base64-tool";
 export { HexToolComponent } from "./encoding/hex-tool";
 export { UrlToolComponent } from "./encoding/url-tool";
 export { UuidGeneratorToolComponent } from "./identifiers/uuid-generator-tool";
+export { HashToolComponent } from "./security/hash-tool";
 export { SingleInputOutputTool } from "./single-input-output-tool";
 export { AnalysisToolComponent } from "./string/analysis-tool";
 export { CaseConverterToolComponent } from "./string/case-converter-tool";

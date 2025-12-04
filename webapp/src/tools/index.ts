@@ -10,25 +10,29 @@ import {
   identifierToolsGroup,
 } from "./identifier-tools";
 import {
+  TOOL_REGISTRY as SECURITY_TOOL_REGISTRY,
+  securityToolsGroup,
+} from "./security-tools";
+import {
   TOOL_REGISTRY as STRING_TOOL_REGISTRY,
   stringToolsGroup,
 } from "./string-tools";
 
-// All tool groups
 export const toolGroups: ToolGroup[] = [
   stringToolsGroup,
   encodingToolsGroup,
   identifierToolsGroup,
+  securityToolsGroup,
 ];
 
 // Flatten all tools for easy access
 export const allTools: Tool[] = toolGroups.flatMap((group) => group.tools);
 
-// Export the tool registry for component lookup
 export const TOOL_REGISTRY = {
   ...STRING_TOOL_REGISTRY,
   ...IDENTIFIER_TOOL_REGISTRY,
   ...ENCODING_TOOL_REGISTRY,
+  ...SECURITY_TOOL_REGISTRY,
 };
 
 // Tool lookup functions

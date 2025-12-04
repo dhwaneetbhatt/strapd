@@ -38,7 +38,13 @@ const caseConverterToolDefinition: ToolDefinition<CaseConverterResult> = {
   operation: (inputs) => {
     const text = String(inputs.text || "");
     if (!text.trim()) {
-      return { success: false, error: "Input is required" };
+      return {
+        success: true,
+        uppercase: "",
+        lowercase: "",
+        capitalcase: "",
+        result: "",
+      };
     }
 
     const upper = stringUtils.case.uppercase(text);
