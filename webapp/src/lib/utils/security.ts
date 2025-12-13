@@ -1,7 +1,7 @@
 import type { ToolResult } from "../../types";
 import { wasmWrapper } from "../wasm";
 
-export const securityOperations = {
+export const hashOperations = {
   /**
    * Calculate MD5 hash
    */
@@ -35,6 +35,25 @@ export const securityOperations = {
   },
 };
 
+export const hmacOperations = {
+  /**
+   * Calculate HMAC SHA256
+   */
+  sha256: (input: string, key: string): ToolResult => {
+    if (!input) return { success: true, result: "" };
+    return wasmWrapper.hmac_sha256(input, key);
+  },
+
+  /**
+   * Calculate HMAC SHA512
+   */
+  sha512: (input: string, key: string): ToolResult => {
+    if (!input) return { success: true, result: "" };
+    return wasmWrapper.hmac_sha512(input, key);
+  },
+};
+
 export const securityUtils = {
-  hash: securityOperations,
+  hash: hashOperations,
+  hmac: hmacOperations,
 };

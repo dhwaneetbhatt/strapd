@@ -1,6 +1,6 @@
 // Security tools definitions
 
-import { HashToolComponent } from "../components/tools";
+import { HashToolComponent, HmacToolComponent } from "../components/tools";
 import type { ToolDefinition } from "../components/tools/base-tool";
 import { CATEGORY_ICONS } from "../constants/category-icons";
 import { securityUtils } from "../lib/utils/security";
@@ -66,6 +66,62 @@ const hashToolDefinition: ToolDefinition<HashResult> = {
   },
 };
 
+// Type definition for hmac tool result
+type HmacResult = {
+  sha256?: string;
+  sha512?: string;
+};
+
+// Define hmac tool
+const hmacToolDefinition: ToolDefinition<HmacResult> = {
+  id: "security-hmac",
+  name: "HMAC Generator",
+  description: "Generate HMACs",
+  category: "security",
+  aliases: ["hmac", "mac", "auth"],
+  component: HmacToolComponent,
+  operation: (inputs) => {
+    const text = String(inputs.text || "");
+    const key = String(inputs.key || "");
+
+    // If input is empty, return empty hashes
+    if (!text) {
+      return {
+        success: true,
+        sha256: "",
+        sha512: "",
+      };
+    }
+
+    const sha256Result = securityUtils.hmac.sha256(text, key);
+    const sha512Result = securityUtils.hmac.sha512(text, key);
+
+    // Check if any operation failed
+    if (!sha256Result.success || !sha512Result.success) {
+      return {
+        success: false,
+        error: "Failed to generate HMACs",
+      };
+    }
+
+    return {
+      success: true,
+      sha256: sha256Result.result,
+      sha512: sha512Result.result,
+    };
+  },
+};
+
+// Create Tool wrapper
+export const hmacTool: Tool<HmacResult> = {
+  id: hmacToolDefinition.id,
+  name: hmacToolDefinition.name,
+  description: hmacToolDefinition.description,
+  category: hmacToolDefinition.category,
+  aliases: hmacToolDefinition.aliases,
+  operation: (inputs) => hmacToolDefinition.operation(inputs),
+};
+
 // Create Tool wrapper
 export const hashTool: Tool<HashResult> = {
   id: hashToolDefinition.id,
@@ -82,10 +138,11 @@ export const securityToolsGroup: ToolGroup = {
   name: "Security Tools",
   description: "Cryptographic and security utilities",
   icon: CATEGORY_ICONS.security,
-  tools: [hashTool],
+  tools: [hashTool, hmacTool],
 };
 
 // Tool registry for component lookup
 export const TOOL_REGISTRY: Record<string, ToolDefinition> = {
   [hashToolDefinition.id]: hashToolDefinition,
+  [hmacToolDefinition.id]: hmacToolDefinition,
 };

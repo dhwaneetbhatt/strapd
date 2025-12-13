@@ -38,6 +38,8 @@ export interface WasmModule {
   hash_sha1: (input: string) => string;
   hash_sha256: (input: string) => string;
   hash_sha512: (input: string) => string;
+  hmac_sha256: (input: string, key: string) => string;
+  hmac_sha512: (input: string, key: string) => string;
 }
 
 export class WasmWrapper {
@@ -246,6 +248,20 @@ export class WasmWrapper {
     return this.safeWasmCall(
       () => this.wasmModule.hash_sha512(input),
       'hash_sha512'
+    );
+  }
+
+  public hmac_sha256(input: string, key: string): ToolResult {
+    return this.safeWasmCall(
+      () => this.wasmModule.hmac_sha256(input, key),
+      'hmac_sha256'
+    );
+  }
+
+  public hmac_sha512(input: string, key: string): ToolResult {
+    return this.safeWasmCall(
+      () => this.wasmModule.hmac_sha512(input, key),
+      'hmac_sha512'
     );
   }
 }
