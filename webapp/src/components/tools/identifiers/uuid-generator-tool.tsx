@@ -32,11 +32,15 @@ export const UuidGeneratorToolComponent: React.FC<BaseToolProps> = ({
     updateInput,
     processInputs,
     clearAll,
-  } = useBaseTool(tool, {
-    version: "v4",
-    count: 1,
-    ...initialInputs,
-  });
+  } = useBaseTool(
+    tool,
+    {
+      version: "v4",
+      count: 1,
+      ...initialInputs,
+    },
+    onInputChange,
+  );
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: processInputs causes infinite loop
   useEffect(() => {
@@ -44,7 +48,7 @@ export const UuidGeneratorToolComponent: React.FC<BaseToolProps> = ({
   }, []);
 
   // Process only when version or count changes
-  useProcessOnChange(processInputs, [inputs.version, inputs.count]);
+  useProcessOnChange(processInputs, [inputs.version, Number(inputs.count)]);
 
   return (
     <BaseToolLayout
@@ -61,7 +65,6 @@ export const UuidGeneratorToolComponent: React.FC<BaseToolProps> = ({
               value={String(inputs.version || "v4")}
               onChange={(e) => {
                 updateInput("version", e.target.value);
-                onInputChange?.({ ...inputs, version: e.target.value });
               }}
               bg="form.bg"
             >
@@ -77,7 +80,6 @@ export const UuidGeneratorToolComponent: React.FC<BaseToolProps> = ({
               onChange={(_, valueAsNumber) => {
                 const count = Number.isNaN(valueAsNumber) ? 1 : valueAsNumber;
                 updateInput("count", count);
-                onInputChange?.({ ...inputs, count });
               }}
               min={1}
               max={100}

@@ -28,7 +28,7 @@ export const SingleInputOutputTool: React.FC<SingleInputOutputToolProps> = ({
     updateInput,
     processInputs,
     clearAll,
-  } = useBaseTool(tool, initialInputs);
+  } = useBaseTool(tool, initialInputs, onInputChange);
 
   // Auto-process as user types
   useAutoProcess(processInputs, inputs);
@@ -55,7 +55,6 @@ export const SingleInputOutputTool: React.FC<SingleInputOutputToolProps> = ({
             value={String(inputs.text || "")}
             onChange={(e) => {
               updateInput("text", e.target.value);
-              onInputChange?.({ text: e.target.value });
             }}
             placeholder={inputPlaceholder}
             aria-label={`Input for ${tool.name}`}

@@ -7,7 +7,7 @@ import {
   VStack,
 } from "@chakra-ui/react";
 import type React from "react";
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { appConfig } from "../../config";
 import type { Tool, ToolResult } from "../../types";
 
@@ -32,10 +32,23 @@ interface BaseToolState {
   error?: string;
 }
 
+// Helper to handle loose equality strictly (avoiding ==)
+const looseEquals = (a: unknown, b: unknown): boolean => {
+  if (a === b) return true;
+  // Handle number vs string (e.g. 5 vs "5")
+  if (typeof a === "number" && String(a) === b) return true;
+  if (typeof b === "number" && String(b) === a) return true;
+  // Handle boolean vs string (e.g. false vs "false")
+  if (typeof a === "boolean" && String(a) === b) return true;
+  if (typeof b === "boolean" && String(b) === a) return true;
+  return false;
+};
+
 // Hook for shared tool logic
 export const useBaseTool = (
   tool: ToolDefinition,
   initialInputs?: Record<string, unknown>,
+  onInputChange?: (inputs: Record<string, unknown>) => void,
 ) => {
   const [state, setState] = useState<BaseToolState>({
     inputs: initialInputs || {},
@@ -43,6 +56,44 @@ export const useBaseTool = (
     isProcessing: false,
     error: undefined,
   });
+
+  // Track previous inputs to avoid redundant updates from unstable object references
+  const prevInitialInputsRef = useRef<Record<string, unknown>>({});
+
+  // Update internal state when initialInputs change (e.g. from URL)
+  // This is important for browser navigation (back/forward)
+  useEffect(() => {
+    if (initialInputs) {
+      // Check if the new initialInputs are actually different from the last ones we processed
+      const hasChangedFromLastProp = Object.entries(initialInputs).some(
+        ([key, value]) =>
+          !looseEquals(prevInitialInputsRef.current[key], value),
+      );
+
+      if (!hasChangedFromLastProp) {
+        return;
+      }
+
+      // Update our ref
+      prevInitialInputsRef.current = initialInputs;
+
+      setState((prev) => {
+        // Also check if they are different from CURRENT state (redundancy check)
+        const hasChangedFromState = Object.entries(initialInputs).some(
+          ([key, value]) => !looseEquals(prev.inputs[key], value),
+        );
+
+        if (!hasChangedFromState) {
+          return prev;
+        }
+
+        return {
+          ...prev,
+          inputs: { ...prev.inputs, ...initialInputs },
+        };
+      });
+    }
+  }, [initialInputs]);
 
   const processInputs = useCallback(async () => {
     setState((prev) => ({ ...prev, isProcessing: true, error: undefined }));
@@ -66,21 +117,31 @@ export const useBaseTool = (
     }
   }, [tool, state.inputs]);
 
-  const updateInput = useCallback((key: string, value: unknown) => {
-    setState((prev) => ({
-      ...prev,
-      inputs: { ...prev.inputs, [key]: value },
-    }));
-  }, []);
+  const updateInput = useCallback(
+    (key: string, value: unknown) => {
+      setState((prev) => {
+        const newInputs = { ...prev.inputs, [key]: value };
+        // Propagate change to parent (URL update)
+        onInputChange?.(newInputs);
+        return {
+          ...prev,
+          inputs: newInputs,
+        };
+      });
+    },
+    [onInputChange],
+  );
 
   const clearAll = useCallback(() => {
+    const emptyInputs = {};
     setState({
-      inputs: {},
+      inputs: emptyInputs,
       outputs: {},
       isProcessing: false,
       error: undefined,
     });
-  }, []);
+    onInputChange?.(emptyInputs);
+  }, [onInputChange]);
 
   return {
     ...state,

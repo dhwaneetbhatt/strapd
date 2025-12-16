@@ -39,7 +39,7 @@ export const ReplaceToolComponent: React.FC<BaseToolProps> = ({
     updateInput,
     processInputs,
     clearAll,
-  } = useBaseTool(tool, initialInputs);
+  } = useBaseTool(tool, initialInputs, onInputChange);
 
   // Auto-process as user types
   useAutoProcess(processInputs, inputs);
@@ -85,7 +85,6 @@ export const ReplaceToolComponent: React.FC<BaseToolProps> = ({
               value={String(inputs.text || "")}
               onChange={(e) => {
                 updateInput("text", e.target.value);
-                onInputChange?.({ text: e.target.value });
               }}
               placeholder="Enter text..."
             />
@@ -123,7 +122,7 @@ export const SlugifyToolComponent: React.FC<BaseToolProps> = ({
     updateInput,
     processInputs,
     clearAll,
-  } = useBaseTool(tool, initialInputs);
+  } = useBaseTool(tool, initialInputs, onInputChange);
 
   // Auto-process as user types
   useAutoProcess(processInputs, inputs);
@@ -150,7 +149,6 @@ export const SlugifyToolComponent: React.FC<BaseToolProps> = ({
               value={String(inputs.text || "")}
               onChange={(e) => {
                 updateInput("text", e.target.value);
-                onInputChange?.({ text: e.target.value });
               }}
               placeholder="Enter text to slugify..."
             />
@@ -188,12 +186,16 @@ export const WhitespaceToolComponent: React.FC<BaseToolProps> = ({
     updateInput,
     processInputs,
     clearAll,
-  } = useBaseTool(tool, {
-    left: true,
-    right: true,
-    all: false,
-    ...initialInputs,
-  });
+  } = useBaseTool(
+    tool,
+    {
+      left: true,
+      right: true,
+      all: false,
+      ...initialInputs,
+    },
+    onInputChange,
+  );
 
   // Auto-process as user types
   useAutoProcess(processInputs, inputs);
@@ -253,7 +255,6 @@ export const WhitespaceToolComponent: React.FC<BaseToolProps> = ({
               value={String(inputs.text || "")}
               onChange={(e) => {
                 updateInput("text", e.target.value);
-                onInputChange?.({ text: e.target.value });
               }}
               placeholder="Enter text to trim..."
             />

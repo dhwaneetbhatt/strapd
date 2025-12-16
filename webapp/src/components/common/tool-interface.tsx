@@ -6,8 +6,8 @@ import type { Tool } from "../../types";
 
 interface ToolInterfaceProps {
   tool: Tool;
-  initialInput?: string;
-  onInputChange?: (input: string) => void;
+  initialInput?: Record<string, unknown>;
+  onInputChange?: (inputs: Record<string, unknown>) => void;
 }
 
 export const ToolInterface: React.FC<ToolInterfaceProps> = ({
@@ -17,12 +17,6 @@ export const ToolInterface: React.FC<ToolInterfaceProps> = ({
 }) => {
   // Look up the tool in the registry
   const toolDefinition = TOOL_REGISTRY[tool.id];
-
-  // Handle input changes and convert to the format expected by onInputChange
-  const handleInputChange = (inputs: Record<string, unknown>) => {
-    // For backward compatibility, pass the 'text' input as the main input
-    onInputChange?.(String(inputs.text || ""));
-  };
 
   if (!toolDefinition) {
     return (
@@ -58,8 +52,8 @@ export const ToolInterface: React.FC<ToolInterfaceProps> = ({
 
       <ToolComponent
         tool={toolDefinition}
-        initialInputs={initialInput ? { text: initialInput } : {}}
-        onInputChange={handleInputChange}
+        initialInputs={initialInput || {}}
+        onInputChange={onInputChange}
       />
     </Box>
   );

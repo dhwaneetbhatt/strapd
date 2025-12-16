@@ -31,10 +31,14 @@ export const UlidGeneratorToolComponent: React.FC<BaseToolProps> = ({
     updateInput,
     processInputs,
     clearAll,
-  } = useBaseTool(tool, {
-    count: 1,
-    ...initialInputs,
-  });
+  } = useBaseTool(
+    tool,
+    {
+      count: 1,
+      ...initialInputs,
+    },
+    onInputChange,
+  );
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: processInputs causes infinite loop
   useEffect(() => {
@@ -42,7 +46,7 @@ export const UlidGeneratorToolComponent: React.FC<BaseToolProps> = ({
   }, []);
 
   // Process only when count changes
-  useProcessOnChange(processInputs, [inputs.count]);
+  useProcessOnChange(processInputs, [Number(inputs.count)]);
 
   return (
     <BaseToolLayout
@@ -60,7 +64,6 @@ export const UlidGeneratorToolComponent: React.FC<BaseToolProps> = ({
               onChange={(_, valueAsNumber) => {
                 const count = Number.isNaN(valueAsNumber) ? 1 : valueAsNumber;
                 updateInput("count", count);
-                onInputChange?.({ ...inputs, count });
               }}
               min={1}
               max={100}

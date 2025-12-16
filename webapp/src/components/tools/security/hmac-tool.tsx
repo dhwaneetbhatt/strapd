@@ -26,7 +26,7 @@ export const HmacToolComponent: React.FC<BaseToolProps> = ({
     updateInput,
     processInputs,
     clearAll,
-  } = useBaseTool(tool, initialInputs);
+  } = useBaseTool(tool, initialInputs, onInputChange);
 
   // Auto-process as user types
   useAutoProcess(processInputs, inputs);
@@ -63,10 +63,10 @@ export const HmacToolComponent: React.FC<BaseToolProps> = ({
           <FormControl>
             <FormLabel>Input Text</FormLabel>
             <Textarea
+              data-testid="tool-default-input"
               value={String(inputs.text || "")}
               onChange={(e) => {
                 updateInput("text", e.target.value);
-                onInputChange?.({ ...inputs, text: e.target.value });
               }}
               placeholder="Enter text to hash..."
               minH="100px"
@@ -78,7 +78,6 @@ export const HmacToolComponent: React.FC<BaseToolProps> = ({
               value={String(inputs.key || "")}
               onChange={(e) => {
                 updateInput("key", e.target.value);
-                onInputChange?.({ ...inputs, key: e.target.value });
               }}
               placeholder="Enter secret key..."
             />

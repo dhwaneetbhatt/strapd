@@ -28,10 +28,14 @@ export const Base64ToolComponent: React.FC<BaseToolProps> = ({
     updateInput,
     processInputs,
     clearAll,
-  } = useBaseTool(tool, {
-    mode: "encode",
-    ...initialInputs,
-  });
+  } = useBaseTool(
+    tool,
+    {
+      mode: "encode",
+      ...initialInputs,
+    },
+    onInputChange,
+  );
 
   useAutoProcess(processInputs, inputs);
 
@@ -73,7 +77,6 @@ export const Base64ToolComponent: React.FC<BaseToolProps> = ({
               value={String(inputs.text || "")}
               onChange={(e) => {
                 updateInput("text", e.target.value);
-                onInputChange?.({ text: e.target.value });
               }}
               placeholder={
                 inputs.mode === "decode"

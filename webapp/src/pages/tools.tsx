@@ -1,7 +1,7 @@
 import { HamburgerIcon } from "@chakra-ui/icons";
 import { Box, Flex, IconButton, useDisclosure } from "@chakra-ui/react";
 import type React from "react";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { CommandPalette, HelpModal, ToolInterface } from "../components/common";
 import { Layout, Sidebar } from "../components/layout";
@@ -15,6 +15,7 @@ export const Tools: React.FC = () => {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const [selectedTool, setSelectedTool] = useState(caseConverterTool);
+  const debounceRef = useRef<number>();
 
   // Handle URL-based tool selection and redirect logic
   useEffect(() => {
@@ -112,13 +113,26 @@ export const Tools: React.FC = () => {
           <Flex flex={1} p={8}>
             <ToolInterface
               tool={selectedTool}
-              initialInput={searchParams.get("input") || ""}
-              onInputChange={(input: string) => {
-                if (input.trim()) {
-                  setSearchParams({ input }, { replace: true });
-                } else {
-                  setSearchParams({}, { replace: true });
+              initialInput={useMemo(
+                () => Object.fromEntries(searchParams.entries()),
+                [searchParams],
+              )}
+              onInputChange={(inputs: Record<string, unknown>) => {
+                // Debounce URL updates to prevent history spam/crashes
+                if (debounceRef.current) {
+                  clearTimeout(debounceRef.current);
                 }
+
+                debounceRef.current = setTimeout(() => {
+                  // Serialize inputs to URL params
+                  const params: Record<string, string> = {};
+                  Object.entries(inputs).forEach(([key, value]) => {
+                    if (value !== undefined && value !== null && value !== "") {
+                      params[key] = String(value);
+                    }
+                  });
+                  setSearchParams(params, { replace: true });
+                }, 300);
               }}
             />
           </Flex>

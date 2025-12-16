@@ -42,7 +42,7 @@ export const CaseConverterToolComponent: React.FC<BaseToolProps> = ({
     updateInput,
     processInputs,
     clearAll,
-  } = useBaseTool(tool, initialInputs);
+  } = useBaseTool(tool, initialInputs, onInputChange);
 
   // Auto-process as user types
   useAutoProcess(processInputs, inputs);
@@ -69,7 +69,6 @@ export const CaseConverterToolComponent: React.FC<BaseToolProps> = ({
             value={String(inputs.text || "")}
             onChange={(e) => {
               updateInput("text", e.target.value);
-              onInputChange?.({ text: e.target.value });
             }}
             placeholder="Enter text to convert..."
           />
