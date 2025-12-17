@@ -166,3 +166,8 @@ export const useCommandI = (callback: () => void) => {
 export const useCommandR = (callback: () => void) => {
   useCrossPlatformShortcut("r", callback);
 };
+
+// Convenience hook for save/copy URL (CMD+S)
+export const useCommandS = (callback: () => void) => {
+  useCrossPlatformShortcut("s", callback);
+};

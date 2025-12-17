@@ -4,11 +4,13 @@ import {
   AlertIcon,
   Button,
   HStack,
+  useToast,
   VStack,
 } from "@chakra-ui/react";
 import type React from "react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { appConfig } from "../../config";
+import { useCommandS } from "../../hooks/use-keyboard";
 import type { Tool, ToolResult } from "../../types";
 
 // Tool definition interface with component
@@ -131,6 +133,39 @@ export const useBaseTool = (
     },
     [onInputChange],
   );
+
+  const toast = useToast();
+
+  useCommandS(async () => {
+    // Check if we have any non-empty inputs
+    const hasInputs = Object.values(state.inputs).some(
+      (value) => value !== undefined && value !== "" && value !== null,
+    );
+
+    if (hasInputs) {
+      try {
+        await navigator.clipboard.writeText(window.location.href);
+        toast({
+          title: "URL copied",
+          description: "Tool state URL has been copied to clipboard",
+          status: "success",
+          duration: 2000,
+          isClosable: true,
+          position: "bottom-right",
+        });
+      } catch (err) {
+        console.error("Failed to copy URL:", err);
+        toast({
+          title: "Copy failed",
+          description: "Could not copy URL to clipboard",
+          status: "error",
+          duration: 2000,
+          isClosable: true,
+          position: "bottom-right",
+        });
+      }
+    }
+  });
 
   const clearAll = useCallback(() => {
     const emptyInputs = {};

@@ -128,6 +128,10 @@ export const HelpModal: React.FC<HelpModalProps> = ({ isOpen, onClose }) => {
                   keys={["⌘", "R"]}
                   description="Reset/clear all content"
                 />
+                <ShortcutItem
+                  keys={["⌘", "S"]}
+                  description="Copy tool URL with state"
+                />
                 <ShortcutItem keys={["."]} description="Show this help" />
                 <ShortcutItem
                   keys={["Esc"]}
@@ -190,12 +194,6 @@ export const HelpModal: React.FC<HelpModalProps> = ({ isOpen, onClose }) => {
                 Tips
               </Text>
               <VStack spacing={2} align="stretch">
-                <Text fontSize="xs" color="text.muted">
-                  • Input box auto-focuses when you select a tool
-                </Text>
-                <Text fontSize="xs" color="text.muted">
-                  • Sidebar auto-closes after tool selection
-                </Text>
                 <Text fontSize="xs" color="text.muted">
                   • Use Ctrl instead of ⌘ on Windows/Linux
                 </Text>
