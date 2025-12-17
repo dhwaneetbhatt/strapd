@@ -1,5 +1,6 @@
 import { HStack, Spacer, Text, Textarea, VStack } from "@chakra-ui/react";
 import type React from "react";
+import { useAutoFocus } from "../../../hooks/use-auto-focus";
 import { useAutoProcess } from "../../../hooks/use-tool-processing";
 import { CopyButton } from "../../common/copy-button";
 import { BaseToolLayout, type BaseToolProps, useBaseTool } from "../base-tool";
@@ -47,6 +48,8 @@ export const CaseConverterToolComponent: React.FC<BaseToolProps> = ({
   // Auto-process as user types
   useAutoProcess(processInputs, inputs);
 
+  const inputRef = useAutoFocus<HTMLTextAreaElement>();
+
   return (
     <BaseToolLayout
       onProcess={processInputs}
@@ -65,6 +68,7 @@ export const CaseConverterToolComponent: React.FC<BaseToolProps> = ({
           </HStack>
           <Textarea
             data-testid="tool-default-input"
+            ref={inputRef}
             variant="toolInput"
             value={String(inputs.text || "")}
             onChange={(e) => {

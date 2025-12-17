@@ -11,6 +11,7 @@ import {
   VStack,
 } from "@chakra-ui/react";
 import type React from "react";
+import { useAutoFocus } from "../../../hooks/use-auto-focus";
 import { useAutoProcess } from "../../../hooks/use-tool-processing";
 import { CopyButton } from "../../common/copy-button";
 import { BaseToolLayout, type BaseToolProps, useBaseTool } from "../base-tool";
@@ -38,6 +39,8 @@ export const UrlToolComponent: React.FC<BaseToolProps> = ({
   );
 
   useAutoProcess(processInputs, inputs);
+
+  const inputRef = useAutoFocus<HTMLTextAreaElement>();
 
   return (
     <BaseToolLayout
@@ -73,6 +76,7 @@ export const UrlToolComponent: React.FC<BaseToolProps> = ({
             </HStack>
             <Textarea
               data-testid="tool-default-input"
+              ref={inputRef}
               variant="input"
               value={String(inputs.text || "")}
               onChange={(e) => {

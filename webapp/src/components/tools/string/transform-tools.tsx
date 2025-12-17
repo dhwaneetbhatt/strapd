@@ -10,6 +10,7 @@ import {
   VStack,
 } from "@chakra-ui/react";
 import type React from "react";
+import { useAutoFocus } from "../../../hooks/use-auto-focus";
 import { useAutoProcess } from "../../../hooks/use-tool-processing";
 import { CopyButton } from "../../common/copy-button";
 import { BaseToolLayout, type BaseToolProps, useBaseTool } from "../base-tool";
@@ -44,6 +45,8 @@ export const ReplaceToolComponent: React.FC<BaseToolProps> = ({
   // Auto-process as user types
   useAutoProcess(processInputs, inputs);
 
+  const inputRef = useAutoFocus<HTMLInputElement>();
+
   return (
     <BaseToolLayout
       onProcess={processInputs}
@@ -56,6 +59,7 @@ export const ReplaceToolComponent: React.FC<BaseToolProps> = ({
           <FormControl>
             <FormLabel>Search For</FormLabel>
             <Input
+              ref={inputRef}
               value={String(inputs.search || "")}
               onChange={(e) => updateInput("search", e.target.value)}
               placeholder="Text to find..."
@@ -127,6 +131,8 @@ export const SlugifyToolComponent: React.FC<BaseToolProps> = ({
   // Auto-process as user types
   useAutoProcess(processInputs, inputs);
 
+  const inputRef = useAutoFocus<HTMLTextAreaElement>();
+
   return (
     <BaseToolLayout
       onProcess={processInputs}
@@ -145,6 +151,7 @@ export const SlugifyToolComponent: React.FC<BaseToolProps> = ({
             </HStack>
             <Textarea
               data-testid="tool-default-input"
+              ref={inputRef}
               variant="input"
               value={String(inputs.text || "")}
               onChange={(e) => {
@@ -200,6 +207,8 @@ export const WhitespaceToolComponent: React.FC<BaseToolProps> = ({
   // Auto-process as user types
   useAutoProcess(processInputs, inputs);
 
+  const inputRef = useAutoFocus<HTMLTextAreaElement>();
+
   return (
     <BaseToolLayout
       onProcess={processInputs}
@@ -251,6 +260,7 @@ export const WhitespaceToolComponent: React.FC<BaseToolProps> = ({
             </HStack>
             <Textarea
               data-testid="tool-default-input"
+              ref={inputRef}
               variant="input"
               value={String(inputs.text || "")}
               onChange={(e) => {
