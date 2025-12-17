@@ -10,6 +10,10 @@ import {
   identifierToolsGroup,
 } from "./identifier-tools";
 import {
+  TOOL_REGISTRY as RANDOM_TOOL_REGISTRY,
+  randomToolsGroup,
+} from "./random-tools";
+import {
   TOOL_REGISTRY as SECURITY_TOOL_REGISTRY,
   securityToolsGroup,
 } from "./security-tools";
@@ -23,6 +27,7 @@ export const toolGroups: ToolGroup[] = [
   encodingToolsGroup,
   identifierToolsGroup,
   securityToolsGroup,
+  randomToolsGroup,
 ];
 
 // Flatten all tools for easy access
@@ -33,6 +38,7 @@ export const TOOL_REGISTRY = {
   ...IDENTIFIER_TOOL_REGISTRY,
   ...ENCODING_TOOL_REGISTRY,
   ...SECURITY_TOOL_REGISTRY,
+  ...RANDOM_TOOL_REGISTRY,
 };
 
 // Tool lookup functions

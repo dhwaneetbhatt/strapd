@@ -32,7 +32,7 @@ export interface WasmModule {
   uuid_generate_v4: (count: number) => string;
   uuid_generate_v7: (count: number) => string;
   ulid_generate: (count: number) => string;
-  
+
   // Security
   hash_md5: (input: string) => string;
   hash_sha1: (input: string) => string;
@@ -40,6 +40,9 @@ export interface WasmModule {
   hash_sha512: (input: string) => string;
   hmac_sha256: (input: string, key: string) => string;
   hmac_sha512: (input: string, key: string) => string;
+  // Random
+  random_string: (length: number, lowercase: boolean, uppercase: boolean, digits: boolean, symbols: boolean) => string;
+  random_number: (min: bigint, max: bigint, count: number) => BigInt64Array;
 }
 
 export class WasmWrapper {
@@ -262,6 +265,24 @@ export class WasmWrapper {
     return this.safeWasmCall(
       () => this.wasmModule.hmac_sha512(input, key),
       'hmac_sha512'
+    );
+  }
+  // Random
+  public random_string(length: number, lowercase: boolean, uppercase: boolean, digits: boolean, symbols: boolean): ToolResult {
+    return this.safeWasmCall(
+      () => this.wasmModule.random_string(length, lowercase, uppercase, digits, symbols),
+      'random_string'
+    );
+  }
+
+  public random_number(min: number, max: number, count: number): ToolResult {
+    return this.safeWasmCall(
+      () => {
+        const result = this.wasmModule.random_number(BigInt(min), BigInt(max), count);
+        // Convert BigInt array to string manually for display
+        return Array.from(result).join(', ');
+      },
+      'random_number'
     );
   }
 }

@@ -1,0 +1,162 @@
+import {
+  Checkbox,
+  FormControl,
+  FormLabel,
+  HStack,
+  NumberDecrementStepper,
+  NumberIncrementStepper,
+  NumberInput,
+  NumberInputField,
+  NumberInputStepper,
+  Spacer,
+  Text,
+  Textarea,
+  VStack,
+} from "@chakra-ui/react";
+import type React from "react";
+import { useEffect } from "react";
+import { useProcessOnChange } from "../../../hooks/use-tool-processing";
+import { CopyButton } from "../../common/copy-button";
+import { BaseToolLayout, type BaseToolProps, useBaseTool } from "../base-tool";
+
+export const RandomStringToolComponent: React.FC<BaseToolProps> = ({
+  tool,
+  initialInputs,
+  onInputChange,
+}) => {
+  const {
+    inputs,
+    outputs,
+    isProcessing,
+    error,
+    updateInput,
+    processInputs,
+    clearAll,
+  } = useBaseTool(
+    tool,
+    {
+      length: 16,
+      lowercase: true,
+      uppercase: true,
+      digits: true,
+      symbols: true,
+      count: 1,
+      ...initialInputs,
+    },
+    onInputChange,
+  );
+
+  // biome-ignore lint/correctness/useExhaustiveDependencies: processInputs causes infinite loop
+  useEffect(() => {
+    processInputs();
+  }, []);
+
+  useProcessOnChange(processInputs, [
+    Number(inputs.length),
+    inputs.lowercase,
+    inputs.uppercase,
+    inputs.digits,
+    inputs.symbols,
+    Number(inputs.count),
+  ]);
+
+  return (
+    <BaseToolLayout
+      onProcess={processInputs}
+      onClear={clearAll}
+      isProcessing={isProcessing}
+      error={error}
+    >
+      <VStack spacing={6} align="stretch">
+        <HStack spacing={6} align="start">
+          {/* Configuration Column */}
+          <VStack flex={1} align="stretch" spacing={4}>
+            <Text fontSize="sm" fontWeight="medium" color="text.secondary">
+              Configuration
+            </Text>
+
+            <FormControl>
+              <FormLabel>Length</FormLabel>
+              <NumberInput
+                value={Number(inputs.length)}
+                onChange={(_, val) => updateInput("length", val)}
+                min={1}
+                max={1000}
+              >
+                <NumberInputField />
+                <NumberInputStepper>
+                  <NumberIncrementStepper />
+                  <NumberDecrementStepper />
+                </NumberInputStepper>
+              </NumberInput>
+            </FormControl>
+
+            <FormControl>
+              <FormLabel>Character Sets</FormLabel>
+              <VStack align="start" spacing={2}>
+                <Checkbox
+                  isChecked={inputs.lowercase as boolean}
+                  onChange={(e) => updateInput("lowercase", e.target.checked)}
+                >
+                  Lowercase (a-z)
+                </Checkbox>
+                <Checkbox
+                  isChecked={inputs.uppercase as boolean}
+                  onChange={(e) => updateInput("uppercase", e.target.checked)}
+                >
+                  Uppercase (A-Z)
+                </Checkbox>
+                <Checkbox
+                  isChecked={inputs.digits as boolean}
+                  onChange={(e) => updateInput("digits", e.target.checked)}
+                >
+                  Digits (0-9)
+                </Checkbox>
+                <Checkbox
+                  isChecked={inputs.symbols as boolean}
+                  onChange={(e) => updateInput("symbols", e.target.checked)}
+                >
+                  Symbols (!@#$...)
+                </Checkbox>
+              </VStack>
+            </FormControl>
+
+            <FormControl>
+              <FormLabel>Count</FormLabel>
+              <NumberInput
+                value={Number(inputs.count)}
+                onChange={(_, val) => updateInput("count", val)}
+                min={1}
+                max={100}
+              >
+                <NumberInputField />
+                <NumberInputStepper>
+                  <NumberIncrementStepper />
+                  <NumberDecrementStepper />
+                </NumberInputStepper>
+              </NumberInput>
+            </FormControl>
+          </VStack>
+
+          {/* Result Column */}
+          <VStack flex={1} align="stretch" spacing={3}>
+            <HStack minH="8">
+              <Text fontSize="sm" fontWeight="medium" color="text.secondary">
+                Result
+              </Text>
+              <Spacer />
+              <CopyButton value={String(outputs.result || "")} />
+            </HStack>
+            <Textarea
+              variant="output"
+              value={String(outputs.result || "")}
+              placeholder="Generated strings will appear here..."
+              minH="200px"
+              isReadOnly
+            />
+          </VStack>
+        </HStack>
+      </VStack>
+    </BaseToolLayout>
+  );
+};
