@@ -2,6 +2,10 @@
 import { fuzzySearch } from "../lib/utils/search";
 import type { Tool, ToolGroup } from "../types";
 import {
+  TOOL_REGISTRY as DATA_FORMATS_TOOL_REGISTRY,
+  dataFormatsToolsGroup,
+} from "./data-formats-tools";
+import {
   TOOL_REGISTRY as ENCODING_TOOL_REGISTRY,
   encodingToolsGroup,
 } from "./encoding-tools";
@@ -28,6 +32,7 @@ export const toolGroups: ToolGroup[] = [
   identifierToolsGroup,
   securityToolsGroup,
   randomToolsGroup,
+  dataFormatsToolsGroup,
 ];
 
 // Flatten all tools for easy access
@@ -39,6 +44,7 @@ export const TOOL_REGISTRY = {
   ...ENCODING_TOOL_REGISTRY,
   ...SECURITY_TOOL_REGISTRY,
   ...RANDOM_TOOL_REGISTRY,
+  ...DATA_FORMATS_TOOL_REGISTRY,
 };
 
 // Tool lookup functions

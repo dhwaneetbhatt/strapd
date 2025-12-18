@@ -43,6 +43,10 @@ export interface WasmModule {
   // Random
   random_string: (length: number, lowercase: boolean, uppercase: boolean, digits: boolean, symbols: boolean) => string;
   random_number: (min: bigint, max: bigint, count: number) => BigInt64Array;
+
+  // Data Formats
+  json_beautify: (input: string, sort: boolean) => string;
+  json_minify: (input: string, sort: boolean) => string;
 }
 
 export class WasmWrapper {
@@ -283,6 +287,21 @@ export class WasmWrapper {
         return Array.from(result).join(', ');
       },
       'random_number'
+    );
+  }
+
+  // Data Formats
+  public json_beautify(input: string, sort: boolean): ToolResult {
+    return this.safeWasmCall(
+      () => this.wasmModule.json_beautify(input, sort),
+      'json_beautify'
+    );
+  }
+
+  public json_minify(input: string, sort: boolean): ToolResult {
+    return this.safeWasmCall(
+      () => this.wasmModule.json_minify(input, sort),
+      'json_minify'
     );
   }
 }
