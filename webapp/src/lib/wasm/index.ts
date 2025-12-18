@@ -47,6 +47,8 @@ export interface WasmModule {
   // Data Formats
   json_beautify: (input: string, sort: boolean) => string;
   json_minify: (input: string, sort: boolean) => string;
+  xml_beautify: (input: string) => string;
+  xml_minify: (input: string) => string;
 }
 
 export class WasmWrapper {
@@ -302,6 +304,20 @@ export class WasmWrapper {
     return this.safeWasmCall(
       () => this.wasmModule.json_minify(input, sort),
       'json_minify'
+    );
+  }
+
+  public xml_beautify(input: string): ToolResult {
+    return this.safeWasmCall(
+      () => this.wasmModule.xml_beautify(input),
+      'xml_beautify'
+    );
+  }
+
+  public xml_minify(input: string): ToolResult {
+    return this.safeWasmCall(
+      () => this.wasmModule.xml_minify(input),
+      'xml_minify'
     );
   }
 }

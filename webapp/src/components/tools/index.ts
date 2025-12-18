@@ -5,6 +5,7 @@ export {
   useBaseTool,
 } from "./base-tool";
 export { JsonToolComponent } from "./data-formats/json-tool";
+export { XmlToolComponent } from "./data-formats/xml-tool";
 export { Base64ToolComponent } from "./encoding/base64-tool";
 export { HexToolComponent } from "./encoding/hex-tool";
 export { UrlToolComponent } from "./encoding/url-tool";

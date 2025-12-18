@@ -9,4 +9,12 @@ export const dataFormatsOperations = {
   jsonMinify: (input: string, sort: boolean): ToolResult => {
     return wasmWrapper.json_minify(input, sort);
   },
+
+  xmlBeautify: (input: string): ToolResult => {
+    return wasmWrapper.xml_beautify(input);
+  },
+
+  xmlMinify: (input: string): ToolResult => {
+    return wasmWrapper.xml_minify(input);
+  },
 };
