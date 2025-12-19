@@ -16,6 +16,7 @@ const jsonToolDefinition: ToolDefinition = {
     const text = String(inputs.text || "");
     const sort = Boolean(inputs.sort);
     const minify = Boolean(inputs.minify);
+    const indentSize = Number(inputs.indentSize) || 2;
 
     // Return empty result if no input
     if (!text.trim()) {
@@ -26,7 +27,7 @@ const jsonToolDefinition: ToolDefinition = {
       return dataFormatsOperations.jsonMinify(text, sort);
     }
 
-    return dataFormatsOperations.jsonBeautify(text, sort);
+    return dataFormatsOperations.jsonBeautify(text, sort, indentSize);
   },
 };
 
@@ -50,6 +51,7 @@ const xmlToolDefinition: ToolDefinition = {
   operation: (inputs) => {
     const text = String(inputs.text || "");
     const minify = Boolean(inputs.minify);
+    const indentSize = Number(inputs.indentSize) || 2;
 
     // Return empty result if no input
     if (!text.trim()) {
@@ -60,7 +62,7 @@ const xmlToolDefinition: ToolDefinition = {
       return dataFormatsOperations.xmlMinify(text);
     }
 
-    return dataFormatsOperations.xmlBeautify(text);
+    return dataFormatsOperations.xmlBeautify(text, indentSize);
   },
 };
 

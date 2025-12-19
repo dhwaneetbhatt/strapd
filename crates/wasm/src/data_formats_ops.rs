@@ -2,8 +2,8 @@ use strapd_core::data_formats;
 use wasm_bindgen::prelude::*;
 
 #[wasm_bindgen]
-pub fn json_beautify(input: &str, sort: bool) -> String {
-    match data_formats::json::beautify(input, 2, sort) {
+pub fn json_beautify(input: &str, sort: bool, spaces: u8) -> String {
+    match data_formats::json::beautify(input, spaces, sort) {
         Ok(result) => result,
         Err(e) => format!("Error: {}", e),
     }
@@ -18,8 +18,8 @@ pub fn json_minify(input: &str, sort: bool) -> String {
 }
 
 #[wasm_bindgen]
-pub fn xml_beautify(input: &str) -> String {
-    match data_formats::xml::beautify(input, 2) {
+pub fn xml_beautify(input: &str, spaces: u8) -> String {
+    match data_formats::xml::beautify(input, spaces) {
         Ok(result) => result,
         Err(e) => format!("Error: {}", e),
     }

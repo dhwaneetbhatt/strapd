@@ -45,9 +45,9 @@ export interface WasmModule {
   random_number: (min: bigint, max: bigint, count: number) => BigInt64Array;
 
   // Data Formats
-  json_beautify: (input: string, sort: boolean) => string;
+  json_beautify: (input: string, sort: boolean, spaces: number) => string;
   json_minify: (input: string, sort: boolean) => string;
-  xml_beautify: (input: string) => string;
+  xml_beautify: (input: string, spaces: number) => string;
   xml_minify: (input: string) => string;
 }
 
@@ -293,9 +293,9 @@ export class WasmWrapper {
   }
 
   // Data Formats
-  public json_beautify(input: string, sort: boolean): ToolResult {
+  public json_beautify(input: string, sort: boolean, spaces: number): ToolResult {
     return this.safeWasmCall(
-      () => this.wasmModule.json_beautify(input, sort),
+      () => this.wasmModule.json_beautify(input, sort, spaces),
       'json_beautify'
     );
   }
@@ -307,9 +307,9 @@ export class WasmWrapper {
     );
   }
 
-  public xml_beautify(input: string): ToolResult {
+  public xml_beautify(input: string, spaces: number): ToolResult {
     return this.safeWasmCall(
-      () => this.wasmModule.xml_beautify(input),
+      () => this.wasmModule.xml_beautify(input, spaces),
       'xml_beautify'
     );
   }

@@ -1,6 +1,13 @@
 import {
   Checkbox,
+  FormControl,
+  FormLabel,
   HStack,
+  NumberDecrementStepper,
+  NumberIncrementStepper,
+  NumberInput,
+  NumberInputField,
+  NumberInputStepper,
   Spacer,
   Stack,
   Text,
@@ -31,6 +38,7 @@ export const JsonToolComponent: React.FC<BaseToolProps> = ({
     {
       sort: false,
       minify: false,
+      indentSize: 2,
       ...initialInputs,
     },
     onInputChange,
@@ -48,20 +56,42 @@ export const JsonToolComponent: React.FC<BaseToolProps> = ({
       error={error}
     >
       <VStack spacing={6} align="stretch">
-        <Stack direction="row" spacing={5}>
-          <Checkbox
-            isChecked={Boolean(inputs.sort)}
-            onChange={(e) => updateInput("sort", e.target.checked)}
-          >
-            Sort Keys
-          </Checkbox>
-          <Checkbox
-            isChecked={Boolean(inputs.minify)}
-            onChange={(e) => updateInput("minify", e.target.checked)}
-          >
-            Minify
-          </Checkbox>
-        </Stack>
+        <HStack spacing={5} align="end">
+          <Stack direction="row" spacing={5}>
+            <Checkbox
+              isChecked={Boolean(inputs.sort)}
+              onChange={(e) => updateInput("sort", e.target.checked)}
+            >
+              Sort Keys
+            </Checkbox>
+            <Checkbox
+              isChecked={Boolean(inputs.minify)}
+              onChange={(e) => updateInput("minify", e.target.checked)}
+            >
+              Minify
+            </Checkbox>
+          </Stack>
+          <FormControl width="120px">
+            <FormLabel fontSize="sm" mb={1}>
+              Indent Size
+            </FormLabel>
+            <NumberInput
+              size="sm"
+              value={Number(inputs.indentSize) || 2}
+              min={1}
+              max={8}
+              onChange={(_, valueAsNumber) =>
+                updateInput("indentSize", valueAsNumber)
+              }
+            >
+              <NumberInputField />
+              <NumberInputStepper>
+                <NumberIncrementStepper />
+                <NumberDecrementStepper />
+              </NumberInputStepper>
+            </NumberInput>
+          </FormControl>
+        </HStack>
 
         <HStack spacing={6} align="start">
           <VStack flex={1} align="stretch" spacing={3}>

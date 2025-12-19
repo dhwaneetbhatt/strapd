@@ -1,6 +1,13 @@
 import {
   Checkbox,
+  FormControl,
+  FormLabel,
   HStack,
+  NumberDecrementStepper,
+  NumberIncrementStepper,
+  NumberInput,
+  NumberInputField,
+  NumberInputStepper,
   Spacer,
   Text,
   Textarea,
@@ -29,6 +36,7 @@ export const XmlToolComponent: React.FC<BaseToolProps> = ({
     tool,
     {
       minify: false,
+      indentSize: 2,
       ...initialInputs,
     },
     onInputChange,
@@ -46,12 +54,34 @@ export const XmlToolComponent: React.FC<BaseToolProps> = ({
       error={error}
     >
       <VStack spacing={6} align="stretch">
-        <Checkbox
-          isChecked={Boolean(inputs.minify)}
-          onChange={(e) => updateInput("minify", e.target.checked)}
-        >
-          Minify
-        </Checkbox>
+        <HStack spacing={5} align="end">
+          <Checkbox
+            isChecked={Boolean(inputs.minify)}
+            onChange={(e) => updateInput("minify", e.target.checked)}
+          >
+            Minify
+          </Checkbox>
+          <FormControl width="120px">
+            <FormLabel fontSize="sm" mb={1}>
+              Indent Size
+            </FormLabel>
+            <NumberInput
+              size="sm"
+              value={Number(inputs.indentSize) || 2}
+              min={1}
+              max={8}
+              onChange={(_, valueAsNumber) =>
+                updateInput("indentSize", valueAsNumber)
+              }
+            >
+              <NumberInputField />
+              <NumberInputStepper>
+                <NumberIncrementStepper />
+                <NumberDecrementStepper />
+              </NumberInputStepper>
+            </NumberInput>
+          </FormControl>
+        </HStack>
 
         <HStack spacing={6} align="start">
           <VStack flex={1} align="stretch" spacing={3}>
