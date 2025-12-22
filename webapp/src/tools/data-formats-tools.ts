@@ -1,6 +1,11 @@
-import { JsonToolComponent, XmlToolComponent } from "../components/tools";
+import {
+  ConverterToolComponent,
+  JsonToolComponent,
+  XmlToolComponent,
+} from "../components/tools";
 import type { ToolDefinition } from "../components/tools/base-tool";
 import { CATEGORY_ICONS } from "../constants/category-icons";
+import type { DataFormat } from "../lib/utils/data-formats";
 import { dataFormatsOperations } from "../lib/utils/data-formats";
 import type { Tool, ToolGroup } from "../types";
 
@@ -75,17 +80,59 @@ export const xmlTool: Tool = {
   operation: (inputs) => xmlToolDefinition.operation(inputs),
 };
 
+// Format Converter Tool
+const converterToolDefinition: ToolDefinition = {
+  id: "data-formats-converter",
+  name: "Format Converter",
+  description: "Convert between formats with auto-detection",
+  category: "dataFormats",
+  aliases: ["convert", "converter", "transform", "json", "yaml"],
+  component: ConverterToolComponent,
+  operation: (inputs) => {
+    const text = String(inputs.text || "");
+    const sourceFormat = String(inputs.sourceFormat || "auto");
+    const targetFormat = String(inputs.targetFormat || "yaml");
+    const detectedFormat = String(inputs.detectedFormat || "unknown");
+
+    // Return empty result if no input
+    if (!text.trim()) {
+      return { success: true, result: "" };
+    }
+
+    // Determine actual source format
+    const actualSource =
+      sourceFormat === "auto" ? detectedFormat : sourceFormat;
+
+    // Use the conversion router
+    return dataFormatsOperations.convert(
+      text,
+      actualSource as DataFormat,
+      targetFormat as DataFormat,
+    );
+  },
+};
+
+export const converterTool: Tool = {
+  id: converterToolDefinition.id,
+  name: converterToolDefinition.name,
+  description: converterToolDefinition.description,
+  category: converterToolDefinition.category,
+  aliases: converterToolDefinition.aliases,
+  operation: (inputs) => converterToolDefinition.operation(inputs),
+};
+
 // Export all data formats tools as a group
 export const dataFormatsToolsGroup: ToolGroup = {
   category: "dataFormats",
   name: "Data Formats",
   description: "Format and transform data structures",
   icon: CATEGORY_ICONS.dataFormats,
-  tools: [jsonTool, xmlTool],
+  tools: [converterTool, jsonTool, xmlTool],
 };
 
 // Tool registry for component lookup
 export const TOOL_REGISTRY: Record<string, ToolDefinition> = {
+  [converterToolDefinition.id]: converterToolDefinition,
   [jsonToolDefinition.id]: jsonToolDefinition,
   [xmlToolDefinition.id]: xmlToolDefinition,
 };

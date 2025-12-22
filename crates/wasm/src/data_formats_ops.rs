@@ -32,3 +32,19 @@ pub fn xml_minify(input: &str) -> String {
         Err(e) => format!("Error: {}", e),
     }
 }
+
+#[wasm_bindgen]
+pub fn json_to_yaml(input: &str) -> String {
+    match data_formats::json::convert_to_yaml(input) {
+        Ok(result) => result,
+        Err(e) => format!("Error: {}", e),
+    }
+}
+
+#[wasm_bindgen]
+pub fn yaml_to_json(input: &str) -> String {
+    match data_formats::yaml::convert_to_json(input) {
+        Ok(result) => result,
+        Err(e) => format!("Error: {}", e),
+    }
+}

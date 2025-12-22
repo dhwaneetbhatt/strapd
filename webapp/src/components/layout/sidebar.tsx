@@ -170,6 +170,16 @@ export const Sidebar: React.FC<SidebarProps> = ({
     }
   }, [isOpen]);
 
+  // Reset sidebar focus when a tool is selected
+  // This prevents Enter key in tool inputs from triggering sidebar navigation
+  useEffect(() => {
+    if (selectedTool) {
+      setFocusedToolIndex(-1);
+      // Blur the sidebar to remove focus
+      sidebarRef.current?.blur();
+    }
+  }, [selectedTool.id, selectedTool]);
+
   // Handle keyboard navigation
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
