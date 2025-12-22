@@ -6,6 +6,10 @@ import {
   dataFormatsToolsGroup,
 } from "./data-formats-tools";
 import {
+  TOOL_REGISTRY as DATETIME_TOOL_REGISTRY,
+  datetimeToolsGroup,
+} from "./datetime-tools";
+import {
   TOOL_REGISTRY as ENCODING_TOOL_REGISTRY,
   encodingToolsGroup,
 } from "./encoding-tools";
@@ -28,6 +32,7 @@ import {
 
 export const toolGroups: ToolGroup[] = [
   stringToolsGroup,
+  datetimeToolsGroup,
   encodingToolsGroup,
   identifierToolsGroup,
   securityToolsGroup,
@@ -40,6 +45,7 @@ export const allTools: Tool[] = toolGroups.flatMap((group) => group.tools);
 
 export const TOOL_REGISTRY = {
   ...STRING_TOOL_REGISTRY,
+  ...DATETIME_TOOL_REGISTRY,
   ...IDENTIFIER_TOOL_REGISTRY,
   ...ENCODING_TOOL_REGISTRY,
   ...SECURITY_TOOL_REGISTRY,

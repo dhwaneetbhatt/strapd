@@ -51,6 +51,11 @@ export interface WasmModule {
   xml_minify: (input: string) => string;
   json_to_yaml: (input: string) => string;
   yaml_to_json: (input: string) => string;
+
+  // Datetime
+  datetime_now: (millis: boolean) => bigint;
+  datetime_from_timestamp: (timestamp: bigint, format: string) => string;
+  datetime_from_timestamp_millis: (timestamp: bigint, format: string) => string;
 }
 
 export class WasmWrapper {
@@ -335,6 +340,28 @@ export class WasmWrapper {
     return this.safeWasmCall(
       () => this.wasmModule.yaml_to_json(input),
       'yaml_to_json'
+    );
+  }
+
+  // Datetime
+  public datetime_now(millis: boolean): ToolResult {
+    return this.safeWasmCall(
+      () => this.wasmModule.datetime_now(millis).toString(),
+      'datetime_now'
+    );
+  }
+
+  public datetime_from_timestamp(timestamp: number, format: 'Human' | 'Iso'): ToolResult {
+    return this.safeWasmCall(
+      () => this.wasmModule.datetime_from_timestamp(BigInt(timestamp), format),
+      'datetime_from_timestamp'
+    );
+  }
+
+  public datetime_from_timestamp_millis(timestamp: number, format: 'Human' | 'Iso'): ToolResult {
+    return this.safeWasmCall(
+      () => this.wasmModule.datetime_from_timestamp_millis(BigInt(timestamp), format),
+      'datetime_from_timestamp_millis'
     );
   }
 }

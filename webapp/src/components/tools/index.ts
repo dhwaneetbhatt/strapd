@@ -7,6 +7,7 @@ export {
 export { ConverterToolComponent } from "./data-formats/converter-tool";
 export { JsonToolComponent } from "./data-formats/json-tool";
 export { XmlToolComponent } from "./data-formats/xml-tool";
+export { TimestampToolComponent } from "./datetime/timestamp-tool";
 export { Base64ToolComponent } from "./encoding/base64-tool";
 export { HexToolComponent } from "./encoding/hex-tool";
 export { UrlToolComponent } from "./encoding/url-tool";
