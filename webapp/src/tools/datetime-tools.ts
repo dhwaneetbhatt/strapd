@@ -9,7 +9,7 @@ import type { Tool, ToolGroup } from "../types";
 const timestampToolDefinition: ToolDefinition = {
   id: "datetime-timestamp",
   name: "Timestamp Converter",
-  description: "Convert Unix timestamps to human-readable dates and vice versa",
+  description: "Convert timestamps",
   category: "datetime",
   aliases: ["timestamp", "date", "time", "now", "unix"],
   component: TimestampToolComponent,

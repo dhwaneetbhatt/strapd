@@ -13,7 +13,7 @@ import type { Tool, ToolGroup } from "../types";
 const jsonToolDefinition: ToolDefinition = {
   id: "data-formats-json",
   name: "JSON",
-  description: "Format, minify, and sort JSON data",
+  description: "Format JSON data",
   category: "dataFormats",
   aliases: ["json", "format", "beautify", "minify"],
   component: JsonToolComponent,
@@ -49,7 +49,7 @@ export const jsonTool: Tool = {
 const xmlToolDefinition: ToolDefinition = {
   id: "data-formats-xml",
   name: "XML",
-  description: "Format and minify XML data",
+  description: "Format XML data",
   category: "dataFormats",
   aliases: ["xml", "format"],
   component: XmlToolComponent,
@@ -84,7 +84,7 @@ export const xmlTool: Tool = {
 const converterToolDefinition: ToolDefinition = {
   id: "data-formats-converter",
   name: "Format Converter",
-  description: "Convert between formats with auto-detection",
+  description: "Auto-convert formats",
   category: "dataFormats",
   aliases: ["convert", "converter", "transform", "json", "yaml"],
   component: ConverterToolComponent,

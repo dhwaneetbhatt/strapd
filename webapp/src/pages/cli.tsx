@@ -129,7 +129,7 @@ export const CLI: React.FC = () => {
               />
               <FeatureCard
                 icon={FiThumbsUp}
-                title="Easy "
+                title="Easy"
                 description="Designed specifically for ease of use in terminal workflows"
               />
               <FeatureCard
@@ -148,6 +148,70 @@ export const CLI: React.FC = () => {
               </Heading>
 
               <VStack spacing={6} align="stretch">
+                {/* One-liner Installer - Unix/Linux/macOS */}
+                <Box
+                  bg="surface.raised"
+                  p={6}
+                  borderRadius="lg"
+                  border="1px solid"
+                  borderColor="border.base"
+                >
+                  <Heading size="md" mb={4} color="text.brand">
+                    🚀 Quick Install (Unix/Linux/macOS)
+                  </Heading>
+                  <Text color="text.secondary" mb={4}>
+                    Download and install in one line:
+                  </Text>
+                  <Box
+                    bg="surface.muted"
+                    p={4}
+                    borderRadius="md"
+                    overflow="auto"
+                  >
+                    <Code
+                      display="block"
+                      whiteSpace="pre"
+                      color="green.600"
+                      bg="transparent"
+                      fontSize="sm"
+                    >
+                      {`curl -fsSL https://raw.githubusercontent.com/dhwaneetbhatt/strapd/main/scripts/install.sh | bash`}
+                    </Code>
+                  </Box>
+                </Box>
+
+                {/* PowerShell Installer - Windows */}
+                <Box
+                  bg="surface.raised"
+                  p={6}
+                  borderRadius="lg"
+                  border="1px solid"
+                  borderColor="border.base"
+                >
+                  <Heading size="md" mb={4} color="text.brand">
+                    🚀 Quick Install (Windows)
+                  </Heading>
+                  <Text color="text.secondary" mb={4}>
+                    Run in PowerShell:
+                  </Text>
+                  <Box
+                    bg="surface.muted"
+                    p={4}
+                    borderRadius="md"
+                    overflow="auto"
+                  >
+                    <Code
+                      display="block"
+                      whiteSpace="pre"
+                      color="cyan.600"
+                      bg="transparent"
+                      fontSize="sm"
+                    >
+                      {`Invoke-RestMethod -Uri "https://raw.githubusercontent.com/dhwaneetbhatt/strapd/main/scripts/install.ps1" | Invoke-Expression`}
+                    </Code>
+                  </Box>
+                </Box>
+
                 {/* Manual Download Section */}
                 <Box
                   bg="surface.raised"

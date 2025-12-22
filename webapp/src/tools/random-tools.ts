@@ -11,7 +11,7 @@ import type { Tool, ToolGroup } from "../types";
 const randomStringToolDefinition: ToolDefinition = {
   id: "random-string",
   name: "Random String",
-  description: "Generate random strings with customizable character sets.",
+  description: "Random strings",
   category: "random",
   aliases: ["string", "text", "password"],
   component: RandomStringToolComponent,
@@ -63,7 +63,7 @@ export const randomStringTool: Tool = {
 const randomNumberToolDefinition: ToolDefinition = {
   id: "random-number",
   name: "Random Number",
-  description: "Generate random numbers within a specified range.",
+  description: "Random numbers",
   category: "random",
   aliases: ["number", "int", "integer"],
   component: RandomNumberToolComponent,

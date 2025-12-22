@@ -18,7 +18,7 @@ type HashResult = {
 const hashToolDefinition: ToolDefinition<HashResult> = {
   id: "security-hash",
   name: "Hash Generator",
-  description: "Generate hashes",
+  description: "Hash text securely",
   category: "security",
   aliases: ["hash", "md5", "sha1", "sha256", "sha512", "checksum"],
   component: HashToolComponent,
@@ -76,7 +76,7 @@ type HmacResult = {
 const hmacToolDefinition: ToolDefinition<HmacResult> = {
   id: "security-hmac",
   name: "HMAC Generator",
-  description: "Generate HMACs",
+  description: "Generate message auth codes",
   category: "security",
   aliases: ["hmac", "mac", "auth"],
   component: HmacToolComponent,
