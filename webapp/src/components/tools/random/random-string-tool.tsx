@@ -70,7 +70,7 @@ export const RandomStringToolComponent: React.FC<BaseToolProps> = ({
       error={error}
     >
       <VStack spacing={6} align="stretch">
-        <HStack spacing={6} align="start">
+        <HStack spacing={6} align="stretch">
           {/* Configuration Column */}
           <VStack flex={1} align="stretch" spacing={4}>
             <Text fontSize="sm" fontWeight="medium" color="text.secondary">
@@ -152,7 +152,7 @@ export const RandomStringToolComponent: React.FC<BaseToolProps> = ({
           </VStack>
 
           {/* Result Column */}
-          <VStack flex={1} align="stretch" spacing={3}>
+          <VStack flex={1} align="stretch" spacing={3} justify="start">
             <HStack minH="8">
               <Text fontSize="sm" fontWeight="medium" color="text.secondary">
                 Result
@@ -164,7 +164,7 @@ export const RandomStringToolComponent: React.FC<BaseToolProps> = ({
               variant="output"
               value={String(outputs.result || "")}
               placeholder="Generated strings will appear here..."
-              minH="200px"
+              flex={1}
               isReadOnly
             />
           </VStack>

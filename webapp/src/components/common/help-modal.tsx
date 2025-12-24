@@ -199,6 +199,15 @@ export const HelpModal: React.FC<HelpModalProps> = ({ isOpen, onClose }) => {
                 </Text>
               </VStack>
             </Box>
+
+            <Divider />
+
+            {/* Version */}
+            <Box>
+              <Text fontSize="xs" color="text.muted" textAlign="center">
+                strapd v{import.meta.env.VITE_APP_VERSION || "dev"}
+              </Text>
+            </Box>
           </VStack>
         </ModalBody>
       </ModalContent>

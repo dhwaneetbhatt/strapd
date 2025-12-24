@@ -11,7 +11,7 @@ import type { Tool, ToolGroup } from "../types";
 const uuidGeneratorToolDefinition: ToolDefinition = {
   id: "identifier-uuid-generator",
   name: "UUID Generator",
-  description: "Generate unique IDs",
+  description: "Generate v4 and v7 UUID identifiers",
   category: "identifiers",
   aliases: ["uuid", "guid", "id"],
   component: UuidGeneratorToolComponent,
@@ -40,7 +40,7 @@ export const uuidGeneratorTool: Tool = {
 const ulidGeneratorToolDefinition: ToolDefinition = {
   id: "identifier-ulid-generator",
   name: "ULID Generator",
-  description: "Sortable unique IDs",
+  description: "Generate sortable, timestamp-based ULIDs",
   category: "identifiers",
   aliases: ["ulid", "sortable-id"],
   component: UlidGeneratorToolComponent,

@@ -83,6 +83,7 @@ export const ConverterToolComponent: React.FC<BaseToolProps> = ({
               size="sm"
               value={sourceFormat}
               onChange={(e) => updateInput("sourceFormat", e.target.value)}
+              bg="form.bg"
             >
               <option value="auto">Auto-detect</option>
               <option value="json">JSON</option>
@@ -102,6 +103,7 @@ export const ConverterToolComponent: React.FC<BaseToolProps> = ({
               size="sm"
               value={targetFormat}
               onChange={(e) => updateInput("targetFormat", e.target.value)}
+              bg="form.bg"
             >
               <option value="json">JSON</option>
               <option value="yaml">YAML</option>

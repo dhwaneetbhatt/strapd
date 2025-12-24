@@ -1,6 +1,6 @@
 # strapd 🛠️
 
-A CLI tool for developers with common utilities like string manipulation, data format conversions, encoding, security stuff, date/time processing, and more.◊
+A CLI tool for developers with common utilities like string manipulation, data format conversions, encoding, security stuff, date/time processing, and more.
 
 ## Why strapd?
 
