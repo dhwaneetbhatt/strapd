@@ -18,23 +18,35 @@ fi
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 PROJECT_ROOT="$( dirname "$SCRIPT_DIR" )"
 
+# Configure sed in-place arguments for different platforms
+case "$(uname)" in
+    Darwin*)
+        # macOS / BSD sed requires an explicit (possibly empty) backup suffix
+        SED_INPLACE=(-i '')
+        ;;
+    *)
+        # GNU sed (common on Linux) uses -i without an empty-string suffix
+        SED_INPLACE=(-i)
+        ;;
+esac
+
 echo "Updating version to $VERSION..."
 
 # Update webapp/package.json
 echo "  Updating webapp/package.json..."
-sed -i '' "s/\"version\": \"[^\"]*\"/\"version\": \"$VERSION\"/" "$PROJECT_ROOT/webapp/package.json"
+sed "${SED_INPLACE[@]}" "s/\"version\": \"[^\"]*\"/\"version\": \"$VERSION\"/" "$PROJECT_ROOT/webapp/package.json"
 
 # Update crates/cli/Cargo.toml
 echo "  Updating crates/cli/Cargo.toml..."
-sed -i '' "/^\[package\]/,/^\[/{s/version = \"[^\"]*\"/version = \"$VERSION\"/;}" "$PROJECT_ROOT/crates/cli/Cargo.toml"
+sed "${SED_INPLACE[@]}" "/^\[package\]/,/^\[/{s/version = \"[^\"]*\"/version = \"$VERSION\"/;}" "$PROJECT_ROOT/crates/cli/Cargo.toml"
 
 # Update crates/core/Cargo.toml
 echo "  Updating crates/core/Cargo.toml..."
-sed -i '' "/^\[package\]/,/^\[/{s/version = \"[^\"]*\"/version = \"$VERSION\"/;}" "$PROJECT_ROOT/crates/core/Cargo.toml"
+sed "${SED_INPLACE[@]}" "/^\[package\]/,/^\[/{s/version = \"[^\"]*\"/version = \"$VERSION\"/;}" "$PROJECT_ROOT/crates/core/Cargo.toml"
 
 # Update crates/wasm/Cargo.toml
 echo "  Updating crates/wasm/Cargo.toml..."
-sed -i '' "/^\[package\]/,/^\[/{s/version = \"[^\"]*\"/version = \"$VERSION\"/;}" "$PROJECT_ROOT/crates/wasm/Cargo.toml"
+sed "${SED_INPLACE[@]}" "/^\[package\]/,/^\[/{s/version = \"[^\"]*\"/version = \"$VERSION\"/;}" "$PROJECT_ROOT/crates/wasm/Cargo.toml"
 
 echo "✓ Version updated to $VERSION in all files:"
 echo "  - webapp/package.json"
