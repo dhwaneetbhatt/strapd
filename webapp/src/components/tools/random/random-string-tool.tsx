@@ -40,6 +40,7 @@ export const RandomStringToolComponent: React.FC<BaseToolProps> = ({
       uppercase: true,
       digits: true,
       symbols: true,
+      customCharset: "",
       count: 1,
       ...initialInputs,
     },
@@ -57,6 +58,7 @@ export const RandomStringToolComponent: React.FC<BaseToolProps> = ({
     inputs.uppercase,
     inputs.digits,
     inputs.symbols,
+    inputs.customCharset,
     Number(inputs.count),
   ]);
 
@@ -119,6 +121,17 @@ export const RandomStringToolComponent: React.FC<BaseToolProps> = ({
                   Symbols (!@#$...)
                 </Checkbox>
               </VStack>
+            </FormControl>
+
+            <FormControl>
+              <FormLabel>Additional Custom Characters</FormLabel>
+              <Textarea
+                value={String(inputs.customCharset || "")}
+                onChange={(e) => updateInput("customCharset", e.target.value)}
+                placeholder="Add any custom characters"
+                minH="60px"
+                maxH="100px"
+              />
             </FormControl>
 
             <FormControl>

@@ -113,10 +113,21 @@ export const Tools: React.FC = () => {
           <Flex flex={1} p={8}>
             <ToolInterface
               tool={selectedTool}
-              initialInput={useMemo(
-                () => Object.fromEntries(searchParams.entries()),
-                [searchParams],
-              )}
+              initialInput={useMemo(() => {
+                const params: Record<string, unknown> = {};
+                searchParams.forEach((value, key) => {
+                  // Parse boolean strings from URL
+                  if (value === "true") {
+                    params[key] = true;
+                  } else if (value === "false") {
+                    params[key] = false;
+                  } else {
+                    // Keep as string, will be converted by components/operations as needed
+                    params[key] = value;
+                  }
+                });
+                return params;
+              }, [searchParams])}
               onInputChange={(inputs: Record<string, unknown>) => {
                 // Debounce URL updates to prevent history spam/crashes
                 if (debounceRef.current) {

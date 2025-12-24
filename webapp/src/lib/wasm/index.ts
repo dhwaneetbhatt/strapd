@@ -40,8 +40,9 @@ export interface WasmModule {
   hash_sha512: (input: string) => string;
   hmac_sha256: (input: string, key: string) => string;
   hmac_sha512: (input: string, key: string) => string;
+
   // Random
-  random_string: (length: number, lowercase: boolean, uppercase: boolean, digits: boolean, symbols: boolean) => string;
+  random_string: (count: number, length: number, lowercase: boolean, uppercase: boolean, digits: boolean, symbols: boolean, customCharset: string) => string;
   random_number: (min: bigint, max: bigint, count: number) => BigInt64Array;
 
   // Data Formats
@@ -280,10 +281,11 @@ export class WasmWrapper {
       'hmac_sha512'
     );
   }
+  
   // Random
-  public random_string(length: number, lowercase: boolean, uppercase: boolean, digits: boolean, symbols: boolean): ToolResult {
+  public random_string(count: number, length: number, lowercase: boolean, uppercase: boolean, digits: boolean, symbols: boolean, customCharset: string): ToolResult {
     return this.safeWasmCall(
-      () => this.wasmModule.random_string(length, lowercase, uppercase, digits, symbols),
+      () => this.wasmModule.random_string(count, length, lowercase, uppercase, digits, symbols, customCharset),
       'random_string'
     );
   }
