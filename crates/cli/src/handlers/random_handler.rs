@@ -19,20 +19,26 @@ pub fn handle(operation: &RandomOperation) -> CommandResult {
 
 pub(super) fn handle_random_string(args: &RandomStringArgs) -> CommandResult {
     // If no flags are specified then use all the character types
-    let any_flag_set = args.lowercase || args.uppercase || args.digits || args.symbols;
+    let any_flag_set =
+        args.lowercase || args.uppercase || args.digits || args.symbols || args.charset.is_some();
     let (lower, upper, digit, symbol) = if any_flag_set {
         (args.lowercase, args.uppercase, args.digits, args.symbols)
     } else {
         (true, true, true, true)
     };
 
-    let mut results = Vec::new();
-    for _ in 0..args.count {
-        let result = random::string(args.length, lower, upper, digit, symbol);
-        match result {
-            Ok(s) => results.push(s),
-            Err(e) => return error_result(&e),
-        }
+    let custom_charset = args.charset.as_deref();
+
+    match random::string(
+        args.count,
+        args.length,
+        lower,
+        upper,
+        digit,
+        symbol,
+        custom_charset,
+    ) {
+        Ok(results) => text_result(results.join("\n")),
+        Err(e) => error_result(&e),
     }
-    text_result(results.join("\n"))
 }

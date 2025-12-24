@@ -22,31 +22,17 @@ const randomStringToolDefinition: ToolDefinition = {
     const digits = inputs.digits !== false; // Default true
     const symbols = inputs.symbols !== false; // Default true
     const count = Number(inputs.count) || 1;
+    const customCharset = String(inputs.customCharset || "");
 
-    if (count <= 1) {
-      return wasmWrapper.random_string(
-        length,
-        lowercase,
-        uppercase,
-        digits,
-        symbols,
-      );
-    }
-
-    // Generate multiple strings
-    const results: string[] = [];
-    for (let i = 0; i < count; i++) {
-      const res = wasmWrapper.random_string(
-        length,
-        lowercase,
-        uppercase,
-        digits,
-        symbols,
-      );
-      if (!res.success) return res;
-      results.push(res.result || "");
-    }
-    return { success: true, result: results.join("\n") };
+    return wasmWrapper.random_string(
+      count,
+      length,
+      lowercase,
+      uppercase,
+      digits,
+      symbols,
+      customCharset,
+    );
   },
 };
 

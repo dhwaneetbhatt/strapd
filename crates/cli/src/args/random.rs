@@ -49,6 +49,10 @@ pub struct RandomStringArgs {
     #[arg(short = 's', long, visible_aliases = ["special"])]
     pub symbols: bool,
 
+    /// Custom characters to include (combined with above flags)
+    #[arg(long, visible_aliases = ["chars"])]
+    pub charset: Option<String>,
+
     /// Number of strings to generate
     #[arg(long, short = 'n', default_value = "1")]
     pub count: usize,
