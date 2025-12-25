@@ -31,7 +31,7 @@ type AnalysisResult = {
 const caseConverterToolDefinition: ToolDefinition<CaseConverterResult> = {
   id: "string-case-converter",
   name: "Case Converter",
-  description: "Convert text cases",
+  description: "Convert to uppercase, lowercase, capital case",
   category: "string",
   aliases: ["case", "convert", "upper", "lower", "capital"],
   component: CaseConverterToolComponent,
@@ -65,7 +65,7 @@ const caseConverterToolDefinition: ToolDefinition<CaseConverterResult> = {
 const analysisToolDefinition: ToolDefinition<AnalysisResult> = {
   id: "string-analysis",
   name: "Text Analysis",
-  description: "Count text statistics",
+  description: "Count lines, words, characters, bytes",
   category: "string",
   aliases: ["count", "stats", "length", "analysis"],
   component: AnalysisToolComponent,
@@ -98,7 +98,7 @@ const analysisToolDefinition: ToolDefinition<AnalysisResult> = {
 const reverseToolDefinition: ToolDefinition = {
   id: "string-reverse",
   name: "Reverse Text",
-  description: "Reverse text strings",
+  description: "Reverse text character by character",
   category: "string",
   aliases: ["reverse", "flip", "backwards"],
   component: ReverseToolComponent,
@@ -109,7 +109,7 @@ const reverseToolDefinition: ToolDefinition = {
 const replaceToolDefinition: ToolDefinition = {
   id: "string-replace",
   name: "Find & Replace",
-  description: "Find and replace text",
+  description: "Find text and replace with new text",
   category: "string",
   aliases: ["replace", "substitute", "find"],
   component: ReplaceToolComponent,
@@ -124,7 +124,7 @@ const replaceToolDefinition: ToolDefinition = {
 const slugifyToolDefinition: ToolDefinition = {
   id: "string-slugify",
   name: "Slugify",
-  description: "URL-friendly slugs",
+  description: "Convert text to URL-friendly slug format",
   category: "string",
   aliases: ["slug", "url", "kebab"],
   component: SlugifyToolComponent,
@@ -139,7 +139,7 @@ const slugifyToolDefinition: ToolDefinition = {
 const whitespaceToolDefinition: ToolDefinition = {
   id: "string-whitespace",
   name: "Trim",
-  description: "Trim whitespace",
+  description: "Trim, collapse whitespace, customize sides",
   category: "string",
   aliases: ["trim", "space", "clean"],
   component: WhitespaceToolComponent,

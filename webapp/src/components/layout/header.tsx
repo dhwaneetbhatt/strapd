@@ -40,31 +40,20 @@ export const Header: React.FC<HeaderProps> = ({ onSearchOpen, onHelpOpen }) => {
       zIndex={10}
       boxShadow="sm"
     >
-      <Flex alignItems="center" maxW="full" mx="auto">
-        {/* Logo and Title */}
-        <HStack spacing={6}>
-          <HStack spacing={3}>
-            <Link to="/">
-              <Heading size="lg" color="text.brand" _hover={{ opacity: 0.8 }}>
-                {appConfig.name}
-              </Heading>
-            </Link>
-            <Text
-              fontSize="sm"
-              color="text.muted"
-              display={{ base: "none", lg: "block" }}
-            >
-              {appConfig.description}
-            </Text>
-          </HStack>
+      <Flex alignItems="center" maxW="full" mx="auto" gap={6}>
+        {/* Logo */}
+        <Link to="/">
+          <Heading size="lg" color="text.brand" _hover={{ opacity: 0.8 }}>
+            {appConfig.name}
+          </Heading>
+        </Link>
 
-          {/* Search Bar - only show on tools page */}
-          {!isCliPage && onSearchOpen && (
-            <Box display={{ base: "none", md: "block" }}>
-              <SearchBar onFocus={onSearchOpen} />
-            </Box>
-          )}
-        </HStack>
+        {/* Search Bar - only show on tools page */}
+        {!isCliPage && onSearchOpen && (
+          <Box display={{ base: "none", md: "block" }}>
+            <SearchBar onFocus={onSearchOpen} />
+          </Box>
+        )}
 
         <Spacer />
 

@@ -1,5 +1,4 @@
 import {
-  Checkbox,
   FormControl,
   FormLabel,
   HStack,
@@ -9,7 +8,7 @@ import {
   NumberInputField,
   NumberInputStepper,
   Spacer,
-  Stack,
+  Switch,
   Text,
   Textarea,
   VStack,
@@ -56,21 +55,27 @@ export const JsonToolComponent: React.FC<BaseToolProps> = ({
       error={error}
     >
       <VStack spacing={6} align="stretch">
-        <HStack spacing={5} align="end">
-          <Stack direction="row" spacing={5}>
-            <Checkbox
+        <HStack spacing={8} align="end">
+          <FormControl display="flex" alignItems="center" w="auto">
+            <FormLabel htmlFor="sort-keys" mb="0">
+              Sort Keys
+            </FormLabel>
+            <Switch
+              id="sort-keys"
               isChecked={Boolean(inputs.sort)}
               onChange={(e) => updateInput("sort", e.target.checked)}
-            >
-              Sort Keys
-            </Checkbox>
-            <Checkbox
+            />
+          </FormControl>
+          <FormControl display="flex" alignItems="center" w="auto">
+            <FormLabel htmlFor="minify" mb="0">
+              Minify
+            </FormLabel>
+            <Switch
+              id="minify"
               isChecked={Boolean(inputs.minify)}
               onChange={(e) => updateInput("minify", e.target.checked)}
-            >
-              Minify
-            </Checkbox>
-          </Stack>
+            />
+          </FormControl>
           <FormControl width="120px">
             <FormLabel fontSize="sm" mb={1}>
               Indent Size

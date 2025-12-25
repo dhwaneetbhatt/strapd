@@ -12,7 +12,7 @@ import type { Tool, ToolGroup } from "../types";
 const base64ToolDefinition: ToolDefinition = {
   id: "encoding-base64",
   name: "Base64",
-  description: "Encode/decode Base64",
+  description: "Encode and decode Base64 strings",
   category: "encoding",
   aliases: ["base64", "encode", "decode"],
   component: Base64ToolComponent,
@@ -41,7 +41,7 @@ export const base64Tool: Tool = {
 const urlToolDefinition: ToolDefinition = {
   id: "encoding-url",
   name: "URL",
-  description: "Encode/decode URLs",
+  description: "Encode and decode URL strings",
   category: "encoding",
   aliases: ["url", "urlencode", "urldecode"],
   component: UrlToolComponent,
@@ -70,7 +70,7 @@ export const urlTool: Tool = {
 const hexToolDefinition: ToolDefinition = {
   id: "encoding-hex",
   name: "Hex",
-  description: "Encode/decode hex",
+  description: "Encode text to hex, decode hex",
   category: "encoding",
   aliases: ["hex", "hexencode", "hexdecode"],
   component: HexToolComponent,

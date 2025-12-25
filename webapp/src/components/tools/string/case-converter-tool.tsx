@@ -1,4 +1,4 @@
-import { HStack, Spacer, Text, Textarea, VStack } from "@chakra-ui/react";
+import { HStack, Input, Spacer, Text, VStack } from "@chakra-ui/react";
 import type React from "react";
 import { useAutoFocus } from "../../../hooks/use-auto-focus";
 import { useAutoProcess } from "../../../hooks/use-tool-processing";
@@ -19,11 +19,10 @@ const OutputSection: React.FC<{
         <Spacer />
         <CopyButton value={value} />
       </HStack>
-      <Textarea
+      <Input
         variant="output"
         value={value}
         placeholder={placeholder}
-        rows={3}
         isReadOnly
       />
     </VStack>
@@ -48,7 +47,7 @@ export const CaseConverterToolComponent: React.FC<BaseToolProps> = ({
   // Auto-process as user types
   useAutoProcess(processInputs, inputs);
 
-  const inputRef = useAutoFocus<HTMLTextAreaElement>();
+  const inputRef = useAutoFocus<HTMLInputElement>();
 
   return (
     <BaseToolLayout
@@ -57,16 +56,16 @@ export const CaseConverterToolComponent: React.FC<BaseToolProps> = ({
       isProcessing={isProcessing}
       error={error}
     >
-      <HStack spacing={6} align="start" alignItems="stretch">
+      <VStack align="stretch" spacing={6}>
         {/* Input Section */}
-        <VStack flex={1} align="stretch" spacing={3}>
+        <VStack align="stretch" spacing={3}>
           <HStack minH="8">
             <Text fontSize="sm" fontWeight="medium" color="text.secondary">
               Input Text
             </Text>
             <Spacer />
           </HStack>
-          <Textarea
+          <Input
             data-testid="tool-default-input"
             ref={inputRef}
             variant="toolInput"
@@ -79,7 +78,7 @@ export const CaseConverterToolComponent: React.FC<BaseToolProps> = ({
         </VStack>
 
         {/* Output Section */}
-        <VStack flex={1} align="stretch" spacing={4}>
+        <VStack align="stretch" spacing={4}>
           <OutputSection
             label="Uppercase"
             value={String(outputs.uppercase || "")}
@@ -96,7 +95,7 @@ export const CaseConverterToolComponent: React.FC<BaseToolProps> = ({
             placeholder="Capital Case Result..."
           />
         </VStack>
-      </HStack>
+      </VStack>
     </BaseToolLayout>
   );
 };
