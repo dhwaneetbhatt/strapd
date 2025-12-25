@@ -21,6 +21,7 @@ jobs:
         uses: actions-rust-lang/setup-rust-toolchain@v1
         with:
           components: rustfmt, clippy
+          targets: wasm32-unknown-unknown
 
       - name: Cache Cargo registry
         uses: actions/cache@v4
@@ -45,11 +46,11 @@ jobs:
       - name: Build Rust
         run: make rust-build
 
-      - name: Build wasm
-        run: make wasm-build
-
       - name: Test Rust
         run: make rust-test
+
+      - name: Build wasm
+        run: make wasm-build
 
       - name: Upload WASM artifacts
         uses: actions/upload-artifact@v4
