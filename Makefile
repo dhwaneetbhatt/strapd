@@ -47,6 +47,7 @@ rust-lint:
 # Install dependencies
 rust-install:
 	cargo fetch
+	cargo install wasm-pack --version 0.13.1
 
 # Build all Rust crates (debug)
 rust-build:

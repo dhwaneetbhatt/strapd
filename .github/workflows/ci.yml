@@ -21,6 +21,7 @@ jobs:
         uses: actions-rust-lang/setup-rust-toolchain@v1
         with:
           components: rustfmt, clippy
+          targets: wasm32-unknown-unknown
 
       - name: Cache Cargo registry
         uses: actions/cache@v4
@@ -48,9 +49,20 @@ jobs:
       - name: Test Rust
         run: make rust-test
 
+      - name: Build wasm
+        run: make wasm-build
+
+      - name: Upload WASM artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: wasm-build
+          path: webapp/wasm/
+          retention-days: 1
+
   test-webapp:
     name: Test Webapp
     runs-on: ubuntu-24.04
+    needs: test-rust
     steps:
       - name: Checkout code
         uses: actions/checkout@v5
@@ -76,8 +88,17 @@ jobs:
       - name: Install webapp dependencies
         run: make webapp-install
 
+      - name: Download WASM artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: wasm-build
+          path: webapp/wasm/
+
       - name: Check formatting
         run: make webapp-fmt-check
 
       - name: Lint webapp
         run: make webapp-lint
+
+      - name: Build webapp
+        run: make webapp-build

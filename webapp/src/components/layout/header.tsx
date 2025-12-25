@@ -6,7 +6,6 @@ import {
   HStack,
   IconButton,
   Spacer,
-  Text,
   Tooltip,
   useColorMode,
 } from "@chakra-ui/react";
