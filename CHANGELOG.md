@@ -8,7 +8,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### webapp
 
-- fix: timestamp converter milliseconds toggle now properly scales value to maintain same time point.
+- fix: timestamp converter milliseconds toggle now properly scales value to maintain same time point
 
 ## [v1.1.1] - 2025-12-24
 

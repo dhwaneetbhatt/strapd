@@ -64,12 +64,14 @@ export const TimestampToolComponent: React.FC<BaseToolProps> = ({
     const newIsMillis = e.target.checked;
 
     // If there's a valid timestamp, scale it accordingly
-    if (inputs.timestamp && !Number.isNaN(Number(inputs.timestamp))) {
-      const currentValue = Number(inputs.timestamp);
-      const scaledValue = newIsMillis
-        ? Math.round(currentValue * 1000) // seconds to millis
-        : Math.round(currentValue / 1000); // millis to seconds
-      updateInput("timestamp", scaledValue.toString());
+    if (inputs.timestamp) {
+      const numericTimestamp = Number(inputs.timestamp);
+      if (!Number.isNaN(numericTimestamp)) {
+        const scaledValue = newIsMillis
+          ? Math.round(numericTimestamp * 1000) // seconds to millis
+          : Math.round(numericTimestamp / 1000); // millis to seconds
+        updateInput("timestamp", scaledValue.toString());
+      }
     }
 
     // Update the isMillis flag
