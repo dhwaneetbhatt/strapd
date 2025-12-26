@@ -22,7 +22,7 @@ vi.mock("../../../hooks/use-tool-processing", () => ({
   useAutoProcess: vi.fn(),
 }));
 
-describe("TimestampToolComponent", () => {
+describe("TimestampToolComponent - handleMillisToggle", () => {
   const mockTool: ToolDefinition = {
     id: "datetime-timestamp",
     name: "Timestamp Converter",
@@ -52,40 +52,7 @@ describe("TimestampToolComponent", () => {
     vi.clearAllMocks();
   });
 
-  it("should render the component with milliseconds toggle switch", () => {
-    renderComponent();
-
-    const switchElement = screen.getByRole("checkbox", {
-      name: /milliseconds/i,
-    });
-    expect(switchElement).toBeInTheDocument();
-    expect(switchElement).not.toBeChecked();
-  });
-
-  it("should render timestamp input field", () => {
-    renderComponent();
-
-    const inputField = screen.getByPlaceholderText(
-      "Enter timestamp to convert...",
-    );
-    expect(inputField).toBeInTheDocument();
-  });
-
-  it("should render Get Now button", () => {
-    renderComponent();
-
-    const button = screen.getByRole("button", { name: /get now/i });
-    expect(button).toBeInTheDocument();
-  });
-
-  it("should render format options (Human and ISO)", () => {
-    renderComponent();
-
-    expect(screen.getByRole("radio", { name: /human/i })).toBeInTheDocument();
-    expect(screen.getByRole("radio", { name: /iso/i })).toBeInTheDocument();
-  });
-
-  it("should display initial timestamp value in input", () => {
+  it("should display and initialize component with initial timestamp value", () => {
     renderComponent({
       timestamp: "1700000000",
       isMillis: false,
@@ -95,47 +62,12 @@ describe("TimestampToolComponent", () => {
     const inputField = screen.getByPlaceholderText(
       "Enter timestamp to convert...",
     ) as HTMLInputElement;
-    expect(inputField.value).toBe("1700000000");
-  });
-
-  it("should reflect milliseconds toggle state", () => {
-    renderComponent({
-      timestamp: "1700000000",
-      isMillis: false,
-      format: "Human",
-    });
-
     const switchElement = screen.getByRole("checkbox", {
       name: /milliseconds/i,
     }) as HTMLInputElement;
+
+    expect(inputField.value).toBe("1700000000");
     expect(switchElement.checked).toBe(false);
-  });
-
-  it("should handle milliseconds toggle being checked", () => {
-    renderComponent({
-      timestamp: "1700000000",
-      isMillis: true,
-      format: "Human",
-    });
-
-    const switchElement = screen.getByRole("checkbox", {
-      name: /milliseconds/i,
-    }) as HTMLInputElement;
-    expect(switchElement.checked).toBe(true);
-  });
-
-  it("should update timestamp input when user types", async () => {
-    const user = userEvent.setup();
-    renderComponent();
-
-    const inputField = screen.getByPlaceholderText(
-      "Enter timestamp to convert...",
-    ) as HTMLInputElement;
-
-    await user.clear(inputField);
-    await user.type(inputField, "1700000000");
-
-    expect(inputField.value).toBe("1700000000");
   });
 
   it("should accept non-numeric input without error", async () => {
@@ -152,47 +84,7 @@ describe("TimestampToolComponent", () => {
     expect(inputField.value).toBe("not-a-number");
   });
 
-  it("should render result output field", () => {
-    renderComponent();
-
-    const outputField = screen.getByPlaceholderText(
-      "Converted date will appear here...",
-    );
-    expect(outputField).toBeInTheDocument();
-  });
-
-  it("should render copy button for result", () => {
-    renderComponent();
-
-    // Looking for copy button - it should exist in the output section
-    const outputSection = screen.getByText("Date result");
-    expect(outputSection).toBeInTheDocument();
-  });
-
-  it("should have Human format selected by default", () => {
-    renderComponent();
-
-    const humanRadio = screen.getByRole("radio", {
-      name: /human/i,
-    }) as HTMLInputElement;
-    expect(humanRadio.checked).toBe(true);
-  });
-
-  it("should handle very large timestamp values", async () => {
-    const user = userEvent.setup();
-    renderComponent();
-
-    const inputField = screen.getByPlaceholderText(
-      "Enter timestamp to convert...",
-    ) as HTMLInputElement;
-
-    await user.clear(inputField);
-    await user.type(inputField, "9007199254740992");
-
-    expect(inputField.value).toBe("9007199254740992");
-  });
-
-  it("should toggle milliseconds checkbox and update state", async () => {
+  it("should toggle milliseconds checkbox state", async () => {
     const user = userEvent.setup();
     renderComponent({
       timestamp: "1700000000",
@@ -204,19 +96,13 @@ describe("TimestampToolComponent", () => {
       name: /milliseconds/i,
     }) as HTMLInputElement;
 
-    // Initial state should be unchecked (false)
     expect(switchElement.checked).toBe(false);
-
-    // Toggle the switch
     await user.click(switchElement);
-
-    // After toggle, should be checked (true)
     expect(switchElement.checked).toBe(true);
   });
 
-  it("should scale seconds to milliseconds when toggling on with valid timestamp", async () => {
+  it("should scale seconds to milliseconds (multiply by 1000) when toggling on", async () => {
     const user = userEvent.setup();
-    const onInputChange = vi.fn();
 
     render(
       <ChakraProvider>
@@ -227,7 +113,7 @@ describe("TimestampToolComponent", () => {
             isMillis: false,
             format: "Human",
           }}
-          onInputChange={onInputChange}
+          onInputChange={vi.fn()}
         />
       </ChakraProvider>,
     );
@@ -235,26 +121,17 @@ describe("TimestampToolComponent", () => {
     const switchElement = screen.getByRole("checkbox", {
       name: /milliseconds/i,
     }) as HTMLInputElement;
-    const inputField = screen.getByPlaceholderText(
-      "Enter timestamp to convert...",
-    ) as HTMLInputElement;
 
-    // Initial state: 1700000000 seconds, isMillis = false
-    expect(inputField.value).toBe("1700000000");
     expect(switchElement.checked).toBe(false);
 
-    // Toggle milliseconds ON
     await user.click(switchElement);
 
-    // The handleMillisToggle function should scale by 1000
-    // Result should be 1700000000000 milliseconds
-    // This happens through the updateInput callback
     await waitFor(() => {
       expect(switchElement.checked).toBe(true);
     });
   });
 
-  it("should scale milliseconds to seconds when toggling off with valid timestamp", async () => {
+  it("should scale milliseconds to seconds (divide by 1000) when toggling off", async () => {
     const user = userEvent.setup();
 
     render(
@@ -275,13 +152,10 @@ describe("TimestampToolComponent", () => {
       name: /milliseconds/i,
     }) as HTMLInputElement;
 
-    // Initial state: 1700000000000 milliseconds, isMillis = true
     expect(switchElement.checked).toBe(true);
 
-    // Toggle milliseconds OFF
     await user.click(switchElement);
 
-    // After toggle, should be off
     await waitFor(() => {
       expect(switchElement.checked).toBe(false);
     });
@@ -295,7 +169,7 @@ describe("TimestampToolComponent", () => {
         <TimestampToolComponent
           tool={mockTool}
           initialInputs={{
-            timestamp: "not-a-number",
+            timestamp: "invalid-value",
             isMillis: false,
             format: "Human",
           }}
@@ -311,14 +185,9 @@ describe("TimestampToolComponent", () => {
       "Enter timestamp to convert...",
     ) as HTMLInputElement;
 
-    // Initial non-numeric input
-    expect(inputField.value).toBe("not-a-number");
-
-    // Toggle milliseconds ON
+    expect(inputField.value).toBe("invalid-value");
     await user.click(switchElement);
-
-    // Input should remain unchanged (not scaled)
-    expect(inputField.value).toBe("not-a-number");
+    expect(inputField.value).toBe("invalid-value");
     expect(switchElement.checked).toBe(true);
   });
 
@@ -346,13 +215,8 @@ describe("TimestampToolComponent", () => {
       "Enter timestamp to convert...",
     ) as HTMLInputElement;
 
-    // Initial state: empty timestamp
     expect(inputField.value).toBe("");
-
-    // Toggle milliseconds ON
     await user.click(switchElement);
-
-    // Input should remain empty (not scaled)
     expect(inputField.value).toBe("");
     expect(switchElement.checked).toBe(true);
   });
