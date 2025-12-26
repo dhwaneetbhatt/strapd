@@ -59,6 +59,23 @@ export const TimestampToolComponent: React.FC<BaseToolProps> = ({
     }
   };
 
+  // Handler for milliseconds toggle with auto-scaling
+  const handleMillisToggle = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newIsMillis = e.target.checked;
+
+    // If there's a valid timestamp, scale it accordingly
+    if (inputs.timestamp && !Number.isNaN(Number(inputs.timestamp))) {
+      const currentValue = Number(inputs.timestamp);
+      const scaledValue = newIsMillis
+        ? Math.round(currentValue * 1000) // seconds to millis
+        : Math.round(currentValue / 1000); // millis to seconds
+      updateInput("timestamp", scaledValue.toString());
+    }
+
+    // Update the isMillis flag
+    updateInput("isMillis", newIsMillis);
+  };
+
   return (
     <BaseToolLayout
       onProcess={processInputs}
@@ -75,7 +92,7 @@ export const TimestampToolComponent: React.FC<BaseToolProps> = ({
             <Switch
               id="is-millis"
               isChecked={Boolean(inputs.isMillis)}
-              onChange={(e) => updateInput("isMillis", e.target.checked)}
+              onChange={handleMillisToggle}
             />
           </FormControl>
 
