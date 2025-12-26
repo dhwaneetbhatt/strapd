@@ -102,3 +102,6 @@ jobs:
 
       - name: Build webapp
         run: make webapp-build
+
+      - name: Test webapp
+        run: make webapp-test
