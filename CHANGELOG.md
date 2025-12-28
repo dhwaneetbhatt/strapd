@@ -4,6 +4,17 @@ All notable changes to this project are documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+
+- **Homebrew support**: Added Homebrew formula for easy installation on macOS and Linux
+  - Created `Formula/strapd.rb` with support for Intel and ARM architectures
+  - Added `scripts/update-formula-checksums.sh` to automate formula updates
+  - Added `HOMEBREW.md` documentation for maintainers
+  - Added Makefile targets: `brew-formula-check` and `brew-update-checksums`
+- Updated README.md with Homebrew installation instructions
+
 ## [v1.1.2] - 2025-12-26
 
 ### webapp
