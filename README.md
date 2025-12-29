@@ -40,10 +40,7 @@ Head over to the [webapp](https://dhwaneetbhatt.com/strapd/) for an interactive 
 ### Homebrew (macOS/Linux)
 
 ```bash
-# From the main repository (coming soon - pending tap setup)
-brew install dhwaneetbhatt/tap/strapd
-
-# Or install directly from the formula in this repo
+# Install directly from the formula in this repo
 brew install --build-from-source Formula/strapd.rb
 ```
 

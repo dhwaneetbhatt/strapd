@@ -5,7 +5,14 @@ set -e
 # Usage: ./scripts/update-formula-checksums.sh [version]
 # Example: ./scripts/update-formula-checksums.sh v1.1.2
 
-VERSION=${1:-$(git describe --tags --abbrev=0 2>/dev/null || echo "v1.1.2")}
+VERSION=${1:-$(git describe --tags --abbrev=0 2>/dev/null)}
+
+if [ -z "$VERSION" ]; then
+  echo "Error: No version specified and no git tags found."
+  echo "Usage: $0 <version>"
+  echo "Example: $0 v1.1.0"
+  exit 1
+fi
 FORMULA_FILE="Formula/strapd.rb"
 
 echo "Updating formula checksums for version: $VERSION"
