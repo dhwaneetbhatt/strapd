@@ -103,13 +103,12 @@ fn json_to_yaml(value: &JsonValue) -> Result<Yaml, String> {
             }
             Ok(Yaml::Hash(hash))
         }
-        JsonValue::Array(_) => {
-            let array: Vec<Yaml> = value
+        JsonValue::Array(_) => Ok(Yaml::Array(
+            value
                 .members()
                 .map(json_to_yaml)
-                .collect::<Result<Vec<Yaml>, String>>()?;
-            Ok(Yaml::Array(array))
-        }
+                .collect::<Result<_, _>>()?,
+        )),
         JsonValue::String(s) => Ok(Yaml::String(s.to_string())),
         JsonValue::Number(n) => match n.to_string().parse::<i64>() {
             Ok(i) => Ok(Yaml::Integer(i)),

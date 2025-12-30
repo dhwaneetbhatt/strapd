@@ -75,7 +75,7 @@ export const ConverterToolComponent: React.FC<BaseToolProps> = ({
       error={error}
     >
       <VStack spacing={6} align="stretch" h="full">
-        <HStack spacing={5} align="flex-end">
+        <HStack spacing={5} align="end">
           <FormControl width="200px">
             <FormLabel fontSize="sm" mb={1}>
               Source Format

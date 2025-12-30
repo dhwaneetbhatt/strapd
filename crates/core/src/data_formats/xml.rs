@@ -71,11 +71,12 @@ pub(crate) fn escape(s: &str) -> String {
     result
 }
 
-/// Unescapes XML entity references using placeholder-based two-pass replacement.
-/// WHY placeholder technique: Direct sequential replacement of "&amp;" to "&" would corrupt other
-/// entities. For example, "&amp;lt;" should decode to "&lt;" (the literal text), but if we replace
-/// "&amp;" first, we'd get "&lt;" → "<" (wrong!). Placeholder defers "&amp;" replacement until
-/// after other entities are replaced, preventing this corruption.
+/// Unescapes XML entity references using a single-pass, entity-by-entity parser.
+/// WHY: We scan the input once, detecting sequences like `&name;` and replacing only recognized
+/// entities (e.g., `&amp;`, `&lt;`, `&gt;`, `&quot;`, `&apos;`) with their character equivalents.
+/// Unrecognized or incomplete entities are left intact. This also correctly handles inputs such
+/// as `&amp;lt;`, which becomes `&lt;`: we decode only the leading `&amp;` and then treat the
+/// remaining `lt;` as literal text rather than a second entity.
 pub(crate) fn unescape(s: &str) -> String {
     let mut result = String::with_capacity(s.len());
     let mut chars = s.chars().peekable();
