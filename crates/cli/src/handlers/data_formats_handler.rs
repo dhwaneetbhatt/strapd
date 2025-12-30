@@ -31,14 +31,18 @@ pub fn handle_json(operation: &JsonOperation) -> CommandResult {
                 Err(e) => error_result(e),
             }
         }
-        JsonOperation::Convert { input, to } => {
-            if *to != "yaml" {
-                return error_result("JSON can only be converted to yaml");
-            }
+        JsonOperation::Convert { input, to, root } => {
             let input = get_input_string(input);
-            match json::convert_to_yaml(&input) {
-                Ok(json) => text_result(json),
-                Err(e) => error_result(&e),
+            match to.as_str() {
+                "yaml" => match json::convert_to_yaml(&input) {
+                    Ok(json) => text_result(json),
+                    Err(e) => error_result(&e),
+                },
+                "xml" => match json::convert_to_xml(&input, root.as_deref()) {
+                    Ok(xml) => text_result(xml),
+                    Err(e) => error_result(&e),
+                },
+                _ => error_result("JSON can only be converted to yaml or xml"),
             }
         }
     }
@@ -72,6 +76,16 @@ pub fn handle_xml(operation: &XmlOperation) -> CommandResult {
             let input = get_input_string(input);
             match xml::minify(&input) {
                 Ok(xml) => text_result(xml),
+                Err(e) => error_result(&e),
+            }
+        }
+        XmlOperation::Convert { input, to } => {
+            if *to != "json" {
+                return error_result("XML can only be converted to json");
+            }
+            let input = get_input_string(input);
+            match xml::convert_to_json(&input) {
+                Ok(json) => text_result(json),
                 Err(e) => error_result(&e),
             }
         }

@@ -195,8 +195,10 @@ export const BaseToolLayout: React.FC<{
   error?: string;
 }> = ({ children, onProcess, onClear, isProcessing, error }) => {
   return (
-    <VStack spacing={6} align="stretch">
-      {children}
+    <VStack spacing={6} align="stretch" h="full">
+      <VStack spacing={6} align="stretch" flex={1} minH="0">
+        {children}
+      </VStack>
 
       {error && (
         <Alert status="error" rounded="md">

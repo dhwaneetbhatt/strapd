@@ -4,6 +4,7 @@ import {
   HStack,
   Select,
   Spacer,
+  Switch,
   Text,
   Textarea,
   VStack,
@@ -73,7 +74,7 @@ export const ConverterToolComponent: React.FC<BaseToolProps> = ({
       isProcessing={isProcessing}
       error={error}
     >
-      <VStack spacing={6} align="stretch">
+      <VStack spacing={6} align="stretch" h="full">
         <HStack spacing={5} align="end">
           <FormControl width="200px">
             <FormLabel fontSize="sm" mb={1}>
@@ -88,6 +89,7 @@ export const ConverterToolComponent: React.FC<BaseToolProps> = ({
               <option value="auto">Auto-detect</option>
               <option value="json">JSON</option>
               <option value="yaml">YAML</option>
+              <option value="xml">XML</option>
             </Select>
           </FormControl>
 
@@ -107,12 +109,24 @@ export const ConverterToolComponent: React.FC<BaseToolProps> = ({
             >
               <option value="json">JSON</option>
               <option value="yaml">YAML</option>
+              <option value="xml">XML</option>
             </Select>
+          </FormControl>
+
+          <FormControl width="auto">
+            <FormLabel fontSize="sm" mb={1}>
+              Minify
+            </FormLabel>
+            <Switch
+              id="minify"
+              isChecked={Boolean(inputs.minify)}
+              onChange={(e) => updateInput("minify", e.target.checked)}
+            />
           </FormControl>
         </HStack>
 
-        <HStack spacing={6} align="start">
-          <VStack flex={1} align="stretch" spacing={3}>
+        <HStack spacing={6} align="stretch" flex={1} minH="0">
+          <VStack flex={1} align="stretch" spacing={3} h="full">
             <HStack minH="8">
               <Text fontSize="sm" fontWeight="medium" color="text.secondary">
                 Input ({getSourceFormatDisplay()})
@@ -123,7 +137,8 @@ export const ConverterToolComponent: React.FC<BaseToolProps> = ({
               data-testid="tool-default-input"
               ref={inputRef}
               variant="input"
-              minH="400px"
+              h="full"
+              minH="tool.textarea.min"
               value={String(inputs.text || "")}
               onChange={(e) => {
                 updateInput("text", e.target.value);
@@ -131,7 +146,7 @@ export const ConverterToolComponent: React.FC<BaseToolProps> = ({
               placeholder="Enter data to convert..."
             />
           </VStack>
-          <VStack flex={1} align="stretch" spacing={3}>
+          <VStack flex={1} align="stretch" spacing={3} h="full">
             <HStack minH="8">
               <Text fontSize="sm" fontWeight="medium" color="text.secondary">
                 Output ({targetFormat.toUpperCase()})
@@ -141,7 +156,8 @@ export const ConverterToolComponent: React.FC<BaseToolProps> = ({
             </HStack>
             <Textarea
               variant="output"
-              minH="400px"
+              h="full"
+              minH="tool.textarea.min"
               value={String(outputs.result || "")}
               placeholder="Converted output..."
             />

@@ -338,7 +338,7 @@ strapd copy | strapd str upper | strapd paste`}
                   },
                   {
                     icon: "🔄",
-                    title: "YAML ⇄ JSON",
+                    title: "YAML ⇄ JSON, XML ⇄ JSON",
                     desc: "Bidirectional conversion",
                   },
                   { icon: "🔒", title: "Security", desc: "Hash, HMAC" },

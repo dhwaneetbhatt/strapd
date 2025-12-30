@@ -27,7 +27,7 @@ It's primarily CLI-focused, but also includes a webapp interface for those who p
 - **Identifiers**: UUIDs (v4, v7), ULIDs
 - **Encoding**: Base64, URL, Hex
 - **Data Formatting**: JSON, YAML, XML, SQL (beautify, minify, sort)
-- **Format Conversion**: YAML ⇄ JSON
+- **Format Conversion**: YAML ⇄ JSON, XML ⇄ JSON
 - **Security**: Hash (MD5, SHA-1, SHA-256, SHA-512), HMAC (SHA-256, SHA-512)
 - **Random**: numbers, strings
 - **Date/Time**: timestamps

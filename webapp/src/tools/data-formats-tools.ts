@@ -84,15 +84,17 @@ export const xmlTool: Tool = {
 const converterToolDefinition: ToolDefinition = {
   id: "data-formats-converter",
   name: "Format Converter",
-  description: "Convert between JSON, YAML, XML",
+  description: "Convert between JSON, YAML, and XML formats",
   category: "dataFormats",
-  aliases: ["convert", "converter", "transform", "json", "yaml"],
+  aliases: ["convert", "converter", "transform", "json", "yaml", "xml"],
   component: ConverterToolComponent,
   operation: (inputs) => {
     const text = String(inputs.text || "");
     const sourceFormat = String(inputs.sourceFormat || "auto");
     const targetFormat = String(inputs.targetFormat || "yaml");
     const detectedFormat = String(inputs.detectedFormat || "unknown");
+    const rootName = inputs.rootName ? String(inputs.rootName) : undefined;
+    const minify = Boolean(inputs.minify);
 
     // Return empty result if no input
     if (!text.trim()) {
@@ -108,6 +110,7 @@ const converterToolDefinition: ToolDefinition = {
       text,
       actualSource as DataFormat,
       targetFormat as DataFormat,
+      { rootName, minify },
     );
   },
 };
