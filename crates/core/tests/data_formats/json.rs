@@ -1,4 +1,4 @@
-use strapd_core::data_formats::json::{convert_to_yaml, sort};
+use strapd_core::data_formats::json::{convert_to_xml, convert_to_yaml, sort};
 
 #[test]
 fn test_sort_simple_object() {
@@ -390,4 +390,161 @@ fn test_convert_large_object_to_yaml() {
     assert!(result.contains("- metrics"));
     assert!(result.contains("debug: true"));
     assert!(result.contains("version: 1.0.0"));
+}
+
+// Tests for convert_to_xml
+#[test]
+fn test_convert_simple_object_to_xml() {
+    let input = r#"{"name": "John", "age": 30}"#;
+    let result = convert_to_xml(input, None).unwrap();
+
+    // Verify XML structure
+    assert!(result.starts_with("<root>"));
+    assert!(result.ends_with("</root>"));
+    // Verify hierarchy: name and age are direct children of root
+    assert!(result.contains("<name>John</name>"));
+    assert!(result.contains("<age>30</age>"));
+    // Verify they're within root tags
+    let root_content = result
+        .trim_start_matches("<root>")
+        .trim_end_matches("</root>");
+    assert!(root_content.contains("<name>John</name>"));
+    assert!(root_content.contains("<age>30</age>"));
+}
+
+#[test]
+fn test_convert_to_xml_with_custom_root() {
+    let input = r#"{"name": "Alice"}"#;
+    let result = convert_to_xml(input, Some("person")).unwrap();
+
+    // Verify custom root element
+    assert!(result.starts_with("<person>"));
+    assert!(result.ends_with("</person>"));
+    assert!(!result.contains("<root>"));
+    // Verify content is inside person element
+    assert!(result.contains("<name>Alice</name>"));
+}
+
+#[test]
+fn test_convert_nested_to_xml() {
+    let input = r#"{"user": {"name": "Bob", "email": "bob@example.com"}}"#;
+    let result = convert_to_xml(input, None).unwrap();
+
+    // Verify hierarchy: auto-detect uses "user" as root since it's single-key object
+    assert!(result.starts_with("<user>"));
+    assert!(result.contains("<name>Bob</name>"));
+    assert!(result.contains("<email>bob@example.com</email>"));
+    assert!(result.ends_with("</user>"));
+
+    // Verify nesting order: name and email come after <user> and before </user>
+    let user_start = result.find("<user>").unwrap();
+    let user_end = result.find("</user>").unwrap();
+    let user_section = &result[user_start..user_end];
+    assert!(user_section.contains("<name>Bob</name>"));
+    assert!(user_section.contains("<email>bob@example.com</email>"));
+}
+
+#[test]
+fn test_convert_array_to_xml() {
+    let input = r#"{"items": [1, 2, 3]}"#;
+    let result = convert_to_xml(input, None).unwrap();
+
+    // Verify multiple items elements exist (array representation)
+    // Auto-detect uses "items" as root since it's single-key object
+    assert!(result.starts_with("<items>"));
+    assert!(result.contains("<items>1</items>"));
+    assert!(result.contains("<items>2</items>"));
+    assert!(result.contains("<items>3</items>"));
+    assert!(result.ends_with("</items>"));
+}
+
+#[test]
+fn test_convert_special_chars_to_xml() {
+    let input = r#"{"text": "Hello & <world>"}"#;
+    let result = convert_to_xml(input, None).unwrap();
+
+    // Verify proper escaping within tag structure
+    assert!(result.contains("<text>"));
+    assert!(result.contains("&amp;"));
+    assert!(result.contains("&lt;"));
+    assert!(result.contains("&gt;"));
+    assert!(result.contains("</text>"));
+    // Verify escaping is within the text tags
+    let text_start = result.find("<text>").unwrap();
+    let text_end = result.find("</text>").unwrap();
+    let text_section = &result[text_start..text_end];
+    assert!(text_section.contains("&amp;"));
+    assert!(text_section.contains("&lt;"));
+    assert!(text_section.contains("&gt;"));
+}
+
+#[test]
+fn test_convert_empty_object_to_xml() {
+    let input = r#"{}"#;
+    let result = convert_to_xml(input, None).unwrap();
+
+    // Empty object should create root element with no children
+    assert!(result.starts_with("<root"));
+    assert!(result.ends_with("</root>"));
+    // Verify no content between tags
+    let root_content = result
+        .trim_start_matches("<root")
+        .trim_start_matches(">")
+        .trim_end_matches("</root>")
+        .trim();
+    assert!(root_content.is_empty());
+}
+
+#[test]
+fn test_convert_boolean_to_xml() {
+    let input = r#"{"active": true, "deleted": false}"#;
+    let result = convert_to_xml(input, None).unwrap();
+
+    // Verify boolean values are properly wrapped
+    assert!(result.contains("<active>true</active>"));
+    assert!(result.contains("<deleted>false</deleted>"));
+    assert!(result.starts_with("<root>"));
+    assert!(result.ends_with("</root>"));
+}
+
+#[test]
+fn test_convert_null_to_xml() {
+    let input = r#"{"value": null}"#;
+    let result = convert_to_xml(input, None).unwrap();
+
+    // Null should be self-closing tag
+    // Auto-detect uses "value" as root since it's single-key object
+    assert!(result.starts_with("<value"));
+    assert!(result.contains("/>"));
+}
+
+#[test]
+fn test_convert_invalid_json_to_xml() {
+    let input = r#"{"invalid": json}"#;
+    let result = convert_to_xml(input, None);
+    assert!(result.is_err());
+}
+
+#[test]
+fn test_convert_multi_key_object_to_xml() {
+    let input = r#"{"name": "John", "age": 30}"#;
+    let result = convert_to_xml(input, None).unwrap();
+
+    // Multiple keys: should use default root since no single key to use
+    assert!(result.starts_with("<root>"));
+    assert!(result.ends_with("</root>"));
+    assert!(result.contains("<name>John</name>"));
+    assert!(result.contains("<age>30</age>"));
+}
+
+#[test]
+fn test_convert_top_level_array_to_xml() {
+    let input = r#"[{"id": 1}, {"id": 2}]"#;
+    let result = convert_to_xml(input, None).unwrap();
+
+    // Top-level array: should use default root wrapper
+    assert!(result.starts_with("<root>"));
+    assert!(result.ends_with("</root>"));
+    assert!(result.contains("<id>1</id>"));
+    assert!(result.contains("<id>2</id>"));
 }

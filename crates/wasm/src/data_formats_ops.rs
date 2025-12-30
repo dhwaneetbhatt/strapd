@@ -48,3 +48,19 @@ pub fn yaml_to_json(input: &str) -> String {
         Err(e) => format!("Error: {}", e),
     }
 }
+
+#[wasm_bindgen]
+pub fn json_to_xml(input: &str, root: Option<String>) -> String {
+    match data_formats::json::convert_to_xml(input, root.as_deref()) {
+        Ok(result) => result,
+        Err(e) => format!("Error: {}", e),
+    }
+}
+
+#[wasm_bindgen]
+pub fn xml_to_json(input: &str) -> String {
+    match data_formats::xml::convert_to_json(input) {
+        Ok(result) => result,
+        Err(e) => format!("Error: {}", e),
+    }
+}
