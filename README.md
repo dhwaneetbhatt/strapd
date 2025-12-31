@@ -40,8 +40,11 @@ Head over to the [webapp](https://dhwaneetbhatt.com/strapd/) for an interactive 
 ### Homebrew (macOS/Linux)
 
 ```bash
-# Install directly from the formula in this repo
-brew install --build-from-source Formula/strapd.rb
+# Add the tap
+brew tap dhwaneetbhatt/tap
+
+# Install strapd
+brew install strapd
 ```
 
 ### Quick Install Script
