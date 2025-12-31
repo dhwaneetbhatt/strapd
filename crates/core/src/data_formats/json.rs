@@ -1,3 +1,4 @@
+use crate::data_formats::xml;
 use json::{self as json_builtin, JsonValue};
 use yaml_rust::{YamlEmitter, yaml::Hash, yaml::Yaml};
 
@@ -41,6 +42,33 @@ pub fn convert_to_yaml(input: &str) -> Result<String, String> {
     Ok(output)
 }
 
+pub fn convert_to_xml(input: &str, root_name: Option<&str>) -> Result<String, String> {
+    let parsed = json_builtin::parse(input).map_err(|e| format!("Invalid JSON input: {e}"))?;
+
+    if let Some(provided_root) = root_name {
+        json_to_xml(&parsed, provided_root)
+    } else {
+        match &parsed {
+            JsonValue::Object(_) => {
+                let mut entries_iter = parsed.entries();
+                if let Some((key, value)) = entries_iter.next() {
+                    if entries_iter.next().is_none() {
+                        // Single key object: use the key as root and pass the value
+                        json_to_xml(value, key)
+                    } else {
+                        // Multiple keys: use default root with full object
+                        json_to_xml(&parsed, "root")
+                    }
+                } else {
+                    // Empty object: use default root
+                    json_to_xml(&parsed, "root")
+                }
+            }
+            _ => json_to_xml(&parsed, "root"),
+        }
+    }
+}
+
 fn sort_json_keys(value: &JsonValue) -> JsonValue {
     match value {
         JsonValue::Object(_) => {
@@ -75,20 +103,110 @@ fn json_to_yaml(value: &JsonValue) -> Result<Yaml, String> {
             }
             Ok(Yaml::Hash(hash))
         }
-        JsonValue::Array(_) => {
-            let array: Result<Vec<Yaml>, String> = value.members().map(json_to_yaml).collect();
-            Ok(Yaml::Array(array?))
-        }
+        JsonValue::Array(_) => Ok(Yaml::Array(
+            value
+                .members()
+                .map(json_to_yaml)
+                .collect::<Result<_, _>>()?,
+        )),
         JsonValue::String(s) => Ok(Yaml::String(s.to_string())),
-        JsonValue::Number(n) => {
-            // Try to parse as integer first, then fall back to real
-            match n.to_string().parse::<i64>() {
-                Ok(i) => Ok(Yaml::Integer(i)),
-                Err(_) => Ok(Yaml::Real(n.to_string())),
-            }
-        }
+        JsonValue::Number(n) => match n.to_string().parse::<i64>() {
+            Ok(i) => Ok(Yaml::Integer(i)),
+            Err(_) => Ok(Yaml::Real(n.to_string())),
+        },
         JsonValue::Boolean(b) => Ok(Yaml::Boolean(*b)),
         JsonValue::Null => Ok(Yaml::Null),
         JsonValue::Short(s) => Ok(Yaml::String(s.to_string())),
+    }
+}
+
+fn json_to_xml(value: &JsonValue, key: &str) -> Result<String, String> {
+    let escaped_key = xml::escape(key);
+
+    match value {
+        JsonValue::Object(_) => {
+            let mut xml = String::with_capacity(256);
+            xml.push('<');
+            xml.push_str(&escaped_key);
+            xml.push('>');
+            for (k, v) in value.entries() {
+                xml.push_str(&json_to_xml(v, k)?);
+            }
+            xml.push_str("</");
+            xml.push_str(&escaped_key);
+            xml.push('>');
+            Ok(xml)
+        }
+        JsonValue::Array(_) => {
+            let items: Vec<String> = value
+                .members()
+                .map(|item| json_to_xml(item, key))
+                .collect::<Result<Vec<String>, String>>()?;
+
+            if items.is_empty() {
+                let mut xml = String::with_capacity(escaped_key.len() + 5);
+                xml.push('<');
+                xml.push_str(&escaped_key);
+                xml.push_str(" />");
+                Ok(xml)
+            } else {
+                Ok(items.join(""))
+            }
+        }
+        JsonValue::String(s) => {
+            let escaped_s = xml::escape(s);
+            let mut xml = String::with_capacity(escaped_key.len() * 2 + escaped_s.len() + 5);
+            xml.push('<');
+            xml.push_str(&escaped_key);
+            xml.push('>');
+            xml.push_str(&escaped_s);
+            xml.push_str("</");
+            xml.push_str(&escaped_key);
+            xml.push('>');
+            Ok(xml)
+        }
+        JsonValue::Number(n) => {
+            let n_str = n.to_string();
+            let mut xml = String::with_capacity(escaped_key.len() * 2 + n_str.len() + 5);
+            xml.push('<');
+            xml.push_str(&escaped_key);
+            xml.push('>');
+            xml.push_str(&n_str);
+            xml.push_str("</");
+            xml.push_str(&escaped_key);
+            xml.push('>');
+            Ok(xml)
+        }
+        JsonValue::Boolean(b) => {
+            let b_str = b.to_string();
+            let mut xml = String::with_capacity(escaped_key.len() * 2 + b_str.len() + 5);
+            xml.push('<');
+            xml.push_str(&escaped_key);
+            xml.push('>');
+            xml.push_str(&b_str);
+            xml.push_str("</");
+            xml.push_str(&escaped_key);
+            xml.push('>');
+            Ok(xml)
+        }
+        JsonValue::Null => {
+            let mut xml = String::with_capacity(escaped_key.len() + 5);
+            xml.push('<');
+            xml.push_str(&escaped_key);
+            xml.push_str(" />");
+            Ok(xml)
+        }
+        JsonValue::Short(s) => {
+            let escaped_s = xml::escape(s);
+            let mut xml = String::with_capacity(escaped_key.len() * 2 + escaped_s.len() + 5);
+            xml.push('<');
+            xml.push_str(&escaped_key);
+            xml.push('>');
+            xml.push_str(&escaped_s);
+            xml.push_str("</");
+            xml.push_str(&escaped_key);
+            xml.push('>');
+            Ok(xml)
+        }
     }
 }

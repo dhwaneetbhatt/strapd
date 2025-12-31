@@ -42,6 +42,10 @@ pub enum JsonOperation {
 
         #[arg(short = 't', long = "to")]
         to: String,
+
+        /// Optional root element name for XML conversion (default: "root")
+        #[arg(long = "root")]
+        root: Option<String>,
     },
 }
 
@@ -62,6 +66,14 @@ pub enum XmlOperation {
     Minify {
         /// The string to convert (if not provided, reads from stdin)
         input: Option<String>,
+    },
+    #[command(aliases = ["transform"])]
+    Convert {
+        /// The string to convert (if not provided, reads from stdin)
+        input: Option<String>,
+
+        #[arg(short = 't', long = "to")]
+        to: String,
     },
 }
 

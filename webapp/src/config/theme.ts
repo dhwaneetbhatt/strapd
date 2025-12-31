@@ -256,6 +256,11 @@ const theme = extendTheme({
         _dark: "#2a2a2a", // Slightly lighter than main background for better separation
       },
     },
+    sizes: {
+      // Tool interface heights - calculated to fill viewport minus header and padding
+      "tool.container": "calc(100vh - 180px)",
+      "tool.textarea.min": "300px",
+    },
   },
 
   // Component styles

@@ -53,7 +53,7 @@ export const XmlToolComponent: React.FC<BaseToolProps> = ({
       isProcessing={isProcessing}
       error={error}
     >
-      <VStack spacing={6} align="stretch">
+      <VStack spacing={6} align="stretch" h="full">
         <HStack spacing={8} align="end">
           <FormControl display="flex" alignItems="center" w="auto">
             <FormLabel htmlFor="minify" mb="0">
@@ -87,8 +87,8 @@ export const XmlToolComponent: React.FC<BaseToolProps> = ({
           </FormControl>
         </HStack>
 
-        <HStack spacing={6} align="start">
-          <VStack flex={1} align="stretch" spacing={3}>
+        <HStack spacing={6} align="stretch" flex={1} minH="0">
+          <VStack flex={1} align="stretch" spacing={3} h="full">
             <HStack minH="8">
               <Text fontSize="sm" fontWeight="medium" color="text.secondary">
                 XML Input
@@ -99,7 +99,8 @@ export const XmlToolComponent: React.FC<BaseToolProps> = ({
               data-testid="tool-default-input"
               ref={inputRef}
               variant="input"
-              minH="400px"
+              h="full"
+              minH="tool.textarea.min"
               value={String(inputs.text || "")}
               onChange={(e) => {
                 updateInput("text", e.target.value);
@@ -107,7 +108,7 @@ export const XmlToolComponent: React.FC<BaseToolProps> = ({
               placeholder="Enter XML to format..."
             />
           </VStack>
-          <VStack flex={1} align="stretch" spacing={3}>
+          <VStack flex={1} align="stretch" spacing={3} h="full">
             <HStack minH="8">
               <Text fontSize="sm" fontWeight="medium" color="text.secondary">
                 Result
@@ -117,7 +118,8 @@ export const XmlToolComponent: React.FC<BaseToolProps> = ({
             </HStack>
             <Textarea
               variant="output"
-              minH="400px"
+              h="full"
+              minH="tool.textarea.min"
               value={String(outputs.result || "")}
               placeholder="Result..."
             />

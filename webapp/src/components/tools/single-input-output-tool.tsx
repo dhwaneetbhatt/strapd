@@ -43,9 +43,9 @@ export const SingleInputOutputTool: React.FC<SingleInputOutputToolProps> = ({
       isProcessing={isProcessing}
       error={error}
     >
-      <HStack spacing={6} align="start">
+      <HStack spacing={6} align="stretch" flex={1} minH="0">
         {/* Input Section */}
-        <VStack flex={1} align="stretch" spacing={3}>
+        <VStack flex={1} align="stretch" spacing={3} h="full">
           <HStack minH="8">
             <Text fontSize="sm" fontWeight="medium" color="text.secondary">
               {inputLabel}
@@ -68,7 +68,7 @@ export const SingleInputOutputTool: React.FC<SingleInputOutputToolProps> = ({
         </VStack>
 
         {/* Output Section */}
-        <VStack flex={1} align="stretch" spacing={3}>
+        <VStack flex={1} align="stretch" spacing={3} h="full">
           <HStack minH="8">
             <Text fontSize="sm" fontWeight="medium" color="text.secondary">
               {outputLabel}

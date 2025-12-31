@@ -52,6 +52,8 @@ export interface WasmModule {
   xml_minify: (input: string) => string;
   json_to_yaml: (input: string) => string;
   yaml_to_json: (input: string) => string;
+  json_to_xml: (input: string, root: string | null) => string;
+  xml_to_json: (input: string) => string;
 
   // Datetime
   datetime_now: (millis: boolean) => bigint;
@@ -342,6 +344,20 @@ export class WasmWrapper {
     return this.safeWasmCall(
       () => this.wasmModule.yaml_to_json(input),
       'yaml_to_json'
+    );
+  }
+
+  public json_to_xml(input: string, root: string | null): ToolResult {
+    return this.safeWasmCall(
+      () => this.wasmModule.json_to_xml(input, root),
+      'json_to_xml'
+    );
+  }
+
+  public xml_to_json(input: string): ToolResult {
+    return this.safeWasmCall(
+      () => this.wasmModule.xml_to_json(input),
+      'xml_to_json'
     );
   }
 

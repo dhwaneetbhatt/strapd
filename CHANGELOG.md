@@ -14,6 +14,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
   - Added `HOMEBREW.md` documentation for maintainers
   - Added Makefile targets: `brew-formula-check` and `brew-update-checksums`
 - Updated README.md with Homebrew installation instructions
+## [v1.2.0] - 2025-12-30
+
+### cli
+
+- feat: add support for bidirectional XML ⇄ JSON format conversion.
+
+### webapp
+
+- feat: add XML ⇄ JSON format conversion tool.
+- fix: fix styling issues in webapp for better user experience.
 
 ## [v1.1.2] - 2025-12-26
 

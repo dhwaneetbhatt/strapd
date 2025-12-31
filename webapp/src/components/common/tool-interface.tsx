@@ -35,9 +35,9 @@ export const ToolInterface: React.FC<ToolInterfaceProps> = ({
   const ToolComponent = toolDefinition.component;
 
   return (
-    <Box w="full">
+    <VStack w="full" h="tool.container" align="stretch" spacing={6}>
       {/* Tool Header */}
-      <VStack align="stretch" spacing={4} mb={6}>
+      <VStack align="stretch" spacing={4}>
         <HStack spacing={3}>
           <Text fontSize="2xl">{getCategoryIcon(tool.category)}</Text>
           <Heading size="lg" color="text.primary">
@@ -50,11 +50,13 @@ export const ToolInterface: React.FC<ToolInterfaceProps> = ({
         <Divider />
       </VStack>
 
-      <ToolComponent
-        tool={toolDefinition}
-        initialInputs={initialInput || {}}
-        onInputChange={onInputChange}
-      />
-    </Box>
+      <Box flex={1} minH="0">
+        <ToolComponent
+          tool={toolDefinition}
+          initialInputs={initialInput || {}}
+          onInputChange={onInputChange}
+        />
+      </Box>
+    </VStack>
   );
 };
