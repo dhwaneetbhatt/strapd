@@ -37,7 +37,17 @@ Head over to the [webapp](https://dhwaneetbhatt.com/strapd/) for an interactive 
 
 ## CLI Installation
 
-### Quick Install (Recommended)
+### Homebrew (macOS/Linux)
+
+```bash
+# Add the tap
+brew tap dhwaneetbhatt/tap
+
+# Install strapd
+brew install strapd
+```
+
+### Quick Install Script
 
 #### Unix/Linux/macOS
 
