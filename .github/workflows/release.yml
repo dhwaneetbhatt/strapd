@@ -34,7 +34,7 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
 
       - name: Build Rust ${{ matrix.platform.target }} binary
         uses: houseabsolute/actions-rust-cross@v1
@@ -60,7 +60,7 @@ jobs:
           rm strapd.exe
 
       - name: Upload artifacts
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v6
         with:
           name: ${{ matrix.platform.name }}
           path: target/${{ matrix.platform.target }}/release/${{ matrix.platform.name }}
@@ -71,10 +71,10 @@ jobs:
     needs: build
     steps:
       - name: Checkout code
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
 
       - name: Download all artifacts
-        uses: actions/download-artifact@v5
+        uses: actions/download-artifact@v6
         with:
           path: artifacts
 
@@ -92,3 +92,44 @@ jobs:
           draft: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Checkout Homebrew Tap
+        uses: actions/checkout@v6
+        with:
+          repository: dhwaneetbhatt/homebrew-tap
+          path: homebrew-tap
+          token: ${{ secrets.GH_PAT }}
+
+      - name: Update Formula
+        env:
+          TAG_NAME: ${{ github.event.inputs.tag || github.ref_name }}
+        run: |
+          # Calculate SHAs
+          export MACOS_SHA_AARCH64=$(shasum -a 256 release/strapd-macos-aarch64.tar.gz | awk '{print $1}')
+          export MACOS_SHA_X86_64=$(shasum -a 256 release/strapd-macos-x86_64.tar.gz | awk '{print $1}')
+          export LINUX_SHA_AARCH64=$(shasum -a 256 release/strapd-linux-aarch64.tar.gz | awk '{print $1}')
+          export LINUX_SHA_X86_64=$(shasum -a 256 release/strapd-linux-x86_64.tar.gz | awk '{print $1}')
+          
+          echo "Updates for Tag: $TAG_NAME"
+          echo "  MacOS Aarch64: $MACOS_SHA_AARCH64"
+          echo "  MacOS x86_64:  $MACOS_SHA_X86_64"
+          echo "  Linux Aarch64: $LINUX_SHA_AARCH64"
+          echo "  Linux x86_64:  $LINUX_SHA_X86_64"
+
+          # Run the update script
+          python3 scripts/update_homebrew_formula.py
+
+      - name: Create Pull Request for Tap
+        uses: peter-evans/create-pull-request@v8
+        with:
+          token: ${{ secrets.GH_PAT }}
+          path: homebrew-tap
+          commit-message: "chore: bump strapd to ${{ github.event.inputs.tag || github.ref_name }}"
+          title: "chore: bump strapd to ${{ github.event.inputs.tag || github.ref_name }}"
+          body: |
+            Automated PR to update strapd version to ${{ github.event.inputs.tag || github.ref_name }}.
+            
+            Use `brew install --build-from-source` to test if artifacts are not yet public.
+          branch: "bump-strapd-${{ github.event.inputs.tag || github.ref_name }}"
+          base: main
+          labels: "automation"

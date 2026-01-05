@@ -124,19 +124,3 @@ install-hooks:
 	cp scripts/pre-commit .git/hooks/pre-commit
 	chmod +x .git/hooks/pre-commit
 	@echo "✅ Pre-commit hooks installed successfully!"
-
-# -------------------
-# Homebrew
-# -------------------
-
-# Check Homebrew formula syntax
-brew-formula-check:
-	@echo "Checking Homebrew formula syntax..."
-	@ruby -c Formula/strapd.rb
-	@echo "✅ Formula syntax is valid!"
-
-# Update Homebrew formula checksums from latest release
-brew-update-checksums:
-	@echo "Updating Homebrew formula checksums..."
-	@./scripts/update-formula-checksums.sh
-	@echo "✅ Formula checksums updated!"
