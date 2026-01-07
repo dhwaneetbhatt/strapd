@@ -82,4 +82,10 @@ pub enum Commands {
         input: Option<String>,
     },
     Paste {},
+    /// Evaluate a mathematical expression
+    #[command(aliases = ["calculate", "eval"])]
+    Calc {
+        /// Mathematical expression to evaluate (if not provided, reads from stdin)
+        expression: Option<String>,
+    },
 }
