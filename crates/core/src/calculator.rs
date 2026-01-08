@@ -391,7 +391,7 @@ fn power(left: Number, right: Number) -> Result<Number, String> {
             // Handle special cases for mathematical correctness
             if a == 0 {
                 if b == 0 {
-                    // 0^0 is mathematically undefined but conventionally 1
+                    // 0^0 is often defined as 1 by convention in discrete mathematics and programming contexts
                     return Ok(Number::Int(1));
                 } else if b < 0 {
                     // 0^negative is undefined (division by zero)
@@ -420,6 +420,13 @@ fn power(left: Number, right: Number) -> Result<Number, String> {
                         }
                     })
             }
+        }
+        (Number::Int(a), Number::Float(b)) if a < 0 && b.fract() != 0.0 => {
+            // Negative base with fractional exponent is complex (not supported)
+            Err(
+                "Complex numbers not supported (negative base with fractional exponent)"
+                    .to_string(),
+            )
         }
         (Number::Float(a), Number::Float(b)) if a < 0.0 && b.fract() != 0.0 => {
             // Negative base with fractional exponent is complex (not supported)

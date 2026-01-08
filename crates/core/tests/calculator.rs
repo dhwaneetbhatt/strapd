@@ -91,6 +91,31 @@ fn test_exponentiation_negative_exponent() {
     assert!((float_result - 0.125).abs() < 0.0001);
 }
 
+#[test]
+fn test_exponentiation_negative_base_fractional_exponent() {
+    // Test Int base with Float exponent (bug caught by Copilot)
+    let result = calculator::evaluate("(-2)^2.5");
+    assert!(result.is_err());
+    assert!(
+        result
+            .unwrap_err()
+            .contains("Complex numbers not supported")
+    );
+
+    // Test Float base with Float exponent
+    let result = calculator::evaluate("(-2.0)^2.5");
+    assert!(result.is_err());
+    assert!(
+        result
+            .unwrap_err()
+            .contains("Complex numbers not supported")
+    );
+
+    // But integer exponents should work fine
+    assert_eq!(calculator::evaluate("(-2)^2"), Ok("4".to_string()));
+    assert_eq!(calculator::evaluate("(-2)^3"), Ok("-8".to_string()));
+}
+
 // ========== Operator Precedence Tests ==========
 
 #[test]
