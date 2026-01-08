@@ -6,14 +6,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
-### Added
+### cli
 
-- **Homebrew support**: Added Homebrew formula for easy installation on macOS and Linux
-  - Created `Formula/strapd.rb` with support for Intel and ARM architectures
-  - Added `scripts/update-formula-checksums.sh` to automate formula updates
-  - Added `HOMEBREW.md` documentation for maintainers
-  - Added Makefile targets: `brew-formula-check` and `brew-update-checksums`
-- Updated README.md with Homebrew installation instructions
+- **Calculator**: Mathematical expression evaluator as foundation for unit conversions
+  - CLI command: `strapd calc <expression>` (aliases: `calculate`, `eval`)
+- **Homebrew support**: Updated README.md with Homebrew installation instructions
+
 ## [v1.2.0] - 2025-12-30
 
 ### cli
