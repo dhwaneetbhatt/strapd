@@ -5,8 +5,9 @@ mod args;
 mod handlers;
 use args::{Cli, Commands};
 use handlers::{
-    calculator_handler, clipboard_handler, data_formats_handler, datetime_handler,
-    encoding_handler, identifiers_handler, random_handler, security_handler, string_handler,
+    calculator_handler, clipboard_handler, conversion_handler, data_formats_handler,
+    datetime_handler, encoding_handler, identifiers_handler, random_handler, security_handler,
+    string_handler,
 };
 
 fn main() {
@@ -30,6 +31,7 @@ fn main() {
         Commands::Copy { input } => clipboard_handler::handle_copy(input),
         Commands::Paste {} => clipboard_handler::handle_paste(),
         Commands::Calc { expression } => calculator_handler::handle(expression),
+        Commands::Convert(args) => conversion_handler::handle(args),
     };
 
     match result {
