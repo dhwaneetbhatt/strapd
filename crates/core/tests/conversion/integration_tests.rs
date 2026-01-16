@@ -1,4 +1,5 @@
-use strapd_core::conversion::{ConversionRequest, convert, convert_to_all};
+use strapd_core::conversion::engine::{convert, convert_to_all};
+use strapd_core::conversion::types::ConversionRequest;
 
 // ============================================================================
 // Convert to All Tests

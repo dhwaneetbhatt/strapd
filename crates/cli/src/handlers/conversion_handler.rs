@@ -6,15 +6,15 @@ use strapd_core::conversion;
 
 pub fn handle(args: &ConvertArgs) -> CommandResult {
     let expression = build_expression(&args.expression)?;
-    let request = conversion::parse_input(&expression)?;
+    let request = conversion::parser::parse_input(&expression)?;
 
     let results = if args.all {
-        conversion::convert_to_all(request.value, &request.from_unit)?
+        conversion::engine::convert_to_all(request.value, &request.from_unit)?
     } else {
-        vec![conversion::convert(&request)?]
+        vec![conversion::engine::convert(&request)?]
     };
 
-    let output = conversion::format_output(&results, args.precision)?;
+    let output = conversion::formatter::format_output(&results, args.precision)?;
     text_result(output)
 }
 

@@ -1,4 +1,5 @@
-use strapd_core::conversion::{ConversionRequest, convert};
+use strapd_core::conversion::engine::convert;
+use strapd_core::conversion::types::ConversionRequest;
 
 #[test]
 fn test_convert_cross_category_error() {

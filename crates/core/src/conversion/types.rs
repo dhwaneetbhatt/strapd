@@ -303,8 +303,18 @@ pub fn get_units_in_category(category: UnitCategory) -> Vec<&'static Unit> {
         .collect();
 
     // Deduplicate by canonical name
-    units.sort_by_key(|u| u.canonical_name);
     units.dedup_by_key(|u| u.canonical_name);
+
+    // Sort by size (to_base_multiplier) for proper ordering
+    // For temperature units (no multiplier), sort by canonical name
+    units.sort_by(|a, b| match (a.to_base_multiplier, b.to_base_multiplier) {
+        (Some(a_mult), Some(b_mult)) => a_mult
+            .partial_cmp(&b_mult)
+            .unwrap_or(std::cmp::Ordering::Equal),
+        (None, None) => a.canonical_name.cmp(b.canonical_name),
+        (Some(_), None) => std::cmp::Ordering::Less,
+        (None, Some(_)) => std::cmp::Ordering::Greater,
+    });
 
     units
 }

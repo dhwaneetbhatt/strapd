@@ -1,4 +1,4 @@
-use strapd_core::conversion::parse_input;
+use strapd_core::conversion::parser::parse_input;
 
 #[test]
 fn test_parse_with_to_keyword() {

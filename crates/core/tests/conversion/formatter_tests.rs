@@ -1,4 +1,5 @@
-use strapd_core::conversion::{ConversionResult, format_output};
+use strapd_core::conversion::formatter::format_output;
+use strapd_core::conversion::types::ConversionResult;
 
 #[test]
 fn test_format_default() {

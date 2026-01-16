@@ -1,4 +1,5 @@
-use strapd_core::conversion::{ConversionRequest, convert};
+use strapd_core::conversion::engine::convert;
+use strapd_core::conversion::types::ConversionRequest;
 
 // ============================================================================
 // Length Conversion Tests
