@@ -313,7 +313,7 @@ fn build_unit_registry() -> HashMap<String, Unit> {
         },
     ];
 
-    // Register all units
+    // Register all units (except data rate) with lowercase normalization
     for unit in bytes_units
         .into_iter()
         .chain(time_units)
@@ -329,7 +329,9 @@ fn build_unit_registry() -> HashMap<String, Unit> {
         }
     }
 
-    // Register data rate units with case sensitivity preserved for bytes-based units
+    // Register data rate units separately with case preserved
+    // Note: datarate_units is NOT in the chain above - this is intentional!
+    // Data rate units need case sensitivity: mbps (megabits/sec) vs MBps (megabytes/sec)
     for unit in datarate_units {
         // For data rate, preserve case to distinguish bits (lowercase b) from bytes (uppercase B)
         registry.insert(unit.canonical_name.to_string(), unit.clone());
