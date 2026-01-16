@@ -1,3 +1,14 @@
+//! Parser for unit conversion expressions.
+//!
+//! Supports multiple input formats:
+//! - With separator: "10 km to mi", "10 km in mi"
+//! - Without separator: "10 km mi", "10km mi"
+//! - Concatenated: "10km", "1.5mb"
+//!
+//! **Limitations**:
+//! - Scientific notation in concatenated format is not supported (e.g., "1e6km" will fail)
+//! - Use whitespace-separated format for scientific notation (e.g., "1e6 km" works)
+
 use super::types::{ConversionRequest, find_unit};
 
 pub fn parse_input(expression: &str) -> Result<ConversionRequest, String> {

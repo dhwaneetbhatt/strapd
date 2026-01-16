@@ -4,16 +4,16 @@ pub fn format_output(
     results: &[ConversionResult],
     explain: bool,
     precision: Option<usize>,
-) -> String {
+) -> Result<String, String> {
     if results.is_empty() {
-        return String::new();
+        return Ok(String::new());
     }
 
     // Validate precision
     if let Some(p) = precision
         && p > 10
     {
-        return "Error: precision must be 0-10".to_string();
+        return Err("Precision must be between 0 and 10".to_string());
     }
 
     // Pre-allocate capacity to avoid reallocations
@@ -37,7 +37,7 @@ pub fn format_output(
         lines.push(line);
     }
 
-    lines.join("\n")
+    Ok(lines.join("\n"))
 }
 
 fn format_value(value: f64, precision: Option<usize>) -> String {

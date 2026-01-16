@@ -14,10 +14,17 @@ pub fn handle(args: &ConvertArgs) -> CommandResult {
         vec![conversion::convert(&request)?]
     };
 
-    let output = conversion::format_output(&results, args.explain, args.precision);
+    let output = conversion::format_output(&results, args.explain, args.precision)?;
     text_result(output)
 }
 
+/// Builds the conversion expression from stdin and/or command-line args.
+///
+/// Supports three input modes:
+/// 1. Args only: `strapd convert "10 km to mi"` - use args as full expression
+/// 2. Stdin only: `echo "10 km to mi" | strapd convert` - use stdin as full expression
+/// 3. Combined: `echo "10 km" | strapd convert "mi"` - concatenate stdin + args
+///    Example: stdin="10 km", args=["mi"] -> "10 km mi"
 fn build_expression(args: &[String]) -> Result<String, String> {
     let mut stdin_content = read_stdin_if_piped()?;
     let has_stdin = !stdin_content.is_empty();
