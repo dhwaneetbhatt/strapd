@@ -19,15 +19,25 @@ pub fn handle(args: &ConvertArgs) -> CommandResult {
 }
 
 fn build_expression(args: &[String]) -> Result<String, String> {
-    let args_str = args.join(" ");
-    let stdin_content = read_stdin_if_piped()?;
+    let mut stdin_content = read_stdin_if_piped()?;
+    let has_stdin = !stdin_content.is_empty();
+    let has_args = !args.is_empty();
 
-    match (args_str.is_empty(), stdin_content.is_empty()) {
-        (true, false) => Ok(stdin_content),
-        (false, true) => Ok(args_str),
-        (false, false) => Ok(format!("{} {}", stdin_content, args_str)),
-        (true, true) => {
-            Err("No input provided. Provide expression as argument or via stdin.".to_string())
-        }
+    if !has_stdin && !has_args {
+        return Err("No input provided. Provide expression as argument or via stdin.".to_string());
     }
+
+    if !has_stdin {
+        return Ok(args.join(" "));
+    }
+
+    if !has_args {
+        return Ok(stdin_content);
+    }
+
+    // Both stdin and args present - combine them
+    let args_str = args.join(" ");
+    stdin_content.push(' ');
+    stdin_content.push_str(&args_str);
+    Ok(stdin_content)
 }

@@ -253,7 +253,7 @@ fn build_unit_registry() -> HashMap<String, Unit> {
         },
         Unit {
             canonical_name: "k",
-            aliases: &["kelvin", "°k", "°K"],
+            aliases: &["kelvin", "K"],
             category: UnitCategory::Temperature,
             to_base_multiplier: None,
         },
