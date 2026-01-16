@@ -59,6 +59,11 @@ export interface WasmModule {
   datetime_now: (millis: boolean) => bigint;
   datetime_from_timestamp: (timestamp: bigint, format: string) => string;
   datetime_from_timestamp_millis: (timestamp: bigint, format: string) => string;
+
+  // Unit Conversion
+  convert: (value: number, from_unit: string, to_unit: string) => string;
+  get_units_in_category: (category: string) => string;
+  convert_all: (value: number, from_unit: string) => string;
 }
 
 export class WasmWrapper {
@@ -380,6 +385,28 @@ export class WasmWrapper {
     return this.safeWasmCall(
       () => this.wasmModule.datetime_from_timestamp_millis(BigInt(timestamp), format),
       'datetime_from_timestamp_millis'
+    );
+  }
+
+  // Unit Conversion
+  public convert(value: number, from_unit: string, to_unit: string): ToolResult {
+    return this.safeWasmCall(
+      () => this.wasmModule.convert(value, from_unit, to_unit),
+      'convert'
+    );
+  }
+
+  public get_units_in_category(category: string): ToolResult {
+    return this.safeWasmCall(
+      () => this.wasmModule.get_units_in_category(category),
+      'get_units_in_category'
+    );
+  }
+
+  public convert_all(value: number, from_unit: string): ToolResult {
+    return this.safeWasmCall(
+      () => this.wasmModule.convert_all(value, from_unit),
+      'convert_all'
     );
   }
 }
