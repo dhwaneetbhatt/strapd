@@ -8,10 +8,6 @@ pub struct ConvertArgs {
     /// Note: Flags can be placed before or after the expression
     pub expression: Vec<String>,
 
-    /// Show conversion formula in output
-    #[arg(short = 'e', long)]
-    pub explain: bool,
-
     /// Convert to all equivalent units in the category
     #[arg(short = 'a', long)]
     pub all: bool,

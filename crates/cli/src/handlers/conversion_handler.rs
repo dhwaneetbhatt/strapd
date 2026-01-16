@@ -14,7 +14,7 @@ pub fn handle(args: &ConvertArgs) -> CommandResult {
         vec![conversion::convert(&request)?]
     };
 
-    let output = conversion::format_output(&results, args.explain, args.precision)?;
+    let output = conversion::format_output(&results, args.precision)?;
     text_result(output)
 }
 

@@ -2,7 +2,6 @@ use super::types::ConversionResult;
 
 pub fn format_output(
     results: &[ConversionResult],
-    explain: bool,
     precision: Option<usize>,
 ) -> Result<String, String> {
     if results.is_empty() {
@@ -21,19 +20,7 @@ pub fn format_output(
 
     for result in results {
         let formatted_value = format_value(result.output_value, precision);
-
-        let line = if explain {
-            format!(
-                "{} {} = {} {}",
-                format_value(result.input_value, None),
-                result.input_unit,
-                formatted_value,
-                result.output_unit
-            )
-        } else {
-            format!("{} {}", formatted_value, result.output_unit)
-        };
-
+        let line = format!("{} {}", formatted_value, result.output_unit);
         lines.push(line);
     }
 

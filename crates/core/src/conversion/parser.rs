@@ -39,20 +39,28 @@ pub fn parse_input(expression: &str) -> Result<ConversionRequest, String> {
             // No separator: try to parse all tokens as value+unit first
             // If that succeeds, there's no target unit
             // Otherwise, assume last token is target unit
-            if parse_value_and_unit(&tokens).is_ok() {
-                // Successfully parsed all tokens as value+unit, no target
-                (&tokens[..], &tokens[0..0]) // Empty slice for to_tokens
-            } else if tokens.len() >= 2 {
-                // Multiple tokens, assume last is target: "10 km mi" or "10km mi"
-                let left = &tokens[..tokens.len() - 1];
-                let right = &tokens[tokens.len() - 1..];
-                (left, right)
-            } else {
-                // Not enough tokens and can't parse as value+unit
-                return Err(
-                    "Invalid expression. Expected format: '10 km to mi', '10 km mi', or '10km'"
-                        .to_string(),
-                );
+            match parse_value_and_unit(&tokens) {
+                Ok((value, from_unit)) => {
+                    // Successfully parsed all tokens as value+unit, no target
+                    return Ok(ConversionRequest {
+                        value,
+                        from_unit,
+                        to_unit: None,
+                    });
+                }
+                Err(_) if tokens.len() >= 2 => {
+                    // Multiple tokens, assume last is target: "10 km mi" or "10km mi"
+                    let left = &tokens[..tokens.len() - 1];
+                    let right = &tokens[tokens.len() - 1..];
+                    (left, right)
+                }
+                Err(_) => {
+                    // Not enough tokens and can't parse as value+unit
+                    return Err(
+                        "Invalid expression. Expected format: '10 km to mi', '10 km mi', or '10km'"
+                            .to_string(),
+                    );
+                }
             }
         }
     };
@@ -71,7 +79,7 @@ pub fn parse_input(expression: &str) -> Result<ConversionRequest, String> {
             to_tokens.join(" ").trim().to_string()
         };
 
-        // Validate unit exists (find_unit handles case sensitivity for data rate)
+        // Validate unit exists
         if find_unit(&unit_str).is_none() {
             return Err(format!(
                 "Unknown target unit: '{}'. Please check unit spelling.",

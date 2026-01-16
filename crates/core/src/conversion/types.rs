@@ -7,7 +7,6 @@ pub enum UnitCategory {
     Time,
     Length,
     Temperature,
-    DataRate,
 }
 
 // Unit struct is small (~41 bytes) so cloning is efficient
@@ -259,61 +258,7 @@ fn build_unit_registry() -> HashMap<String, Unit> {
         },
     ];
 
-    // Data Rate
-    let datarate_units = vec![
-        // Bits per second (base unit)
-        Unit {
-            canonical_name: "bps",
-            aliases: &["bit/s", "bits/s"],
-            category: UnitCategory::DataRate,
-            to_base_multiplier: Some(1.0),
-        },
-        Unit {
-            canonical_name: "kbps",
-            aliases: &["kbit/s", "kbits/s"],
-            category: UnitCategory::DataRate,
-            to_base_multiplier: Some(1000.0),
-        },
-        Unit {
-            canonical_name: "mbps",
-            aliases: &["mbit/s", "mbits/s"],
-            category: UnitCategory::DataRate,
-            to_base_multiplier: Some(1_000_000.0),
-        },
-        Unit {
-            canonical_name: "gbps",
-            aliases: &["gbit/s", "gbits/s"],
-            category: UnitCategory::DataRate,
-            to_base_multiplier: Some(1_000_000_000.0),
-        },
-        // Bytes per second (8 bits = 1 byte)
-        Unit {
-            canonical_name: "Bps",
-            aliases: &["B/s", "byte/s", "bytes/s"],
-            category: UnitCategory::DataRate,
-            to_base_multiplier: Some(8.0), // 1 byte/s = 8 bits/s
-        },
-        Unit {
-            canonical_name: "KBps",
-            aliases: &["KB/s", "kilobyte/s", "kilobytes/s"],
-            category: UnitCategory::DataRate,
-            to_base_multiplier: Some(8000.0), // 1000 * 8
-        },
-        Unit {
-            canonical_name: "MBps",
-            aliases: &["MB/s", "megabyte/s", "megabytes/s"],
-            category: UnitCategory::DataRate,
-            to_base_multiplier: Some(8_000_000.0), // 1000000 * 8
-        },
-        Unit {
-            canonical_name: "GBps",
-            aliases: &["GB/s", "gigabyte/s", "gigabytes/s"],
-            category: UnitCategory::DataRate,
-            to_base_multiplier: Some(8_000_000_000.0), // 1000000000 * 8
-        },
-    ];
-
-    // Register all units (except data rate) with lowercase normalization
+    // Register all units with lowercase normalization
     for unit in bytes_units
         .into_iter()
         .chain(time_units)
@@ -329,19 +274,6 @@ fn build_unit_registry() -> HashMap<String, Unit> {
         }
     }
 
-    // Register data rate units separately with case preserved
-    // Note: datarate_units is NOT in the chain above - this is intentional!
-    // Data rate units need case sensitivity: mbps (megabits/sec) vs MBps (megabytes/sec)
-    for unit in datarate_units {
-        // For data rate, preserve case to distinguish bits (lowercase b) from bytes (uppercase B)
-        registry.insert(unit.canonical_name.to_string(), unit.clone());
-
-        // Register aliases with case preserved
-        for alias in unit.aliases {
-            registry.insert(alias.to_string(), unit.clone());
-        }
-    }
-
     registry
 }
 
@@ -353,12 +285,12 @@ pub fn find_unit(unit_str: &str) -> Option<&'static Unit> {
     let registry = get_unit_registry();
     let trimmed = unit_str.trim();
 
-    // Try case-preserved lookup first (for data rate units like MBps vs mbps)
+    // Try case-preserved lookup first
     if let Some(unit) = registry.get(trimmed) {
         return Some(unit);
     }
 
-    // Fall back to lowercase lookup (for all other units)
+    // Fall back to lowercase lookup
     let normalized = trimmed.to_lowercase();
     registry.get(&normalized)
 }

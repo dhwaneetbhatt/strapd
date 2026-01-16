@@ -8,20 +8,8 @@ fn test_format_default() {
         output_value: 6.21371,
         output_unit: "mi".to_string(),
     }];
-    let output = format_output(&results, false, None).unwrap();
+    let output = format_output(&results, None).unwrap();
     assert_eq!(output, "6.21371 mi");
-}
-
-#[test]
-fn test_format_explain() {
-    let results = vec![ConversionResult {
-        input_value: 10.0,
-        input_unit: "km".to_string(),
-        output_value: 6.21371,
-        output_unit: "mi".to_string(),
-    }];
-    let output = format_output(&results, true, None).unwrap();
-    assert_eq!(output, "10 km = 6.21371 mi");
 }
 
 #[test]
@@ -32,7 +20,7 @@ fn test_format_precision_2() {
         output_value: 6.21371,
         output_unit: "mi".to_string(),
     }];
-    let output = format_output(&results, false, Some(2)).unwrap();
+    let output = format_output(&results, Some(2)).unwrap();
     assert_eq!(output, "6.21 mi");
 }
 
@@ -44,7 +32,7 @@ fn test_format_precision_0() {
         output_value: 6.21371,
         output_unit: "mi".to_string(),
     }];
-    let output = format_output(&results, false, Some(0)).unwrap();
+    let output = format_output(&results, Some(0)).unwrap();
     assert_eq!(output, "6 mi");
 }
 
@@ -56,7 +44,7 @@ fn test_format_precision_validation() {
         output_value: 6.21371,
         output_unit: "mi".to_string(),
     }];
-    let result = format_output(&results, false, Some(15));
+    let result = format_output(&results, Some(15));
     assert!(result.is_err());
     assert_eq!(result.unwrap_err(), "Precision must be between 0 and 10");
 }

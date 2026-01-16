@@ -56,13 +56,13 @@ pub fn get_input_bytes(input: &Option<String>) -> Result<Vec<u8>, String> {
 }
 
 pub fn read_stdin_if_piped() -> Result<String, String> {
-    let stdin = io::stdin();
+    let mut stdin = io::stdin();
     if stdin.is_terminal() {
         return Ok(String::new());
     }
 
     let mut buf = String::new();
-    io::stdin()
+    stdin
         .read_to_string(&mut buf)
         .map_err(|e| format!("Failed to read from stdin: {}", e))?;
     Ok(buf.trim().to_string())
