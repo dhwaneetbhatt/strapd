@@ -215,7 +215,7 @@ export const UnitConverterToolComponent: React.FC<BaseToolProps> = ({
             />
           </FormControl>
 
-          {outputs.result && (
+          {Boolean(outputs.result) && (
             <FormControl flex={1}>
               <HStack justify="space-between" mb={2}>
                 <FormLabel fontSize="sm" color="text.secondary" mb={0}>

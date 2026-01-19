@@ -8,7 +8,7 @@ import { appConfig } from "../config";
 export const useAutoProcess = (
   processInputs: () => void,
   inputs: Record<string, unknown>,
-  delay = appConfig.tools.debounceDelay,
+  delay: number = appConfig.tools.debounceDelay,
 ) => {
   const debounceTimerRef = useRef<number>();
 
