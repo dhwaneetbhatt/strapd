@@ -8,6 +8,7 @@ export const CATEGORY_ICONS = {
   identifiers: "🆔",
   datetime: "⏰",
   random: "🎲",
+  calculator: "🧮",
 } as const;
 
 export type CategoryKey = keyof typeof CATEGORY_ICONS;
