@@ -43,15 +43,15 @@ fn build_unit_registry() -> HashMap<String, Unit> {
     let bytes_units = vec![
         // Bits
         Unit {
-            canonical_name: "b",
-            aliases: &["bit", "bits"],
+            canonical_name: "bit",
+            aliases: &["b", "bits"],
             category: UnitCategory::Bytes,
             to_base_multiplier: Some(0.125), // 1 bit = 0.125 bytes
         },
         // Bytes (base unit)
         Unit {
             canonical_name: "byte",
-            aliases: &["B", "bytes"],
+            aliases: &["bytes"],
             category: UnitCategory::Bytes,
             to_base_multiplier: Some(1.0),
         },
