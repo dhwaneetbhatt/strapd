@@ -10,7 +10,7 @@ fn test_format_default() {
         output_unit: "mi".to_string(),
     }];
     let output = format_output(&results, None).unwrap();
-    assert_eq!(output, "6.21371 mi");
+    assert_eq!(output, "6.21 mi"); // Default is now 2 decimal places
 }
 
 #[test]

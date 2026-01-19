@@ -302,7 +302,10 @@ pub fn get_units_in_category(category: UnitCategory) -> Vec<&'static Unit> {
         .filter(|u| u.category == category)
         .collect();
 
-    // Deduplicate by canonical name
+    // Sort by canonical name first to group duplicates together
+    units.sort_by_key(|u| u.canonical_name);
+
+    // Deduplicate by canonical name (now that they're consecutive)
     units.dedup_by_key(|u| u.canonical_name);
 
     // Sort by size (to_base_multiplier) for proper ordering

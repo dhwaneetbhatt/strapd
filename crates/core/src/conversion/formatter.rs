@@ -31,13 +31,13 @@ fn format_value(value: f64, precision: Option<usize>) -> String {
     match precision {
         Some(p) => format!("{:.prec$}", value, prec = p),
         None => {
-            // Auto-detect precision
+            // Default to 2 decimal places
             // If value is very close to integer, show as integer
             if (value.round() - value).abs() < 0.0001 {
                 format!("{}", value.round() as i64)
             } else {
-                // Show up to 6 significant decimals, trim trailing zeros
-                let formatted = format!("{:.6}", value);
+                // Show 2 decimal places, trim trailing zeros
+                let formatted = format!("{:.2}", value);
                 formatted
                     .trim_end_matches('0')
                     .trim_end_matches('.')

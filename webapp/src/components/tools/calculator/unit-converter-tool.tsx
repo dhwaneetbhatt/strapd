@@ -56,6 +56,7 @@ export const UnitConverterToolComponent: React.FC<BaseToolProps> = ({
   });
 
   // Load units when category changes
+  // biome-ignore lint/correctness/useExhaustiveDependencies: Only reload units when category changes, not on every input change
   useEffect(() => {
     const category = String(inputs.category || "bytes");
     const result = wasmWrapper.get_units_in_category(category);
@@ -92,14 +93,7 @@ export const UnitConverterToolComponent: React.FC<BaseToolProps> = ({
         console.error("Failed to parse units:", err);
       }
     }
-  }, [
-    inputs.category,
-    inputs.value,
-    initialInputs?.category,
-    inputs.fromUnit,
-    inputs.toUnit,
-    updateInput,
-  ]);
+  }, [inputs.category]);
 
   // Auto-process when inputs change (no debounce for instant conversion)
   useAutoProcess(
