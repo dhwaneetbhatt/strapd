@@ -1,2 +1,4 @@
 overrides:
+  '@remix-run/router@<=1.23.1': '>=1.23.2'
   esbuild@<=0.24.2: '>=0.25.0'
+  react-router@>=6.0.0 <6.30.2: '>=6.30.2'

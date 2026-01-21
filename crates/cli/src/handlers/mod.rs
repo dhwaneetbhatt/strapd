@@ -1,10 +1,12 @@
 // Handlers for various command line operations
 use std::{
-    io::{self, Read},
+    io::{self, IsTerminal, Read},
     str::FromStr,
 };
 
+pub mod calculator_handler;
 pub mod clipboard_handler;
+pub mod conversion_handler;
 pub mod data_formats_handler;
 pub mod datetime_handler;
 pub mod encoding_handler;
@@ -51,6 +53,19 @@ pub fn get_input_bytes(input: &Option<String>) -> Result<Vec<u8>, String> {
             Ok(buf)
         }
     }
+}
+
+pub fn read_stdin_if_piped() -> Result<String, String> {
+    let mut stdin = io::stdin();
+    if stdin.is_terminal() {
+        return Ok(String::new());
+    }
+
+    let mut buf = String::new();
+    stdin
+        .read_to_string(&mut buf)
+        .map_err(|e| format!("Failed to read from stdin: {}", e))?;
+    Ok(buf.trim().to_string())
 }
 
 pub fn get_input_int<T>(input: &Option<T>) -> T

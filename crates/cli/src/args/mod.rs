@@ -1,5 +1,6 @@
 use clap::{Parser, Subcommand};
 
+pub mod conversion;
 pub mod data_formats;
 pub mod datetime;
 pub mod encoding;
@@ -82,4 +83,13 @@ pub enum Commands {
         input: Option<String>,
     },
     Paste {},
+    /// Evaluate a mathematical expression
+    #[command(aliases = ["calculate", "eval"])]
+    Calc {
+        /// Mathematical expression to evaluate (if not provided, reads from stdin)
+        expression: Option<String>,
+    },
+    /// Convert between units (length, bytes, time, temperature, data rate)
+    #[command(aliases = ["conv", "cv"])]
+    Convert(conversion::ConvertArgs),
 }
