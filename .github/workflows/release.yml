@@ -1,9 +1,6 @@
 name: Release CLI
 
 on:
-  pull_request:
-    branches:
-      - main
   push:
     tags:
       - 'v*'
@@ -86,15 +83,15 @@ jobs:
           mkdir -p release
           find artifacts -type f -exec mv {} release/ \;
 
-      # - name: Create Release
-      #   uses: softprops/action-gh-release@v2
-      #   with:
-      #     tag_name: ${{ github.event.inputs.tag || github.ref_name }}
-      #     name: Release ${{ github.event.inputs.tag || github.ref_name }}
-      #     files: release/*
-      #     draft: true
-      #   env:
-      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.event.inputs.tag || github.ref_name }}
+          name: Release ${{ github.event.inputs.tag || github.ref_name }}
+          files: release/*
+          draft: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Checkout Homebrew Tap
         uses: actions/checkout@v6
