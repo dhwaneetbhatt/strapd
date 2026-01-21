@@ -101,7 +101,6 @@ jobs:
         with:
           repository: dhwaneetbhatt/homebrew-tap
           path: homebrew-tap
-          token: ${{ secrets.GH_PAT }}
 
       - name: Update Formula
         env:
@@ -125,7 +124,7 @@ jobs:
       - name: Create Pull Request for Tap
         uses: peter-evans/create-pull-request@v8
         with:
-          token: ${{ secrets.GH_PAT }}
+          token: ${{ secrets.HOMEBREW_TAP_TOKEN }}
           path: homebrew-tap
           commit-message: "chore: bump strapd to ${{ github.event.inputs.tag || github.ref_name }}"
           title: "chore: bump strapd to ${{ github.event.inputs.tag || github.ref_name }}"
