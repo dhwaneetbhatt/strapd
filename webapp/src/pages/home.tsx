@@ -1,22 +1,27 @@
-import { HamburgerIcon } from "@chakra-ui/icons";
+import { HamburgerIcon, StarIcon } from "@chakra-ui/icons";
 import {
   Box,
+  Button,
   Flex,
   Grid,
   GridItem,
   Heading,
   HStack,
   IconButton,
+  Switch,
   Text,
   useDisclosure,
   VStack,
 } from "@chakra-ui/react";
 import type React from "react";
 import { useState } from "react";
+import { BsPinAngle, BsPinFill } from "react-icons/bs";
+import { FiStar } from "react-icons/fi";
 import { useNavigate } from "react-router-dom";
 import { CommandPalette, HelpModal } from "../components/common";
 import { Layout, Sidebar } from "../components/layout";
 import { getCategoryIcon } from "../constants/category-icons";
+import { useSettings } from "../contexts/settings-context";
 import { toolGroups } from "../tools";
 import { caseConverterTool } from "../tools/string-tools";
 import type { Tool } from "../types";
@@ -58,6 +63,18 @@ export const Home: React.FC = () => {
 
   // Flatten all tools from all groups
   const allTools = toolGroups.flatMap((group) => group.tools);
+  const {
+    isFavorite,
+    toggleFavorite,
+    pinnedToolId,
+    setPinnedToolId,
+    showFavoritesOnly,
+    toggleShowFavoritesOnly,
+  } = useSettings();
+
+  const displayedTools = showFavoritesOnly
+    ? allTools.filter((tool) => isFavorite(tool.id))
+    : allTools;
 
   return (
     <Layout
@@ -100,6 +117,26 @@ export const Home: React.FC = () => {
                   <Text fontSize="lg" color="text.secondary">
                     Developer toolkit for common utilities
                   </Text>
+
+                  <HStack spacing={4} mt={4}>
+                    <HStack
+                      as="label"
+                      cursor="pointer"
+                      spacing={2}
+                      p={2}
+                      borderRadius="md"
+                      _hover={{ bg: "surface.muted" }}
+                    >
+                      <Text fontSize="sm" fontWeight="medium">
+                        Show Favorites Only
+                      </Text>
+                      <Switch
+                        isChecked={showFavoritesOnly}
+                        onChange={toggleShowFavoritesOnly}
+                        colorScheme="brand"
+                      />
+                    </HStack>
+                  </HStack>
                 </VStack>
               </VStack>
 
@@ -113,55 +150,128 @@ export const Home: React.FC = () => {
                 }}
                 gap={6}
               >
-                {allTools.map((tool) => (
-                  <GridItem
-                    key={tool.id}
-                    as="button"
-                    onClick={() => handleToolClick(tool.id)}
-                    p={4}
-                    borderRadius="md"
-                    border="1px solid"
-                    borderColor="border.base"
-                    bg="surface.muted"
-                    minH="200px"
-                    _hover={{
-                      borderColor: "border.hover",
-                      bg: "bg.hover",
-                      transform: "translateY(-2px)",
-                      boxShadow: "0 4px 12px rgba(0, 0, 0, 0.1)",
-                    }}
-                    _active={{
-                      transform: "translateY(0)",
-                    }}
-                    transition="all 0.2s cubic-bezier(0.4, 0, 0.2, 1)"
-                    cursor="pointer"
-                    textAlign="left"
-                    display="flex"
-                    flexDirection="column"
-                    justifyContent="space-between"
-                  >
-                    <VStack align="start" spacing={2} flex={1}>
-                      <HStack spacing={2}>
-                        <Text fontSize="lg">
-                          {getCategoryIcon(tool.category)}
-                        </Text>
-                        <Heading size="sm" color="text.primary">
-                          {tool.name}
-                        </Heading>
-                      </HStack>
-                      <Text
-                        fontSize="sm"
-                        color="text.secondary"
+                {displayedTools.map((tool) => {
+                  const isPinned = pinnedToolId === tool.id;
+                  const isFav = isFavorite(tool.id);
+
+                  return (
+                    <GridItem
+                      key={tool.id}
+                      as="div"
+                      position="relative"
+                      borderRadius="md"
+                      border="1px solid"
+                      borderColor="border.base"
+                      bg="surface.muted"
+                      _hover={{
+                        borderColor: "border.hover",
+                        bg: "bg.hover",
+                        transform: "translateY(-2px)",
+                        boxShadow: "0 4px 12px rgba(0, 0, 0, 0.1)",
+                      }}
+                      _active={{
+                        transform: "translateY(0)",
+                      }}
+                      transition="all 0.2s cubic-bezier(0.4, 0, 0.2, 1)"
+                      minH="200px"
+                      display="flex"
+                      flexDirection="column"
+                      justifyContent="space-between"
+                    >
+                      <Box
+                        as="button"
+                        onClick={() => handleToolClick(tool.id)}
+                        p={4}
+                        w="full"
+                        h="full"
                         textAlign="left"
-                        flex={1}
-                        noOfLines={2}
+                        display="flex"
+                        flexDirection="column"
                       >
-                        {tool.description}
-                      </Text>
-                    </VStack>
-                  </GridItem>
-                ))}
+                        <VStack align="start" spacing={2} flex={1} w="full">
+                          <HStack spacing={2} w="full">
+                            <Text fontSize="lg">
+                              {getCategoryIcon(tool.category)}
+                            </Text>
+                            <Heading
+                              size="sm"
+                              color="text.primary"
+                              noOfLines={1}
+                              flex={1}
+                            >
+                              {tool.name}
+                            </Heading>
+                            {/* Actions */}
+                            <HStack
+                              spacing={1}
+                              onClick={(e) => e.stopPropagation()}
+                            >
+                              <IconButton
+                                aria-label={
+                                  isPinned ? "Unpin tool" : "Pin tool"
+                                }
+                                icon={isPinned ? <BsPinFill /> : <BsPinAngle />}
+                                size="sm"
+                                variant="action"
+                                color={
+                                  isPinned ? "brand.500" : "text.secondary"
+                                }
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setPinnedToolId(tool.id);
+                                }}
+                              />
+                              <IconButton
+                                aria-label={
+                                  isFav
+                                    ? "Remove from favorites"
+                                    : "Add to favorites"
+                                }
+                                icon={isFav ? <StarIcon /> : <FiStar />}
+                                size="sm"
+                                variant="action"
+                                color={isFav ? "yellow.400" : "text.secondary"}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  toggleFavorite(tool.id);
+                                }}
+                              />
+                            </HStack>
+                          </HStack>
+                          <Text
+                            fontSize="sm"
+                            color="text.secondary"
+                            textAlign="left"
+                            flex={1}
+                            noOfLines={2}
+                            w="full"
+                          >
+                            {tool.description}
+                          </Text>
+                        </VStack>
+                      </Box>
+                    </GridItem>
+                  );
+                })}
               </Grid>
+
+              {displayedTools.length === 0 && (
+                <Box textAlign="center" py={12}>
+                  <Text color="text.secondary">
+                    No tools found matching your criteria.
+                  </Text>
+                  {showFavoritesOnly && (
+                    <Button
+                      variant="link"
+                      colorScheme="brand"
+                      onClick={toggleShowFavoritesOnly}
+                      mt={2}
+                    >
+                      Show all tools
+                    </Button>
+                  )}
+                </Box>
+              )}
             </Box>
           </Flex>
         </Flex>

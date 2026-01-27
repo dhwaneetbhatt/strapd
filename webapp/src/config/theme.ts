@@ -296,6 +296,20 @@ const theme = extendTheme({
           minW: "6",
           px: 2,
         },
+        action: {
+          bg: "transparent",
+          color: "text.secondary",
+          fontSize: "1.2em",
+          _active: {
+            bg: "blackAlpha.200",
+            _dark: {
+              bg: "whiteAlpha.300",
+            },
+          },
+          p: 1,
+          h: "auto",
+          minW: "auto",
+        },
       },
     },
     Textarea: {
