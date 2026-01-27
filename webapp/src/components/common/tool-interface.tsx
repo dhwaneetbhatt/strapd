@@ -1,4 +1,3 @@
-import { StarIcon } from "@chakra-ui/icons";
 import {
   Box,
   Divider,
@@ -9,8 +8,7 @@ import {
   VStack,
 } from "@chakra-ui/react";
 import type React from "react";
-import { BsPinAngle, BsPinFill } from "react-icons/bs";
-import { FiStar } from "react-icons/fi";
+import { BsPinAngle, BsPinFill, BsStar, BsStarFill } from "react-icons/bs";
 import { getCategoryIcon } from "../../constants/category-icons";
 import { useSettings } from "../../contexts/settings-context";
 import { TOOL_REGISTRY } from "../../tools";
@@ -27,7 +25,7 @@ export const ToolInterface: React.FC<ToolInterfaceProps> = ({
   initialInput,
   onInputChange,
 }) => {
-  const { isFavorite, toggleFavorite, pinnedToolId, setPinnedToolId } =
+  const { isFavorite, toggleFavorite, pinnedToolId, togglePinnedTool } =
     useSettings();
   const isPinned = pinnedToolId === tool.id;
 
@@ -67,7 +65,7 @@ export const ToolInterface: React.FC<ToolInterfaceProps> = ({
               size="md"
               variant="action"
               color={isPinned ? "brand.500" : "text.secondary"}
-              onClick={() => setPinnedToolId(tool.id)}
+              onClick={() => togglePinnedTool(tool.id)}
             />
             <IconButton
               aria-label={
@@ -75,7 +73,7 @@ export const ToolInterface: React.FC<ToolInterfaceProps> = ({
                   ? "Remove from favorites"
                   : "Add to favorites"
               }
-              icon={isFavorite(tool.id) ? <StarIcon /> : <FiStar />}
+              icon={isFavorite(tool.id) ? <BsStarFill /> : <BsStar />}
               size="md"
               variant="action"
               color={isFavorite(tool.id) ? "yellow.400" : "text.secondary"}

@@ -1,4 +1,4 @@
-import { HamburgerIcon, StarIcon } from "@chakra-ui/icons";
+import { HamburgerIcon } from "@chakra-ui/icons";
 import {
   Box,
   Button,
@@ -15,8 +15,7 @@ import {
 } from "@chakra-ui/react";
 import type React from "react";
 import { useState } from "react";
-import { BsPinAngle, BsPinFill } from "react-icons/bs";
-import { FiStar } from "react-icons/fi";
+import { BsPinAngle, BsPinFill, BsStar, BsStarFill } from "react-icons/bs";
 import { useNavigate } from "react-router-dom";
 import { CommandPalette, HelpModal } from "../components/common";
 import { Layout, Sidebar } from "../components/layout";
@@ -67,7 +66,7 @@ export const Home: React.FC = () => {
     isFavorite,
     toggleFavorite,
     pinnedToolId,
-    setPinnedToolId,
+    togglePinnedTool,
     showFavoritesOnly,
     toggleShowFavoritesOnly,
   } = useSettings();
@@ -218,7 +217,7 @@ export const Home: React.FC = () => {
                                 }
                                 onClick={(e) => {
                                   e.stopPropagation();
-                                  setPinnedToolId(tool.id);
+                                  togglePinnedTool(tool.id);
                                 }}
                               />
                               <IconButton
@@ -227,7 +226,7 @@ export const Home: React.FC = () => {
                                     ? "Remove from favorites"
                                     : "Add to favorites"
                                 }
-                                icon={isFav ? <StarIcon /> : <FiStar />}
+                                icon={isFav ? <BsStarFill /> : <BsStar />}
                                 size="sm"
                                 variant="action"
                                 color={isFav ? "yellow.400" : "text.secondary"}

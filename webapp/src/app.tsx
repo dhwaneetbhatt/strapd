@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import {
   Route,
   HashRouter as Router,
@@ -14,11 +14,12 @@ function AppContent() {
   const { pinnedToolId } = useSettings();
   const navigate = useNavigate();
   const location = useLocation();
+  const hasRedirected = useRef(false);
 
   useEffect(() => {
-    // Only redirect if we are at the root path and have a pinned tool
-    // and we haven't already redirected (checked by history/state if needed, but simple check here is fine)
-    if (location.pathname === "/" && pinnedToolId) {
+    // Only redirect on initial mount if we're at root and have a pinned tool
+    if (!hasRedirected.current && location.pathname === "/" && pinnedToolId) {
+      hasRedirected.current = true;
       navigate(`/tool/${pinnedToolId}`);
     }
   }, [location.pathname, pinnedToolId, navigate]);

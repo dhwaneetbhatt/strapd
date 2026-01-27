@@ -7,7 +7,7 @@ interface SettingsContextType {
   isFavorite: (toolId: string) => boolean;
 
   pinnedToolId: string | null;
-  setPinnedToolId: (toolId: string | null) => void;
+  togglePinnedTool: (toolId: string) => void;
 
   showFavoritesOnly: boolean;
   toggleShowFavoritesOnly: () => void;
@@ -29,7 +29,8 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({
     try {
       const stored = localStorage.getItem(FAVORITES_KEY);
       return stored ? JSON.parse(stored) : [];
-    } catch {
+    } catch (error) {
+      console.error("Failed to parse favorites from localStorage:", error);
       return [];
     }
   });
@@ -38,7 +39,8 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({
   const [pinnedToolId, setPinnedToolState] = useState<string | null>(() => {
     try {
       return localStorage.getItem(PINNED_TOOL_KEY);
-    } catch {
+    } catch (error) {
+      console.error("Failed to retrieve pinned tool from localStorage:", error);
       return null;
     }
   });
@@ -48,7 +50,11 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({
     try {
       const stored = localStorage.getItem(SHOW_FAVORITES_ONLY_KEY);
       return stored === "true";
-    } catch {
+    } catch (error) {
+      console.error(
+        "Failed to parse showFavoritesOnly setting from localStorage:",
+        error,
+      );
       return false;
     }
   });
@@ -82,8 +88,7 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({
 
   const isFavorite = (toolId: string) => favorites.includes(toolId);
 
-  const setPinnedToolId = (toolId: string | null) => {
-    // If clicking the same tool again, unpin it
+  const togglePinnedTool = (toolId: string) => {
     setPinnedToolState((prev) => (prev === toolId ? null : toolId));
   };
 
@@ -96,7 +101,7 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({
     toggleFavorite,
     isFavorite,
     pinnedToolId,
-    setPinnedToolId,
+    togglePinnedTool,
     showFavoritesOnly,
     toggleShowFavoritesOnly,
   };
