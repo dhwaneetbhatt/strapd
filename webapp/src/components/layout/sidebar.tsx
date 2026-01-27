@@ -17,8 +17,9 @@ import {
 } from "@chakra-ui/react";
 import type React from "react";
 import { useEffect, useMemo, useRef, useState } from "react";
+import { useSettings } from "../../contexts/settings-context";
 import { toolGroups } from "../../tools";
-import type { Tool, ToolGroup } from "../../types";
+import type { Tool, ToolCategory, ToolGroup } from "../../types";
 
 const FOCUS_DELAY = 100; // Configurable constant instead of magic number
 
@@ -142,12 +143,35 @@ export const Sidebar: React.FC<SidebarProps> = ({
   );
   const [focusedToolIndex, setFocusedToolIndex] = useState(-1);
   const sidebarRef = useRef<HTMLDivElement>(null);
+  const { favorites } = useSettings();
+
+  // Create Favorites Group
+  const favoritesGroup = useMemo(() => {
+    const favoriteTools = allTools.filter((tool) =>
+      favorites.includes(tool.id),
+    );
+    return {
+      name: "Favorites",
+      category: "favorites" as ToolCategory,
+      icon: "⭐",
+      description: "Your favorite tools",
+      tools: favoriteTools,
+    };
+  }, [allTools, favorites]);
+
+  // Combined groups for display, favorites first if any exist
+  const displayGroups = useMemo(() => {
+    if (favoritesGroup.tools.length > 0) {
+      return [favoritesGroup, ...toolGroups];
+    }
+    return toolGroups;
+  }, [favoritesGroup]);
 
   // Memoize group start indices for keyboard navigation
   const groupStartIndices = useMemo(() => {
-    return toolGroups.reduce(
+    return displayGroups.reduce(
       (acc, group, index) => {
-        const startIndex = toolGroups
+        const startIndex = displayGroups
           .slice(0, index)
           .reduce((sum, g) => sum + g.tools.length, 0);
         acc[group.category] = startIndex;
@@ -155,7 +179,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
       },
       {} as Record<string, number>,
     );
-  }, []);
+  }, [displayGroups]);
 
   // Reset focus when sidebar opens/closes
   useEffect(() => {
@@ -182,6 +206,12 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
   // Handle keyboard navigation
   useEffect(() => {
+    const totalTools = displayGroups.reduce(
+      (acc, group) => acc + group.tools.length,
+      0,
+    );
+    const flattenedTools = displayGroups.flatMap((g) => g.tools);
+
     const handleKeyDown = (event: KeyboardEvent) => {
       if (!isOpen || focusedToolIndex === -1) return;
 
@@ -193,9 +223,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
       switch (event.key) {
         case "ArrowDown":
           event.preventDefault();
-          setFocusedToolIndex((prev) =>
-            Math.min(prev + 1, allTools.length - 1),
-          );
+          setFocusedToolIndex((prev) => Math.min(prev + 1, totalTools - 1));
           break;
         case "ArrowUp":
           event.preventDefault();
@@ -203,8 +231,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
           break;
         case "Enter":
           event.preventDefault();
-          if (focusedToolIndex >= 0 && focusedToolIndex < allTools.length) {
-            onToolSelect(allTools[focusedToolIndex]);
+          if (focusedToolIndex >= 0 && focusedToolIndex < totalTools) {
+            onToolSelect(flattenedTools[focusedToolIndex]);
           }
           break;
         case "Escape":
@@ -218,7 +246,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
       window.addEventListener("keydown", handleKeyDown);
       return () => window.removeEventListener("keydown", handleKeyDown);
     }
-  }, [isOpen, focusedToolIndex, allTools, onToolSelect, onToggle]);
+  }, [isOpen, focusedToolIndex, displayGroups, onToolSelect, onToggle]);
 
   return (
     <>
@@ -290,7 +318,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 Text Tools
               </Text>
 
-              {toolGroups.map((group) => (
+              {displayGroups.map((group) => (
                 <ToolGroupSection
                   key={group.category}
                   group={group}

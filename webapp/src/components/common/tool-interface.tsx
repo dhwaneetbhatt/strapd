@@ -1,6 +1,16 @@
-import { Box, Divider, Heading, HStack, Text, VStack } from "@chakra-ui/react";
+import {
+  Box,
+  Divider,
+  Heading,
+  HStack,
+  IconButton,
+  Text,
+  VStack,
+} from "@chakra-ui/react";
 import type React from "react";
+import { BsPinAngle, BsPinFill, BsStar, BsStarFill } from "react-icons/bs";
 import { getCategoryIcon } from "../../constants/category-icons";
+import { useSettings } from "../../contexts/settings-context";
 import { TOOL_REGISTRY } from "../../tools";
 import type { Tool } from "../../types";
 
@@ -15,6 +25,10 @@ export const ToolInterface: React.FC<ToolInterfaceProps> = ({
   initialInput,
   onInputChange,
 }) => {
+  const { isFavorite, toggleFavorite, pinnedToolId, togglePinnedTool } =
+    useSettings();
+  const isPinned = pinnedToolId === tool.id;
+
   // Look up the tool in the registry
   const toolDefinition = TOOL_REGISTRY[tool.id];
 
@@ -43,6 +57,29 @@ export const ToolInterface: React.FC<ToolInterfaceProps> = ({
           <Heading size="lg" color="text.primary">
             {tool.name}
           </Heading>
+
+          <HStack spacing={1}>
+            <IconButton
+              aria-label={isPinned ? "Unpin tool" : "Pin tool"}
+              icon={isPinned ? <BsPinFill /> : <BsPinAngle />}
+              size="md"
+              variant="action"
+              color={isPinned ? "brand.500" : "text.secondary"}
+              onClick={() => togglePinnedTool(tool.id)}
+            />
+            <IconButton
+              aria-label={
+                isFavorite(tool.id)
+                  ? "Remove from favorites"
+                  : "Add to favorites"
+              }
+              icon={isFavorite(tool.id) ? <BsStarFill /> : <BsStar />}
+              size="md"
+              variant="action"
+              color={isFavorite(tool.id) ? "yellow.400" : "text.secondary"}
+              onClick={() => toggleFavorite(tool.id)}
+            />
+          </HStack>
         </HStack>
         <Text fontSize="md" color="text.secondary">
           {tool.description}

@@ -1,18 +1,47 @@
-import { Route, HashRouter as Router, Routes } from "react-router-dom";
+import { useEffect, useRef } from "react";
+import {
+  Route,
+  HashRouter as Router,
+  Routes,
+  useLocation,
+  useNavigate,
+} from "react-router-dom";
 import { KeyboardProvider } from "./contexts/keyboard-context";
+import { SettingsProvider, useSettings } from "./contexts/settings-context";
 import { CLI, Home, Tools } from "./pages";
+
+function AppContent() {
+  const { pinnedToolId } = useSettings();
+  const navigate = useNavigate();
+  const location = useLocation();
+  const hasRedirected = useRef(false);
+
+  useEffect(() => {
+    // Only redirect on initial mount if we're at root and have a pinned tool
+    if (!hasRedirected.current && location.pathname === "/" && pinnedToolId) {
+      hasRedirected.current = true;
+      navigate(`/tool/${pinnedToolId}`);
+    }
+  }, [location.pathname, pinnedToolId, navigate]);
+
+  return (
+    <Routes>
+      <Route path="/" element={<Home />} />
+      <Route path="/tool/:toolId" element={<Tools />} />
+      <Route path="/cli" element={<CLI />} />
+    </Routes>
+  );
+}
 
 function App() {
   return (
-    <KeyboardProvider>
-      <Router>
-        <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/tool/:toolId" element={<Tools />} />
-          <Route path="/cli" element={<CLI />} />
-        </Routes>
-      </Router>
-    </KeyboardProvider>
+    <SettingsProvider>
+      <KeyboardProvider>
+        <Router>
+          <AppContent />
+        </Router>
+      </KeyboardProvider>
+    </SettingsProvider>
   );
 }
 

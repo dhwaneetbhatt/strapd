@@ -7,7 +7,8 @@ export type ToolCategory =
   | "identifiers"
   | "datetime"
   | "random"
-  | "calculator";
+  | "calculator"
+  | "favorites";
 
 // Tool operation result - generic type for type-safe tool outputs
 export type ToolResult<T = object> = {
