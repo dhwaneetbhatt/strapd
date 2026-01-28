@@ -132,9 +132,9 @@ fn test_generate_v7_lexicographic_order() {
     let result = uuid::generate_v7(10);
     let lines: Vec<&str> = result.lines().collect();
 
-    // Check that consecutive UUIDs are in ascending order
+    // Check that consecutive UUIDs are in strictly ascending order
     for i in 0..lines.len() - 1 {
-        assert!(lines[i] < lines[i + 1] || lines[i] == lines[i + 1]);
+        assert!(lines[i] < lines[i + 1]);
     }
 }
 
