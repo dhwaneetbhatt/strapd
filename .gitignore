@@ -19,6 +19,9 @@ node_modules/
 
 # Test coverage output
 coverage/
+lcov.info
+*.profraw
+*.profdata
 
 # Next.js build output
 .next/

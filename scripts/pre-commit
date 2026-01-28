@@ -6,6 +6,11 @@
 
 set -e
 
+# Add common paths for pnpm
+export PATH="$HOME/.local/share/pnpm:$PATH"
+export PATH="$HOME/Library/pnpm:$PATH"
+export PATH="/usr/local/bin:$PATH"
+
 echo "Running pre-commit checks..."
 
 # Check what files are being committed
