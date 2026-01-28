@@ -49,6 +49,16 @@ jobs:
       - name: Test Rust
         run: make rust-test
 
+      - name: Generate Rust coverage report
+        run: make rust-coverage-report
+
+      - name: Upload Rust coverage to Codecov
+        uses: codecov/codecov-action@v5
+        with:
+          files: ./lcov.info
+          flags: rust
+          name: rust-coverage
+
       - name: Build wasm
         run: make wasm-build
 
@@ -104,4 +114,11 @@ jobs:
         run: make webapp-build
 
       - name: Test webapp
-        run: make webapp-test
+        run: make webapp-coverage
+
+      - name: Upload Webapp coverage to Codecov
+        uses: codecov/codecov-action@v5
+        with:
+          files: ./webapp/coverage/lcov.info
+          flags: webapp
+          name: webapp-coverage
