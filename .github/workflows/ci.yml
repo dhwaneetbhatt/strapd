@@ -50,10 +50,20 @@ jobs:
         run: make rust-test
 
       - name: Generate Rust coverage report
-        run: make rust-coverage-report
+        run: |
+          make rust-coverage
+          make rust-coverage-report
+
+      - name: Upload Rust coverage report
+        uses: actions/upload-artifact@v4
+        with:
+          name: rust-coverage-report
+          path: target/llvm-cov/html/
+          retention-days: 30
 
       - name: Upload Rust coverage to Codecov
         uses: codecov/codecov-action@v5
+        continue-on-error: true
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           files: ./lcov.info
@@ -117,8 +127,16 @@ jobs:
       - name: Test webapp
         run: make webapp-coverage
 
+      - name: Upload Webapp coverage report
+        uses: actions/upload-artifact@v4
+        with:
+          name: webapp-coverage-report
+          path: webapp/coverage/
+          retention-days: 30
+
       - name: Upload Webapp coverage to Codecov
         uses: codecov/codecov-action@v5
+        continue-on-error: true
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           files: ./webapp/coverage/lcov.info
