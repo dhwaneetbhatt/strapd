@@ -55,6 +55,7 @@ jobs:
       - name: Upload Rust coverage to Codecov
         uses: codecov/codecov-action@v5
         with:
+          token: ${{ secrets.CODECOV_TOKEN }}
           files: ./lcov.info
           flags: rust
           name: rust-coverage
@@ -119,6 +120,7 @@ jobs:
       - name: Upload Webapp coverage to Codecov
         uses: codecov/codecov-action@v5
         with:
+          token: ${{ secrets.CODECOV_TOKEN }}
           files: ./webapp/coverage/lcov.info
           flags: webapp
           name: webapp-coverage
