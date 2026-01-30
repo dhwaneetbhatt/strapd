@@ -1,10 +1,8 @@
 use clap::Parser;
 use std::io::{self, Write};
 
-mod args;
-mod handlers;
-use args::{Cli, Commands};
-use handlers::{
+use strapd::args::{Cli, Commands};
+use strapd::handlers::{
     calculator_handler, clipboard_handler, conversion_handler, data_formats_handler,
     datetime_handler, encoding_handler, identifiers_handler, random_handler, security_handler,
     string_handler,

@@ -1,6 +1,6 @@
 # Makefile for strapd project
 
-.PHONY: all rust-fmt rust-fmt-check rust-lint rust-install rust-build cli-build cli-release rust-test wasm-build webapp-install webapp-fmt webapp-fmt-check webapp-lint webapp-dev webapp-build webapp-test help lint fmt fmt-check test install-hooks brew-formula-check brew-update-checksums
+.PHONY: all rust-fmt rust-fmt-check rust-lint rust-install rust-install-coverage rust-build cli-build cli-release rust-test rust-coverage rust-coverage-report wasm-build webapp-install webapp-fmt webapp-fmt-check webapp-lint webapp-dev webapp-build webapp-test webapp-coverage webapp-coverage-open coverage help lint fmt fmt-check test install-hooks brew-formula-check brew-update-checksums
 
 # -------------------
 # Help
@@ -11,6 +11,7 @@ help:
 	@echo "  rust-fmt-check        - Check Rust code formatting"
 	@echo "  rust-lint             - Run Rust linter (clippy)"
 	@echo "  rust-install          - Install Rust dependencies"
+	@echo "  rust-install-coverage - Install cargo-llvm-cov coverage tool"
 	@echo "  cli-build             - Build CLI crate (debug)"
 	@echo "  cli-release           - Build CLI crate (release)"
 	@echo "  rust-test             - Run Rust tests"
@@ -22,6 +23,11 @@ help:
 	@echo "  webapp-dev            - Start webapp development server"
 	@echo "  webapp-build          - Build webapp"
 	@echo "  webapp-test           - Run webapp tests"
+	@echo "  rust-coverage         - Run Rust tests with coverage (HTML)"
+	@echo "  rust-coverage-report  - Generate Rust coverage report (LCOV)"
+	@echo "  webapp-coverage       - Run webapp tests with coverage"
+	@echo "  webapp-coverage-open  - Run webapp tests with coverage and open report"
+	@echo "  coverage              - Run all tests with coverage"
 	@echo "  lint                  - Run all linters"
 	@echo "  fmt                   - Format all code"
 	@echo "  fmt-check             - Check formatting for all code"
@@ -51,6 +57,10 @@ rust-install:
 	cargo fetch
 	cargo install wasm-pack --version 0.13.1
 
+# Install coverage tools
+rust-install-coverage:
+	cargo install cargo-llvm-cov
+
 # Build all Rust crates (debug)
 rust-build:
 	cargo build
@@ -66,6 +76,16 @@ cli-release:
 # Run tests
 rust-test:
 	cargo test
+
+# Run tests with coverage (HTML report) - excludes wasm wrapper crate
+rust-coverage:
+	@command -v cargo-llvm-cov >/dev/null 2>&1 || { echo "Installing cargo-llvm-cov..."; cargo install cargo-llvm-cov; }
+	cargo llvm-cov --all-features --workspace --exclude strapd-wasm --html
+
+# Generate coverage report (LCOV format)
+rust-coverage-report:
+	@command -v cargo-llvm-cov >/dev/null 2>&1 || { echo "Installing cargo-llvm-cov..."; cargo install cargo-llvm-cov; }
+	cargo llvm-cov --all-features --workspace --exclude strapd-wasm --lcov --output-path lcov.info
 
 # Build WASM module for webapp
 wasm-build:
@@ -101,7 +121,15 @@ webapp-build:
 
 # Test webapp
 webapp-test:
-	cd webapp && pnpm test || echo "No tests configured yet"
+	cd webapp && pnpm test
+
+# Test webapp with coverage
+webapp-coverage:
+	cd webapp && pnpm test --coverage
+
+# Test webapp with coverage and open report
+webapp-coverage-open:
+	cd webapp && pnpm test --coverage && open coverage/index.html
 
 # -------------------
 # Combined targets
@@ -118,6 +146,9 @@ fmt-check: rust-fmt-check webapp-fmt-check
 
 # Run all tests
 test: rust-test webapp-test
+
+# Run all tests with coverage
+coverage: rust-coverage webapp-coverage
 
 # Install git pre-commit hooks
 install-hooks:
