@@ -148,7 +148,7 @@ export const CLI: React.FC = () => {
               </Heading>
 
               <VStack spacing={6} align="stretch">
-                {/* Homebrew Installer - macOS/Linux */}
+                {/* Homebrew Installation - macOS/Linux */}
                 <Box
                   bg="surface.raised"
                   p={6}

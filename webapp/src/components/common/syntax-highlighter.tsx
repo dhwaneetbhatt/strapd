@@ -110,11 +110,6 @@ export const SyntaxHighlighterComponent: React.FC<SyntaxHighlighterComponentProp
             height: "100%",
             maxHeight: "100%",
             overflow: "auto",
-            // Force word wrapping to prevent horizontal overflow
-            whiteSpace: "pre-wrap",
-            wordBreak: "break-word",
-            overflowWrap: "break-word",
-            // Use theme token colors
             backgroundColor: formBg,
             color: textPrimary,
           }}
