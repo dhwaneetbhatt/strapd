@@ -148,6 +148,42 @@ export const CLI: React.FC = () => {
               </Heading>
 
               <VStack spacing={6} align="stretch">
+                {/* Homebrew Installation - macOS/Linux */}
+                <Box
+                  bg="surface.raised"
+                  p={6}
+                  borderRadius="lg"
+                  border="1px solid"
+                  borderColor="border.base"
+                >
+                  <Heading size="md" mb={4} color="text.brand">
+                    🍺 Homebrew (macOS/Linux)
+                  </Heading>
+                  <Text color="text.secondary" mb={4}>
+                    Install via Homebrew:
+                  </Text>
+                  <Box
+                    bg="surface.muted"
+                    p={4}
+                    borderRadius="md"
+                    overflow="auto"
+                  >
+                    <Code
+                      display="block"
+                      whiteSpace="pre"
+                      color="orange.600"
+                      bg="transparent"
+                      fontSize="sm"
+                    >
+                      {`# Add the tap
+brew tap dhwaneetbhatt/tap
+
+# Install strapd
+brew install strapd`}
+                    </Code>
+                  </Box>
+                </Box>
+
                 {/* One-liner Installer - Unix/Linux/macOS */}
                 <Box
                   bg="surface.raised"

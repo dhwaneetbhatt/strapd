@@ -17,6 +17,7 @@ import type React from "react";
 import { useAutoFocus } from "../../../hooks/use-auto-focus";
 import { useAutoProcess } from "../../../hooks/use-tool-processing";
 import { CopyButton } from "../../common/copy-button";
+import { SyntaxHighlighterComponent } from "../../common/syntax-highlighter";
 import { BaseToolLayout, type BaseToolProps, useBaseTool } from "../base-tool";
 
 export const JsonToolComponent: React.FC<BaseToolProps> = ({
@@ -127,12 +128,11 @@ export const JsonToolComponent: React.FC<BaseToolProps> = ({
               <Spacer />
               <CopyButton value={String(outputs.result || "")} />
             </HStack>
-            <Textarea
-              variant="output"
-              h="full"
-              minH="tool.textarea.min"
-              value={String(outputs.result || "")}
-              placeholder="Result..."
+            <SyntaxHighlighterComponent
+              code={String(outputs.result || "")}
+              language="json"
+              fontSize="sm"
+              maxHeight="full"
             />
           </VStack>
         </HStack>

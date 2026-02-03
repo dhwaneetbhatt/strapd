@@ -20,6 +20,7 @@
     "react-dom": "^18.3.1",
     "react-icons": "^4.12.0",
     "react-router-dom": "^6.30.3",
+    "react-syntax-highlighter": "^16.1.0",
     "strapd_wasm": "link:wasm"
   },
   "devDependencies": {
@@ -29,6 +30,7 @@
     "@testing-library/user-event": "^14.6.1",
     "@types/react": "^18.3.27",
     "@types/react-dom": "^18.3.7",
+    "@types/react-syntax-highlighter": "^15.5.13",
     "@vitejs/plugin-react-swc": "^4.2.2",
     "@vitest/coverage-v8": "^4.0.18",
     "@vitest/ui": "^4.0.17",

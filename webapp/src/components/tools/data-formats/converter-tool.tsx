@@ -15,6 +15,7 @@ import { useAutoFocus } from "../../../hooks/use-auto-focus";
 import { useAutoProcess } from "../../../hooks/use-tool-processing";
 import { detectFormat } from "../../../lib/utils/data-formats";
 import { CopyButton } from "../../common/copy-button";
+import { SyntaxHighlighterComponent } from "../../common/syntax-highlighter";
 import { BaseToolLayout, type BaseToolProps, useBaseTool } from "../base-tool";
 
 export const ConverterToolComponent: React.FC<BaseToolProps> = ({
@@ -154,12 +155,11 @@ export const ConverterToolComponent: React.FC<BaseToolProps> = ({
               <Spacer />
               <CopyButton value={String(outputs.result || "")} />
             </HStack>
-            <Textarea
-              variant="output"
-              h="full"
-              minH="tool.textarea.min"
-              value={String(outputs.result || "")}
-              placeholder="Converted output..."
+            <SyntaxHighlighterComponent
+              code={String(outputs.result || "")}
+              language={targetFormat as "json" | "xml" | "yaml"}
+              fontSize="sm"
+              maxHeight="full"
             />
           </VStack>
         </HStack>
