@@ -1,5 +1,6 @@
 export { CommandPalette } from "./command-palette";
 export { CopyButton } from "./copy-button";
+export { DownloadButton } from "./download-button";
 export { FileUploadButton } from "./file-upload-button";
 export { HelpModal } from "./help-modal";
 export { SearchBar } from "./search-bar";

@@ -17,6 +17,7 @@ import type React from "react";
 import { useAutoFocus } from "../../../hooks/use-auto-focus";
 import { useAutoProcess } from "../../../hooks/use-tool-processing";
 import { CopyButton } from "../../common/copy-button";
+import { DownloadButton } from "../../common/download-button";
 import { FileUploadButton } from "../../common/file-upload-button";
 import { SyntaxHighlighterComponent } from "../../common/syntax-highlighter";
 import { BaseToolLayout, type BaseToolProps, useBaseTool } from "../base-tool";
@@ -122,6 +123,11 @@ export const XmlToolComponent: React.FC<BaseToolProps> = ({
               </Text>
               <Spacer />
               <CopyButton value={String(outputs.result || "")} />
+              <DownloadButton
+                content={String(outputs.result || "")}
+                filename="formatted.xml"
+                size="xs"
+              />
             </HStack>
             <SyntaxHighlighterComponent
               code={String(outputs.result || "")}
