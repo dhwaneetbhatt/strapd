@@ -17,6 +17,7 @@ import type React from "react";
 import { useAutoFocus } from "../../../hooks/use-auto-focus";
 import { useAutoProcess } from "../../../hooks/use-tool-processing";
 import { CopyButton } from "../../common/copy-button";
+import { FileUploadButton } from "../../common/file-upload-button";
 import { SyntaxHighlighterComponent } from "../../common/syntax-highlighter";
 import { BaseToolLayout, type BaseToolProps, useBaseTool } from "../base-tool";
 
@@ -106,6 +107,11 @@ export const JsonToolComponent: React.FC<BaseToolProps> = ({
                 JSON Input
               </Text>
               <Spacer />
+              <FileUploadButton
+                onFileLoad={(content) => updateInput("text", content)}
+                acceptedExtensions={[".json", ".txt"]}
+                size="xs"
+              />
             </HStack>
             <Textarea
               data-testid="tool-default-input"
