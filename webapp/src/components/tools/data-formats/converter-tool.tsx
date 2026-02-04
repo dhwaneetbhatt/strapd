@@ -15,6 +15,8 @@ import { useAutoFocus } from "../../../hooks/use-auto-focus";
 import { useAutoProcess } from "../../../hooks/use-tool-processing";
 import { detectFormat } from "../../../lib/utils/data-formats";
 import { CopyButton } from "../../common/copy-button";
+import { DownloadButton } from "../../common/download-button";
+import { FileUploadButton } from "../../common/file-upload-button";
 import { SyntaxHighlighterComponent } from "../../common/syntax-highlighter";
 import { BaseToolLayout, type BaseToolProps, useBaseTool } from "../base-tool";
 
@@ -133,6 +135,11 @@ export const ConverterToolComponent: React.FC<BaseToolProps> = ({
                 Input ({getSourceFormatDisplay()})
               </Text>
               <Spacer />
+              <FileUploadButton
+                onFileLoad={(content) => updateInput("text", content)}
+                acceptedExtensions={[".json", ".yaml", ".yml", ".xml", ".txt"]}
+                size="xs"
+              />
             </HStack>
             <Textarea
               data-testid="tool-default-input"
@@ -154,6 +161,11 @@ export const ConverterToolComponent: React.FC<BaseToolProps> = ({
               </Text>
               <Spacer />
               <CopyButton value={String(outputs.result || "")} />
+              <DownloadButton
+                content={String(outputs.result || "")}
+                filename={`converted.${targetFormat}`}
+                size="xs"
+              />
             </HStack>
             <SyntaxHighlighterComponent
               code={String(outputs.result || "")}
