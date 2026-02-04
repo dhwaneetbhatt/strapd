@@ -9,6 +9,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 ### webapp
 
 - feat: add syntax highlighter for data format tools
+- feat: add Progressive Web App (PWA) support
 
 ## [v1.3.0] - 2026-01-21
 
