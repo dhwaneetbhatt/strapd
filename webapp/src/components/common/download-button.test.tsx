@@ -52,8 +52,12 @@ describe("DownloadButton", () => {
     mockClick = vi.fn();
 
     // Mock URL methods globally (these don't interfere with React rendering)
-    globalThis.URL.createObjectURL = mockCreateObjectURL as any;
-    globalThis.URL.revokeObjectURL = mockRevokeObjectURL as any;
+    globalThis.URL.createObjectURL = mockCreateObjectURL as unknown as (
+      obj: Blob | MediaSource,
+    ) => string;
+    globalThis.URL.revokeObjectURL = mockRevokeObjectURL as unknown as (
+      url: string,
+    ) => void;
   });
 
   afterEach(() => {
@@ -152,10 +156,10 @@ describe("DownloadButton", () => {
 
       // Mock appendChild/removeChild now as well
       vi.spyOn(document.body, "appendChild").mockImplementation(
-        () => mockLink as any,
+        () => mockLink as unknown as HTMLAnchorElement,
       );
       vi.spyOn(document.body, "removeChild").mockImplementation(
-        () => mockLink as any,
+        () => mockLink as unknown as HTMLAnchorElement,
       );
 
       const button = screen.getByRole("button", { name: /download/i });
