@@ -63,7 +63,7 @@ export const DownloadButton: React.FC<DownloadButtonProps> = ({
         isClosable: true,
         position: "bottom-right",
       });
-    } catch (error) {
+    } catch (_error) {
       toast({
         title: "Download failed",
         description: "Failed to download file",

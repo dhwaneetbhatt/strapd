@@ -14,7 +14,7 @@ import {
   VStack,
 } from "@chakra-ui/react";
 import type React from "react";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { BsPinAngle, BsPinFill, BsStar, BsStarFill } from "react-icons/bs";
 import { useNavigate } from "react-router-dom";
 import { CommandPalette, HelpModal } from "../components/common";
@@ -47,6 +47,7 @@ export const Home: React.FC = () => {
   } = useDisclosure();
 
   const handleToolClick = (toolId: string) => {
+    recordToolUsage(toolId);
     navigate(`/tool/${toolId}`);
   };
 
@@ -54,6 +55,7 @@ export const Home: React.FC = () => {
     setSelectedTool(tool);
     navigate(`/tool/${tool.id}`);
     onCommandPaletteClose();
+    recordToolUsage(tool.id);
     // Auto-close sidebar after selection (especially useful on mobile)
     if (window.innerWidth < 768 && isSidebarOpen) {
       onSidebarToggle();
@@ -69,11 +71,17 @@ export const Home: React.FC = () => {
     togglePinnedTool,
     showFavoritesOnly,
     toggleShowFavoritesOnly,
+    recordToolUsage,
+    getSortedToolsByUsage,
   } = useSettings();
 
-  const displayedTools = showFavoritesOnly
-    ? allTools.filter((tool) => isFavorite(tool.id))
-    : allTools;
+  const displayedTools = useMemo(() => {
+    const filtered = showFavoritesOnly
+      ? allTools.filter((tool) => isFavorite(tool.id))
+      : allTools;
+
+    return getSortedToolsByUsage(filtered);
+  }, [showFavoritesOnly, allTools, isFavorite, getSortedToolsByUsage]);
 
   return (
     <Layout

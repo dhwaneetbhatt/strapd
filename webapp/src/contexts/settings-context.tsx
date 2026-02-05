@@ -1,5 +1,15 @@
 import type React from "react";
-import { createContext, useContext, useEffect, useState } from "react";
+import { createContext, useContext, useEffect, useMemo, useState } from "react";
+import {
+  createInitialState,
+  deserializeState,
+  getTopToolIds,
+  serializeState,
+  sortToolsByUsage,
+  type ToolUsageState,
+  updateToolUsage,
+} from "../lib/utils/tool-usage";
+import type { Tool } from "../types";
 
 interface SettingsContextType {
   favorites: string[];
@@ -11,6 +21,10 @@ interface SettingsContextType {
 
   showFavoritesOnly: boolean;
   toggleShowFavoritesOnly: () => void;
+
+  recordToolUsage: (toolId: string) => void;
+  getFrequentlyUsedTools: (limit?: number) => string[];
+  getSortedToolsByUsage: (tools: Tool[]) => Tool[];
 }
 
 const SettingsContext = createContext<SettingsContextType | undefined>(
@@ -20,6 +34,7 @@ const SettingsContext = createContext<SettingsContextType | undefined>(
 const FAVORITES_KEY = "strapd_favorites";
 const PINNED_TOOL_KEY = "strapd_pinned_tool";
 const SHOW_FAVORITES_ONLY_KEY = "strapd_show_favorites_only";
+const TOOL_USAGE_KEY = "strapd_tool_usage";
 
 export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
@@ -59,6 +74,20 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({
     }
   });
 
+  // Tool Usage Tracking State
+  const [toolUsageState, setToolUsageState] = useState<ToolUsageState>(() => {
+    try {
+      const stored = localStorage.getItem(TOOL_USAGE_KEY);
+      if (stored) {
+        return deserializeState(stored);
+      }
+      return createInitialState();
+    } catch (error) {
+      console.error("Failed to parse tool usage from localStorage:", error);
+      return createInitialState();
+    }
+  });
+
   // Persistence Effects
   useEffect(() => {
     localStorage.setItem(FAVORITES_KEY, JSON.stringify(favorites));
@@ -75,6 +104,10 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({
   useEffect(() => {
     localStorage.setItem(SHOW_FAVORITES_ONLY_KEY, String(showFavoritesOnly));
   }, [showFavoritesOnly]);
+
+  useEffect(() => {
+    localStorage.setItem(TOOL_USAGE_KEY, serializeState(toolUsageState));
+  }, [toolUsageState]);
 
   // Actions
   const toggleFavorite = (toolId: string) => {
@@ -96,6 +129,23 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({
     setShowFavoritesOnly((prev) => !prev);
   };
 
+  // Tool Usage Tracking Functions
+  const recordToolUsage = (toolId: string) => {
+    setToolUsageState((prev) => updateToolUsage(prev, toolId));
+  };
+
+  const getFrequentlyUsedTools = useMemo(() => {
+    return (limit = 5): string[] => {
+      return getTopToolIds(toolUsageState, limit);
+    };
+  }, [toolUsageState]);
+
+  const getSortedToolsByUsage = useMemo(() => {
+    return (tools: Tool[]): Tool[] => {
+      return sortToolsByUsage(tools, toolUsageState);
+    };
+  }, [toolUsageState]);
+
   const value = {
     favorites,
     toggleFavorite,
@@ -104,6 +154,9 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({
     togglePinnedTool,
     showFavoritesOnly,
     toggleShowFavoritesOnly,
+    recordToolUsage,
+    getFrequentlyUsedTools,
+    getSortedToolsByUsage,
   };
 
   return (

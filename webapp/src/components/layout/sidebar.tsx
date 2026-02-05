@@ -143,7 +143,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   );
   const [focusedToolIndex, setFocusedToolIndex] = useState(-1);
   const sidebarRef = useRef<HTMLDivElement>(null);
-  const { favorites } = useSettings();
+  const { favorites, getFrequentlyUsedTools } = useSettings();
 
   // Create Favorites Group
   const favoritesGroup = useMemo(() => {
@@ -159,13 +159,38 @@ export const Sidebar: React.FC<SidebarProps> = ({
     };
   }, [allTools, favorites]);
 
-  // Combined groups for display, favorites first if any exist
+  // Create Frequently Used Group
+  const frequentlyUsedGroup = useMemo(() => {
+    const frequentToolIds = getFrequentlyUsedTools(5);
+    const frequentTools = frequentToolIds
+      .map((id) => allTools.find((tool) => tool.id === id))
+      .filter((tool): tool is Tool => tool !== undefined);
+
+    return {
+      name: "Frequently Used",
+      category: "frequently-used" as ToolCategory,
+      icon: "🔥",
+      description: "Your most used tools",
+      tools: frequentTools,
+    };
+  }, [allTools, getFrequentlyUsedTools]);
+
+  // Combined groups for display: favorites, frequently used, then regular groups
   const displayGroups = useMemo(() => {
+    const groups: ToolGroup[] = [];
+
     if (favoritesGroup.tools.length > 0) {
-      return [favoritesGroup, ...toolGroups];
+      groups.push(favoritesGroup);
     }
-    return toolGroups;
-  }, [favoritesGroup]);
+
+    if (frequentlyUsedGroup.tools.length > 0) {
+      groups.push(frequentlyUsedGroup);
+    }
+
+    groups.push(...toolGroups);
+
+    return groups;
+  }, [favoritesGroup, frequentlyUsedGroup]);
 
   // Memoize group start indices for keyboard navigation
   const groupStartIndices = useMemo(() => {
