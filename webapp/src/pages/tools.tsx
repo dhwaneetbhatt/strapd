@@ -5,6 +5,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { CommandPalette, HelpModal, ToolInterface } from "../components/common";
 import { Layout, Sidebar } from "../components/layout";
+import { useSettings } from "../contexts/settings-context";
 import { useCommandI, useCommandR, useEscapeBlur } from "../hooks/use-keyboard";
 import { getToolById } from "../tools";
 import { caseConverterTool } from "../tools/string-tools";
@@ -13,6 +14,7 @@ import type { Tool } from "../types";
 export const Tools: React.FC = () => {
   const { toolId } = useParams<{ toolId?: string }>();
   const navigate = useNavigate();
+  const { recordToolUsage } = useSettings();
   const [searchParams, setSearchParams] = useSearchParams();
   const [selectedTool, setSelectedTool] = useState(caseConverterTool);
   const debounceRef = useRef<number>();
@@ -72,6 +74,7 @@ export const Tools: React.FC = () => {
   // Handle tool selection with auto-close sidebar and URL update
   const handleToolSelect = (tool: Tool) => {
     setSelectedTool(tool);
+    recordToolUsage(tool.id);
     // Update URL to reflect selected tool
     navigate(`/tool/${tool.id}`, { replace: true });
     // Auto-close sidebar after selection (especially useful on mobile)
