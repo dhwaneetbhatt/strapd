@@ -4,6 +4,7 @@ import userEvent from "@testing-library/user-event";
 import type React from "react";
 import { beforeAll, describe, expect, it, vi } from "vitest";
 import theme from "../../config/theme";
+import { ToolSearchCombobox } from "../common";
 import { PipeConfigFields } from "./pipe-config-fields";
 import { PipeEditInspector } from "./pipe-edit-inspector";
 import { PipeEditor } from "./pipe-editor";
@@ -483,6 +484,126 @@ describe("pipe components", () => {
     expect(screen.queryByText(/edit step/i)).not.toBeInTheDocument();
   });
 
+  it("wires every edit inspector action and validation state", async () => {
+    const user = userEvent.setup();
+    const onNameChange = vi.fn();
+    const onAddStep = vi.fn();
+    const onConfigChange = vi.fn();
+    const onMoveStep = vi.fn();
+    const onRemoveStep = vi.fn();
+    const onSave = vi.fn();
+    const onCancel = vi.fn();
+    const configurableStep: PipeStepView = {
+      ...steps[1],
+      options: [
+        {
+          id: "separator",
+          name: "Separator",
+          type: "select",
+          defaultValue: "-",
+          description: "Character placed between words",
+          options: ["-", "_"],
+        },
+      ],
+    };
+
+    render(
+      <PipeEditInspector
+        name=""
+        steps={[steps[0], configurableStep]}
+        tools={tools}
+        selectedStepId="step-two"
+        validation={{
+          name: "Pipe name is required",
+          form: ["Fix the pipe before saving"],
+          steps: {
+            "step-two": {
+              fields: { separator: "Choose a separator" },
+              messages: ["Step configuration is invalid"],
+            },
+          },
+        }}
+        onNameChange={onNameChange}
+        onAddStep={onAddStep}
+        onConfigChange={onConfigChange}
+        onMoveStep={onMoveStep}
+        onRemoveStep={onRemoveStep}
+        onSave={onSave}
+        onCancel={onCancel}
+      />,
+      { wrapper },
+    );
+
+    fireEvent.change(screen.getByLabelText("Pipe name"), {
+      target: { value: "Normalize" },
+    });
+    await user.selectOptions(screen.getByLabelText("Separator"), "_");
+    await user.click(screen.getByRole("button", { name: "Move Slugify up" }));
+    await user.click(screen.getByRole("button", { name: "Remove" }));
+    await user.click(screen.getByRole("button", { name: "Cancel" }));
+    await user.click(screen.getByRole("button", { name: "Save pipe" }));
+    await user.click(
+      screen.getByRole("combobox", {
+        name: "Search compatible tools to add",
+      }),
+    );
+    await user.click(screen.getByRole("option", { name: /Reverse Text/ }));
+
+    expect(onNameChange).toHaveBeenLastCalledWith("Normalize");
+    expect(onConfigChange).toHaveBeenCalledWith("step-two", "separator", "_");
+    expect(onMoveStep).toHaveBeenCalledWith("step-two", -1);
+    expect(onRemoveStep).toHaveBeenCalledWith("step-two");
+    expect(onCancel).toHaveBeenCalledOnce();
+    expect(onSave).toHaveBeenCalledOnce();
+    expect(onAddStep).toHaveBeenCalledWith("string-reverse");
+    expect(screen.getByText("Fix the pipe before saving")).toBeInTheDocument();
+    expect(
+      screen.getByText("Step configuration is invalid"),
+    ).toBeInTheDocument();
+  });
+
+  it("renders inspector guidance for no selection and unavailable steps", () => {
+    const commonProps = {
+      name: "Imported pipe",
+      tools,
+      validation: {},
+      onNameChange: vi.fn(),
+      onAddStep: vi.fn(),
+      onConfigChange: vi.fn(),
+      onMoveStep: vi.fn(),
+      onRemoveStep: vi.fn(),
+      onSave: vi.fn(),
+      onCancel: vi.fn(),
+    };
+    const { rerender } = render(
+      <PipeEditInspector {...commonProps} steps={steps} />,
+      { wrapper },
+    );
+    expect(
+      screen.getByText(/Select a step in the frozen sequence/),
+    ).toBeInTheDocument();
+
+    rerender(
+      wrapper({
+        children: (
+          <PipeEditInspector
+            {...commonProps}
+            steps={[
+              {
+                ...steps[0],
+                unavailableReason: "Tool unavailable: removed-tool",
+              },
+            ]}
+            selectedStepId="step-one"
+          />
+        ),
+      }),
+    );
+    expect(
+      screen.getByText(/will never be skipped silently/),
+    ).toBeInTheDocument();
+  });
+
   it("disables collection navigation while a working copy is active", () => {
     render(
       <SavedPipesRail
@@ -506,5 +627,115 @@ describe("pipe components", () => {
     expect(screen.getByRole("button", { name: "New pipe" })).toBeDisabled();
     expect(screen.getByRole("button", { name: "Import" })).toBeDisabled();
     expect(screen.getByRole("button", { name: /Saved pipe/ })).toBeDisabled();
+  });
+
+  it("handles saved-pipe collection actions and file imports", async () => {
+    const user = userEvent.setup();
+    const onCreate = vi.fn();
+    const onImport = vi.fn();
+    const onSelect = vi.fn();
+    const { rerender } = render(
+      <SavedPipesRail
+        pipes={[]}
+        onSelect={onSelect}
+        onCreate={onCreate}
+        onImport={onImport}
+      />,
+      { wrapper },
+    );
+    expect(
+      screen.getByText(/Your saved pipes will appear here/),
+    ).toBeInTheDocument();
+
+    rerender(
+      wrapper({
+        children: (
+          <SavedPipesRail
+            pipes={[
+              {
+                id: "pipe-one",
+                name: "Runnable pipe",
+                updatedAt: "Updated now",
+                isRunnable: true,
+              },
+              {
+                id: "pipe-two",
+                name: "Unavailable pipe",
+                updatedAt: "Updated yesterday",
+                isRunnable: false,
+              },
+            ]}
+            selectedPipeId="pipe-one"
+            onSelect={onSelect}
+            onCreate={onCreate}
+            onImport={onImport}
+          />
+        ),
+      }),
+    );
+
+    await user.click(screen.getByRole("button", { name: "New pipe" }));
+    await user.click(screen.getByRole("button", { name: /Unavailable pipe/ }));
+    const file = new File(["{}"], "pipe.json", { type: "application/json" });
+    await user.upload(screen.getByLabelText("Import pipe JSON"), file);
+
+    expect(onCreate).toHaveBeenCalledOnce();
+    expect(onSelect).toHaveBeenCalledWith("pipe-two");
+    expect(onImport).toHaveBeenCalledWith(file);
+    expect(
+      screen.getByRole("button", { name: /Runnable pipe/ }),
+    ).toHaveAttribute("aria-current", "page");
+  });
+
+  it("supports complete keyboard and pointer tool-search interaction", async () => {
+    const user = userEvent.setup();
+    const onSelect = vi.fn();
+    const onEscape = vi.fn();
+    const { rerender } = render(
+      <ToolSearchCombobox
+        items={tools}
+        onSelect={onSelect}
+        onEscape={onEscape}
+        renderLeading={(tool) => <span>Leading {tool.name}</span>}
+        renderTrailing={(tool) => <span>Trailing {tool.category}</span>}
+      />,
+      { wrapper },
+    );
+    const search = screen.getByRole("combobox", { name: "Search tools" });
+    await user.click(search);
+    expect(screen.getByText(/Start typing to search/)).toBeInTheDocument();
+
+    await user.type(search, "string");
+    await user.keyboard("{End}{ArrowUp}{Home}{ArrowDown}");
+    expect(search).toHaveAttribute("aria-activedescendant");
+    await user.keyboard("{Escape}");
+    expect(onEscape).toHaveBeenCalledOnce();
+
+    await user.clear(search);
+    await user.type(search, "not-a-real-tool");
+    expect(screen.getByText(/No tools found/)).toBeInTheDocument();
+
+    await user.clear(search);
+    await user.type(search, "reverse");
+    const option = screen.getByRole("option", { name: /Reverse Text/ });
+    fireEvent.mouseEnter(option);
+    fireEvent.mouseDown(option);
+    await user.click(option);
+    expect(onSelect).toHaveBeenCalledWith(tools[0]);
+
+    rerender(
+      wrapper({
+        children: (
+          <ToolSearchCombobox
+            items={tools}
+            onSelect={onSelect}
+            showDefaultResults
+            resultLimit={1}
+          />
+        ),
+      }),
+    );
+    await user.click(screen.getByRole("combobox", { name: "Search tools" }));
+    expect(screen.getAllByRole("option")).toHaveLength(1);
   });
 });
