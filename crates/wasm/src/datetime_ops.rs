@@ -10,27 +10,21 @@ pub fn datetime_now(millis: bool) -> i64 {
 }
 
 #[wasm_bindgen]
-pub fn datetime_from_timestamp(timestamp: i64, format: &str) -> String {
+pub fn datetime_from_timestamp(timestamp: i64, format: &str) -> Result<String, JsValue> {
     let format = match format {
         "Iso" => TimestampFormat::Iso,
         _ => TimestampFormat::Human,
     };
 
-    match timestamp::from_timestamp(timestamp, format) {
-        Ok(s) => s,
-        Err(e) => format!("Error: {}", e),
-    }
+    timestamp::from_timestamp(timestamp, format).map_err(crate::wasm_error)
 }
 
 #[wasm_bindgen]
-pub fn datetime_from_timestamp_millis(timestamp: i64, format: &str) -> String {
+pub fn datetime_from_timestamp_millis(timestamp: i64, format: &str) -> Result<String, JsValue> {
     let format = match format {
         "Iso" => TimestampFormat::Iso,
         _ => TimestampFormat::Human,
     };
 
-    match timestamp::from_timestamp_millis(timestamp, format) {
-        Ok(s) => s,
-        Err(e) => format!("Error: {}", e),
-    }
+    timestamp::from_timestamp_millis(timestamp, format).map_err(crate::wasm_error)
 }

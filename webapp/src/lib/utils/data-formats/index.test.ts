@@ -189,6 +189,23 @@ describe("dataFormatsOperations.convert", () => {
       });
     });
 
+    describe("YAML to XML", () => {
+      it("converts through JSON and applies XML output options", () => {
+        const input = "key: value";
+        const result = dataFormatsOperations.convert(input, "yaml", "xml", {
+          rootName: "document",
+        });
+
+        expect(result.success).toBe(true);
+        expect(mockedWasm.yaml_to_json).toHaveBeenCalledWith(input);
+        expect(mockedWasm.json_to_xml).toHaveBeenCalledWith(
+          '{"key":"value"}',
+          "document",
+        );
+        expect(mockedWasm.xml_beautify).toHaveBeenCalled();
+      });
+    });
+
     describe("JSON to XML", () => {
       it("converts successfully", () => {
         const input = '{"user":"Bob"}';
@@ -253,6 +270,19 @@ describe("dataFormatsOperations.convert", () => {
         expect(result.success).toBe(true);
         expect(mockedWasm.xml_to_json).toHaveBeenCalled();
         expect(mockedWasm.json_beautify).not.toHaveBeenCalled();
+      });
+    });
+
+    describe("XML to YAML", () => {
+      it("converts through JSON", () => {
+        const input = "<root><item>value</item></root>";
+        const result = dataFormatsOperations.convert(input, "xml", "yaml");
+
+        expect(result.success).toBe(true);
+        expect(mockedWasm.xml_to_json).toHaveBeenCalledWith(input);
+        expect(mockedWasm.json_to_yaml).toHaveBeenCalledWith(
+          '{"root":{"text":"content"}}',
+        );
       });
     });
   });

@@ -8,7 +8,7 @@ import {
 } from "react-router-dom";
 import { KeyboardProvider } from "./contexts/keyboard-context";
 import { SettingsProvider, useSettings } from "./contexts/settings-context";
-import { CLI, Home, Tools } from "./pages";
+import { CLI, Home, Pipes, Tools } from "./pages";
 
 function AppContent() {
   const { pinnedToolId } = useSettings();
@@ -29,6 +29,7 @@ function AppContent() {
       <Route path="/" element={<Home />} />
       <Route path="/tool/:toolId" element={<Tools />} />
       <Route path="/cli" element={<CLI />} />
+      <Route path="/pipes" element={<Pipes />} />
     </Routes>
   );
 }

@@ -5,8 +5,20 @@ import {
 } from "../components/tools";
 import type { ToolDefinition } from "../components/tools/base-tool";
 import { CATEGORY_ICONS } from "../constants/category-icons";
+import { createPipeToolContract } from "../lib/pipes/tool-contract";
 import { encodingOperations } from "../lib/utils/encoding";
 import type { Tool, ToolGroup } from "../types";
+
+const modeConfig = [
+  {
+    id: "mode",
+    name: "Mode",
+    type: "select" as const,
+    defaultValue: "encode",
+    description: "Encode or decode the incoming value",
+    options: ["encode", "decode"],
+  },
+];
 
 // Base64 Tool
 const base64ToolDefinition: ToolDefinition = {
@@ -15,6 +27,10 @@ const base64ToolDefinition: ToolDefinition = {
   description: "Encode and decode Base64 strings",
   category: "encoding",
   aliases: ["base64", "encode", "decode"],
+  pipe: createPipeToolContract({
+    input: { kind: "transform", key: "text" },
+    config: modeConfig,
+  }),
   component: Base64ToolComponent,
   operation: (inputs) => {
     const text = String(inputs.text || "");
@@ -44,6 +60,10 @@ const urlToolDefinition: ToolDefinition = {
   description: "Encode and decode URL strings",
   category: "encoding",
   aliases: ["url", "urlencode", "urldecode"],
+  pipe: createPipeToolContract({
+    input: { kind: "transform", key: "text" },
+    config: modeConfig,
+  }),
   component: UrlToolComponent,
   operation: (inputs) => {
     const text = String(inputs.text || "");
@@ -73,6 +93,10 @@ const hexToolDefinition: ToolDefinition = {
   description: "Encode text to hex, decode hex",
   category: "encoding",
   aliases: ["hex", "hexencode", "hexdecode"],
+  pipe: createPipeToolContract({
+    input: { kind: "transform", key: "text" },
+    config: modeConfig,
+  }),
   component: HexToolComponent,
   operation: (inputs) => {
     const text = String(inputs.text || "");

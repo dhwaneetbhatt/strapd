@@ -22,17 +22,11 @@ pub fn hash_sha512(input: &str) -> String {
 }
 
 #[wasm_bindgen]
-pub fn hmac_sha256(input: &str, key: &str) -> String {
-    match strapd_core::security::hmac::sha256(input, key) {
-        Ok(result) => result,
-        Err(e) => format!("Error: {}", e),
-    }
+pub fn hmac_sha256(input: &str, key: &str) -> Result<String, JsValue> {
+    strapd_core::security::hmac::sha256(input, key).map_err(crate::wasm_error)
 }
 
 #[wasm_bindgen]
-pub fn hmac_sha512(input: &str, key: &str) -> String {
-    match strapd_core::security::hmac::sha512(input, key) {
-        Ok(result) => result,
-        Err(e) => format!("Error: {}", e),
-    }
+pub fn hmac_sha512(input: &str, key: &str) -> Result<String, JsValue> {
+    strapd_core::security::hmac::sha512(input, key).map_err(crate::wasm_error)
 }

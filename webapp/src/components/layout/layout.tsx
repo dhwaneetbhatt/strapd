@@ -8,6 +8,7 @@ interface LayoutProps {
   onSearchOpen?: () => void;
   onHelpOpen?: () => void;
   onSidebarToggle?: () => void;
+  onNavigationRequest?: (to: string) => boolean;
 }
 
 export const Layout: React.FC<LayoutProps> = ({
@@ -15,6 +16,7 @@ export const Layout: React.FC<LayoutProps> = ({
   onSearchOpen,
   onHelpOpen,
   onSidebarToggle,
+  onNavigationRequest,
 }) => {
   // Set up global keyboard shortcuts
   useCommandK(() => onSearchOpen?.());
@@ -22,7 +24,11 @@ export const Layout: React.FC<LayoutProps> = ({
   useCommandH(() => onSidebarToggle?.());
   return (
     <Flex direction="column" minH="100vh">
-      <Header onSearchOpen={onSearchOpen} onHelpOpen={onHelpOpen} />
+      <Header
+        onSearchOpen={onSearchOpen}
+        onHelpOpen={onHelpOpen}
+        onNavigationRequest={onNavigationRequest}
+      />
       <Box flex={1}>{children}</Box>
     </Flex>
   );

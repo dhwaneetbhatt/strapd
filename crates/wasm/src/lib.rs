@@ -7,6 +7,13 @@ pub mod random_ops;
 pub mod security_ops;
 pub mod string_ops;
 
+use std::fmt::Display;
+use wasm_bindgen::JsValue;
+
+pub(crate) fn wasm_error(error: impl Display) -> JsValue {
+    JsValue::from_str(&format!("Error: {error}"))
+}
+
 pub use conversion_ops::*;
 pub use data_formats_ops::*;
 pub use datetime_ops::*;

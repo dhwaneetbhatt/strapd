@@ -1,5 +1,5 @@
 import * as wasm from 'strapd_wasm';
-import { ToolResult } from '../../types';
+import type { ToolResult } from '../../types';
 
 export interface WasmModule {
   string_to_uppercase: (input: string) => string;
@@ -81,10 +81,7 @@ export class WasmWrapper {
     return WasmWrapper.instance;
   }
 
-  private safeWasmCall<T>(
-    fn: () => T,
-    functionName: string
-  ): ToolResult {
+  private safeWasmCall<T>(fn: () => T, functionName: string): ToolResult {
     try {
       const result = fn();
       return {
@@ -93,9 +90,15 @@ export class WasmWrapper {
       };
     } catch (error) {
       console.error(`WASM ${functionName} error:`, error);
+      const message =
+        error instanceof Error
+          ? error.message
+          : typeof error === 'string'
+            ? error
+            : `Unknown error in ${functionName}`;
       return {
         success: false,
-        error: error instanceof Error ? error.message : `Unknown error in ${functionName}`
+        error: message.replace(/^Error:\s*/, '')
       };
     }
   }

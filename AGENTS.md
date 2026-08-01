@@ -42,13 +42,17 @@ strapd/
 ├── webapp/           # React + TypeScript frontend
 │   ├── src/
 │   │   ├── components/
+│   │   │   ├── pipes/      # Pipe builder, saved list, and runner UI
 │   │   │   └── tools/      # Tool UI components
 │   │   │       ├── encoding/
 │   │   │       ├── identifiers/
 │   │   │       └── string/
+│   │   ├── hooks/          # Shared UI state, including pipe workspace state
 │   │   ├── lib/
+│   │   │   ├── pipes/      # Pipe contracts, validation, storage, and execution
 │   │   │   ├── wasm/       # WASM wrapper
 │   │   │   └── utils/      # Utility functions
+│   │   ├── pages/          # Routed pages, including the pipe workspace
 │   │   ├── tools/          # Tool definitions & logic
 │   │   └── types/          # TypeScript types
 │   ├── wasm/         # Built WASM output (generated)
@@ -71,6 +75,12 @@ User Input → CLI Args Parser → Handler → strapd_core → Output
 ### Webapp Flow
 ```
 User Input → React Component → Tool Definition → WASM Wrapper → strapd_wasm → strapd_core → Result
+```
+
+### Webapp Pipe Flow
+
+```
+Runner Input/Source → Saved Frozen Configuration → Tool.operation → Canonical String Output → Next Step
 ```
 
 **Key Insight**: Both CLI and webapp use the same `strapd_core` library, ensuring consistent behavior.
@@ -111,6 +121,14 @@ User Input → React Component → Tool Definition → WASM Wrapper → strapd_w
 
 ### Date/Time
 - **Timestamps**: Unix timestamps, ISO 8601
+
+### Webapp Pipes
+
+- **Composition**: linear, sequential workflows built from compatible registered tools
+- **Lifecycle**: create, run, rename, edit, reorder, duplicate, export, import, and delete
+- **Persistence**: versioned browser `localStorage`; no server, account, telemetry, or network dependency
+- **Portability**: versioned single-pipe JSON documents with stable pipe and step UUIDs
+- **Configuration**: selected step options are frozen at save time and change only when the pipe is edited and saved
 
 ### Clipboard (CLI only)
 - **Copy/Paste**: `strapd copy` and `strapd paste` for workflow automation
@@ -252,6 +270,49 @@ const toolDefinition: ToolDefinition = {
 };
 ```
 
+### Pipe-Compatible Tool Registration
+
+Pipes are a framework extension of the central tool registry, not a second tool registry. A tool appears in the generic pipe builder when its `ToolDefinition` declares a versioned `pipe` contract:
+
+```typescript
+import { createPipeToolContract } from "../lib/pipes";
+
+const toolDefinition: ToolDefinition = {
+  id: "encoding-example",
+  name: "Example",
+  description: "Transform an incoming value",
+  category: "encoding",
+  component: ExampleToolComponent,
+  pipe: createPipeToolContract({
+    input: { kind: "transform", key: "text" },
+    config: [
+      {
+        id: "mode",
+        name: "Mode",
+        type: "select",
+        defaultValue: "encode",
+        description: "Choose how to transform the value",
+        options: ["encode", "decode"],
+      },
+    ],
+    outputKey: "result",
+  }),
+  operation: (inputs) => exampleOperation(inputs),
+};
+```
+
+Registration rules:
+
+- Use `{ kind: "transform", key: "..." }` for tools that consume the previous output. The runtime key is injected during execution and must not be stored in frozen configuration.
+- Use `{ kind: "source" }` for generators. A source is valid only as the first step and makes runner input unnecessary.
+- Declare builder controls as `ToolOption` metadata. Boolean, string, number, and select fields are rendered and validated generically; defaults become the initial frozen configuration.
+- Declare exactly one canonical output key and guarantee that a successful operation returns a string at that key. The default key is `result`.
+- Keep saved configuration JSON-safe. Do not serialize functions, JSX, runtime input, intermediate results, or component state.
+- Treat contract changes as compatibility changes: update the tool contract version and provide a configuration migration when older saved steps can be upgraded. Never silently drop unavailable or unsupported steps.
+- Add or update `webapp/src/tools/pipe-contracts.test.ts` whenever pipe compatibility changes.
+
+Saved pipes use stable UUIDs across rename, editing, reorder, execution, and ordinary export/import. Duplication and “import as copy” generate a new pipe UUID and new UUIDs for every step. The portable format exports one pipe per versioned JSON document; import must parse, migrate, and validate the complete document before writing to local storage.
+
 ### Component Pattern (Webapp)
 - Use `useBaseTool` hook for state management
 - Use `useAutoProcess` for automatic processing on input change
@@ -268,6 +329,20 @@ const toolDefinition: ToolDefinition = {
 - Component tests (planned)
 - Run with `make webapp-test`
 
+### Pipe Verification
+
+```bash
+cd webapp
+pnpm test --run src/tools/pipe-contracts.test.ts src/lib/pipes src/components/pipes/pipes.test.tsx
+cd ..
+make webapp-test
+make webapp-fmt-check
+make webapp-lint
+make webapp-build
+```
+
+Manually verify the `/pipes` create, edit, rename, reorder, duplicate, delete, reload, export, import-new, import-replace, import-copy, unavailable-tool, and failed-step flows. Cover desktop and mobile layouts, light and dark themes, and keyboard-only operation.
+
 ### Manual Testing
 - CLI: Test commands manually
 - Webapp: Test in browser at `http://localhost:5173/`
@@ -279,6 +354,11 @@ const toolDefinition: ToolDefinition = {
 - **Release binaries**: Built for multiple platforms
 
 ## Common Tasks for AI Agents
+
+### OpenSpec Workflow
+- Every feature, fix, or other implementation change must go through the OpenSpec workflow before code changes begin.
+- Name each OpenSpec change with its GitHub issue prefix: `gh-<issue-number>-<short-kebab-case-description>` (for example, `gh-21-add-webapp-pipes`).
+- Explore and clarify requirements first, create the OpenSpec proposal and required artifacts, apply the change, validate it, then archive it when complete.
 
 ### Adding a New Tool
 1. Implement in `crates/core/src/<category>/`

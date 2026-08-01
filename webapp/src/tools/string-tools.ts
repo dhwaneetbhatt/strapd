@@ -10,6 +10,7 @@ import {
 } from "../components/tools";
 import type { ToolDefinition } from "../components/tools/base-tool";
 import { CATEGORY_ICONS } from "../constants/category-icons";
+import { createPipeToolContract } from "../lib/pipes/tool-contract";
 import { stringUtils } from "../lib/utils/string";
 import type { Tool, ToolGroup } from "../types";
 
@@ -27,6 +28,10 @@ type AnalysisResult = {
   bytes?: number;
 };
 
+type OutputCase = "Uppercase" | "Lowercase" | "Capital case";
+
+const DEFAULT_OUTPUT_CASE: OutputCase = "Uppercase";
+
 // Define consolidated case tool
 const caseConverterToolDefinition: ToolDefinition<CaseConverterResult> = {
   id: "string-case-converter",
@@ -34,6 +39,19 @@ const caseConverterToolDefinition: ToolDefinition<CaseConverterResult> = {
   description: "Convert to uppercase, lowercase, capital case",
   category: "string",
   aliases: ["case", "convert", "upper", "lower", "capital"],
+  pipe: createPipeToolContract({
+    input: { kind: "transform", key: "text" },
+    config: [
+      {
+        id: "outputCase",
+        name: "Output case",
+        type: "select",
+        defaultValue: DEFAULT_OUTPUT_CASE,
+        description: "Case conversion applied to the incoming value",
+        options: ["Uppercase", "Lowercase", "Capital case"],
+      },
+    ],
+  }),
   component: CaseConverterToolComponent,
   operation: (inputs) => {
     const text = String(inputs.text || "");
@@ -50,13 +68,20 @@ const caseConverterToolDefinition: ToolDefinition<CaseConverterResult> = {
     const upper = stringUtils.case.uppercase(text);
     const lower = stringUtils.case.lowercase(text);
     const capital = stringUtils.case.capitalcase(text);
+    const outputCase = String(inputs.outputCase ?? DEFAULT_OUTPUT_CASE);
+    const result =
+      outputCase === "Lowercase"
+        ? lower.result
+        : outputCase === "Capital case"
+          ? capital.result
+          : upper.result;
 
     return {
       success: true,
       uppercase: upper.result,
       lowercase: lower.result,
       capitalcase: capital.result,
-      result: upper.result, // Default result
+      result,
     };
   },
 };
@@ -68,6 +93,7 @@ const analysisToolDefinition: ToolDefinition<AnalysisResult> = {
   description: "Count lines, words, characters, bytes",
   category: "string",
   aliases: ["count", "stats", "length", "analysis"],
+  pipe: createPipeToolContract({ input: { kind: "transform", key: "text" } }),
   component: AnalysisToolComponent,
   operation: (inputs) => {
     const text = String(inputs.text || "");
@@ -101,6 +127,7 @@ const reverseToolDefinition: ToolDefinition = {
   description: "Reverse text character by character",
   category: "string",
   aliases: ["reverse", "flip", "backwards"],
+  pipe: createPipeToolContract({ input: { kind: "transform", key: "text" } }),
   component: ReverseToolComponent,
   operation: (inputs) =>
     stringUtils.transform.reverse(String(inputs.text || "")),
@@ -112,6 +139,25 @@ const replaceToolDefinition: ToolDefinition = {
   description: "Find text and replace with new text",
   category: "string",
   aliases: ["replace", "substitute", "find"],
+  pipe: createPipeToolContract({
+    input: { kind: "transform", key: "text" },
+    config: [
+      {
+        id: "search",
+        name: "Find",
+        type: "string",
+        defaultValue: "",
+        description: "Text to find",
+      },
+      {
+        id: "replacement",
+        name: "Replace with",
+        type: "string",
+        defaultValue: "",
+        description: "Replacement text",
+      },
+    ],
+  }),
   component: ReplaceToolComponent,
   operation: (inputs) =>
     stringUtils.transform.replace(
@@ -127,11 +173,31 @@ const slugifyToolDefinition: ToolDefinition = {
   description: "Convert text to URL-friendly slug format",
   category: "string",
   aliases: ["slug", "url", "kebab"],
+  pipe: createPipeToolContract({
+    input: { kind: "transform", key: "text" },
+    config: [
+      {
+        id: "separator",
+        name: "Separator",
+        type: "string",
+        defaultValue: "-",
+        description: "Separator placed between slug words",
+        validations: [
+          {
+            rule: "stringLength",
+            min: 1,
+            max: 1,
+            message: "Separator must be exactly one character",
+          },
+        ],
+      },
+    ],
+  }),
   component: SlugifyToolComponent,
   operation: (inputs) =>
     stringUtils.transform.slugify(
       String(inputs.text || ""),
-      String(inputs.separator || "-"),
+      String(inputs.separator ?? "-"),
     ),
 };
 
@@ -142,6 +208,32 @@ const whitespaceToolDefinition: ToolDefinition = {
   description: "Trim, collapse whitespace, customize sides",
   category: "string",
   aliases: ["trim", "space", "clean"],
+  pipe: createPipeToolContract({
+    input: { kind: "transform", key: "text" },
+    config: [
+      {
+        id: "left",
+        name: "Trim left",
+        type: "boolean",
+        defaultValue: true,
+        description: "Remove leading whitespace",
+      },
+      {
+        id: "right",
+        name: "Trim right",
+        type: "boolean",
+        defaultValue: true,
+        description: "Remove trailing whitespace",
+      },
+      {
+        id: "all",
+        name: "Collapse whitespace",
+        type: "boolean",
+        defaultValue: false,
+        description: "Collapse repeated whitespace throughout the value",
+      },
+    ],
+  }),
   component: WhitespaceToolComponent,
   operation: (inputs) => {
     const text = String(inputs.text || "");

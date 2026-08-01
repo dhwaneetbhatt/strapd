@@ -31,9 +31,18 @@ It's primarily CLI-focused, but also includes a webapp interface for those who p
 - **Security**: Hash (MD5, SHA-1, SHA-256, SHA-512), HMAC (SHA-256, SHA-512)
 - **Random**: numbers, strings
 - **Date/Time**: timestamps
+- **Webapp Pipes**: reusable, sequential workflows composed from compatible tools
 - **Clipboard**: copy and paste (CLI only)
 
 Head over to the [webapp](https://dhwaneetbhatt.com/strapd/) for an interactive experience!
+
+## Webapp Pipes
+
+The webapp can combine compatible tools into a reusable linear pipe: the output of each step becomes the input of the next. Open `/pipes` in the webapp to create a pipe, choose and freeze each step's configuration, reorder steps, and run the saved sequence. Generator tools can start a pipe without user input; all other pipes accept an initial string.
+
+Pipes are saved in browser `localStorage`, so creating, editing, and running them remains offline and does not require an account or server. They are local to the current browser profile and origin; export important pipes before clearing site data or moving to another browser.
+
+Export downloads one pipe as a versioned JSON document. The document contains the pipe's stable UUID, ordered step UUIDs, tool IDs and contract versions, and frozen JSON-safe configuration. Import validates and migrates supported documents before saving them. A UUID conflict can replace the existing local pipe or import a copy with fresh pipe and step UUIDs.
 
 ## CLI Installation
 
@@ -115,22 +124,39 @@ strapd copy | strapd str upper | strapd paste
 ## Development and Contributing
 
 1. Fork and clone the repository
-2. Install hooks: `make install-hooks`
-3. Make changes and commit (hooks run automatically)
-4. Submit a pull request
+2. Run `make setup` to install the development toolchain and dependencies. It uses asdf for Node.js and pnpm, and rustup for Rust.
+3. Install hooks: `make install-hooks`
+4. Make changes and commit (hooks run automatically)
+5. Submit a pull request
 
 ### Available Commands
 
 ```bash
+make setup         # Install development tools and dependencies
 make cli-build     # Build CLI (debug)
 make cli-release   # Build CLI (release)
 make wasm-build    # Build WASM module
 make webapp-build  # Build webapp
+make webapp-test   # Run webapp tests
+make webapp-lint   # Lint webapp code
+make webapp-fmt-check # Check webapp formatting
 make test          # Run tests
 make lint          # Run clippy linter
 make fmt           # Format code
 make install-hooks # Install git pre-commit hooks
 make help          # Show all available commands
+```
+
+For pipe-specific development, run the focused tests before the full webapp checks:
+
+```bash
+cd webapp
+pnpm test --run src/tools/pipe-contracts.test.ts src/lib/pipes src/components/pipes/pipes.test.tsx
+cd ..
+make webapp-test
+make webapp-fmt-check
+make webapp-lint
+make webapp-build
 ```
 
 ## License

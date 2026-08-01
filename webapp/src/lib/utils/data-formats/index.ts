@@ -101,6 +101,21 @@ export const dataFormatsOperations = {
       return result;
     }
 
+    // YAML → XML via the canonical JSON representation
+    if (sourceFormat === "yaml" && targetFormat === "xml") {
+      const jsonResult = dataFormatsOperations.yamlToJson(input);
+      if (!jsonResult.success || !jsonResult.result) return jsonResult;
+
+      const xmlResult = dataFormatsOperations.jsonToXml(
+        jsonResult.result,
+        options?.rootName,
+      );
+      if (xmlResult.success && !minify && xmlResult.result) {
+        return dataFormatsOperations.xmlBeautify(xmlResult.result, 2);
+      }
+      return xmlResult;
+    }
+
     // JSON → XML
     if (sourceFormat === "json" && targetFormat === "xml") {
       const result = dataFormatsOperations.jsonToXml(input, options?.rootName);
@@ -117,6 +132,13 @@ export const dataFormatsOperations = {
         return dataFormatsOperations.jsonBeautify(result.result, false, 2);
       }
       return result;
+    }
+
+    // XML → YAML via the canonical JSON representation
+    if (sourceFormat === "xml" && targetFormat === "yaml") {
+      const jsonResult = dataFormatsOperations.xmlToJson(input);
+      if (!jsonResult.success || !jsonResult.result) return jsonResult;
+      return dataFormatsOperations.jsonToYaml(jsonResult.result);
     }
 
     return { success: false, error: "Unsupported conversion" };

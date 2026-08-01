@@ -1,0 +1,92 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-08-01T00:00:00Z",
+  "title": "Design System: strapd",
+  "extensions": {
+    "colorMeta": {
+      "editor-blue": { "role": "primary", "displayName": "Editor Blue", "canonical": "#0ea5e9", "tonalRamp": ["oklch(15% 0.05 235)", "oklch(26% 0.08 235)", "oklch(38% 0.12 235)", "oklch(50% 0.16 235)", "#0ea5e9", "oklch(72% 0.14 235)", "oklch(84% 0.09 235)", "oklch(95% 0.03 235)"] },
+      "focus-blue": { "role": "primary", "displayName": "Focus Blue", "canonical": "#007acc", "tonalRamp": ["oklch(15% 0.06 245)", "oklch(27% 0.10 245)", "oklch(39% 0.14 245)", "#007acc", "oklch(59% 0.16 245)", "oklch(72% 0.13 245)", "oklch(84% 0.08 245)", "oklch(95% 0.03 245)"] },
+      "workbench-gray": { "role": "neutral", "displayName": "Workbench Gray", "canonical": "#f3f3f3", "tonalRamp": ["#1e1e1e", "#2d2d30", "#464647", "#757575", "#999999", "#d4d4d4", "#e5e5e5", "#f8f8f8"] },
+      "panel-white": { "role": "neutral", "displayName": "Panel White", "canonical": "#ffffff", "tonalRamp": ["#1f1f1f", "#424242", "#616161", "#757575", "#bdbdbd", "#e5e5e5", "#f3f3f3", "#ffffff"] }
+    },
+    "typographyMeta": {
+      "display": { "displayName": "Inter Display", "purpose": "Page-level headings and product identity." },
+      "body": { "displayName": "Inter UI", "purpose": "Navigation, labels, instructions, and supporting copy." },
+      "mono": { "displayName": "JetBrains Mono Data", "purpose": "Inputs, output, placeholders, and developer-facing values." }
+    },
+    "shadows": [
+      { "name": "header-sm", "value": "sm", "purpose": "Keeps the sticky header legible above the workspace." },
+      { "name": "card-hover", "value": "0 4px 12px rgba(0, 0, 0, 0.1)", "purpose": "A restrained lift for clickable tool cards on hover." }
+    ],
+    "motion": [
+      { "name": "card-hover", "value": "transform 0.2s", "purpose": "Short hover lift on feature cards." }
+    ],
+    "breakpoints": [
+      { "name": "sm", "value": "30em" },
+      { "name": "md", "value": "48em" },
+      { "name": "lg", "value": "62em" }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "The clear affirmative action for a tool or installation flow.",
+      "html": "<button class=\"ds-btn-primary\">Transform</button>",
+      "css": ".ds-btn-primary { background: #0ea5e9; color: #ffffff; border: 0; border-radius: 0.5rem; padding: 0.5rem 1rem; font: 600 0.875rem Inter, sans-serif; cursor: pointer; } .ds-btn-primary:hover { background: #0284c7; } .ds-btn-primary:focus-visible { outline: 2px solid #007acc; outline-offset: 2px; }"
+    },
+    {
+      "name": "Copy Button",
+      "kind": "button",
+      "refersTo": "button-copy",
+      "description": "A compact secondary control for copying generated utility output.",
+      "html": "<button class=\"ds-btn-copy\">⧉ Copy</button>",
+      "css": ".ds-btn-copy { background: transparent; color: #4a5568; border: 0; border-radius: 0.5rem; min-height: 1.5rem; padding: 0 0.5rem; font: 0.75rem Inter, sans-serif; cursor: pointer; } .ds-btn-copy:hover { background: rgba(0,0,0,0.1); } .ds-btn-copy:focus-visible { outline: 2px solid #007acc; outline-offset: 2px; }"
+    },
+    {
+      "name": "Tool Text Area",
+      "kind": "input",
+      "refersTo": "tool-input",
+      "description": "The resizable monospace working surface for source and result text.",
+      "html": "<textarea class=\"ds-tool-input\" placeholder=\"Enter text to transform…\"></textarea>",
+      "css": ".ds-tool-input { box-sizing: border-box; width: 100%; min-height: 12rem; resize: vertical; background: #ffffff; color: #1f1f1f; border: 1px solid #e5e5e5; border-radius: 0.5rem; padding: 0.75rem; font: 0.875rem/1.5 'JetBrains Mono', monospace; } .ds-tool-input:hover { border-color: #d4d4d4; } .ds-tool-input:focus-visible { outline: 0; border-color: #007acc; box-shadow: 0 0 0 1px #007acc; }"
+    },
+    {
+      "name": "Search Launcher",
+      "kind": "input",
+      "refersTo": "search-launcher",
+      "description": "A compact command-palette launcher with visible keyboard affordance.",
+      "html": "<button class=\"ds-search\"><span>⌕&nbsp; Search tools…</span><kbd>⌘ K</kbd></button>",
+      "css": ".ds-search { width: 20rem; display: flex; align-items: center; justify-content: space-between; background: #ffffff; color: #616161; border: 1px solid #e5e5e5; border-radius: 0.5rem; padding: 0.4rem 0.6rem; font: 0.875rem 'JetBrains Mono', monospace; text-align: left; cursor: pointer; } .ds-search:hover { border-color: #d4d4d4; } .ds-search:focus-visible { outline: 0; border-color: #007acc; box-shadow: 0 0 0 1px #0ea5e9; } .ds-search kbd { background: #f0f0f0; color: #666666; border-radius: 0.25rem; padding: 0.1rem 0.25rem; font: 0.75rem Inter, sans-serif; }"
+    },
+    {
+      "name": "Tool Card",
+      "kind": "card",
+      "refersTo": "tool-card",
+      "description": "A discoverable utility entry that stays quiet until hovered.",
+      "html": "<article class=\"ds-tool-card\"><strong>Base64</strong><span>Encode and decode text.</span></article>",
+      "css": ".ds-tool-card { display: grid; gap: 0.4rem; background: #f8f8f8; color: #1f1f1f; border: 1px solid #e5e5e5; border-radius: 0.5rem; padding: 1.5rem; font: 0.875rem Inter, sans-serif; transition: transform 0.2s, box-shadow 0.2s, background 0.2s; } .ds-tool-card:hover { background: #f0f0f0; border-color: #d4d4d4; box-shadow: 0 4px 12px rgba(0,0,0,0.1); transform: translateY(-2px); }"
+    },
+    {
+      "name": "Selected Navigation Item",
+      "kind": "nav",
+      "refersTo": "sidebar-selected-item",
+      "description": "A grouped sidebar item with a precise blue selection edge.",
+      "html": "<button class=\"ds-nav-item\">Base64</button>",
+      "css": ".ds-nav-item { width: 100%; background: #e7f3ff; color: #1f1f1f; border: 0; border-left: 2px solid #007acc; border-radius: 0.5rem; padding: 0.5rem 0.75rem; font: 500 0.875rem Inter, sans-serif; text-align: left; cursor: pointer; } .ds-nav-item:hover { background: #d4edff; } .ds-nav-item:focus-visible { outline: 2px solid #007acc; outline-offset: 2px; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Dependable Codebench",
+    "overview": "strapd is a calm, familiar developer workspace: a VS Code-inspired workbench where practical utility takes priority over spectacle. Light and dark modes use neutral gray planes, restrained borders, and a single clear blue signal for the actions and states that need attention. The interface is compact but not cramped. Inter keeps navigation and explanatory copy readable, while JetBrains Mono gives input, output, and data handling the texture of a real developer tool.",
+    "keyCharacteristics": ["Familiar editor-like neutral surfaces in both color modes.", "One reliable blue accent for focus, selection, and primary action.", "Monospace fields for data; clean sans-serif UI for orientation and controls.", "Flat operational surfaces that lift only to communicate interaction or persistent structure."],
+    "rules": [
+      { "name": "The One Signal Rule", "body": "Use blue to identify focus, selection, primary action, and product navigation—not as a decorative fill across every surface.", "section": "colors" },
+      { "name": "The Data Texture Rule", "body": "Keep interface labels and explanations in Inter; reserve monospace typography for content a developer might inspect, paste, transform, or pipe.", "section": "typography" },
+      { "name": "The Earned Lift Rule", "body": "A surface earns elevation only when it is sticky, hovered, or otherwise actively inviting interaction.", "section": "elevation" }
+    ],
+    "dos": ["Do use neutral layered surfaces and thin borders to organize operational space.", "Do make keyboard focus unmistakable with Focus Blue.", "Do use JetBrains Mono for input, output, placeholders, and values under transformation.", "Do keep interactive movement brief and restrained, such as the existing small card lift on hover."],
+    "donts": ["Don't spread the blue accent across backgrounds that do not convey action, focus, or selection.", "Don't introduce heavy shadows, glossy effects, or decorative gradients into tool workflows.", "Don't use monospace as the default for navigation, explanations, or broad page copy.", "Don't hide essential navigation or fast actions behind pointer-only interactions."]
+  }
+}

@@ -31,6 +31,7 @@ export const appConfig = {
     favorites: "strapd-favorites",
     recent: "strapd-recent",
     preferences: "strapd-preferences",
+    pipes: "strapd-pipes",
   },
 
   // External links
