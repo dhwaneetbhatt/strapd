@@ -107,11 +107,11 @@ prefix_rule(
     justification = "Allow project-local OpenSpec planning and validation while keeping archive operations approval-gated.",
     match = [
         "openspec list --json",
-        "openspec new change gh-21-add-webapp-pipes",
-        "openspec validate gh-21-add-webapp-pipes",
+        "openspec new change gh-123-example-change",
+        "openspec validate gh-123-example-change",
     ],
     not_match = [
-        "openspec archive gh-21-add-webapp-pipes",
+        "openspec archive gh-123-example-change",
     ],
 )
 
@@ -120,9 +120,9 @@ prefix_rule(
     decision = "allow",
     justification = "Allow read-only inspection of GitHub issues referenced by project work.",
     match = [
-        "gh issue view 21 --repo dhwaneetbhatt/strapd",
+        "gh issue view 123 --repo dhwaneetbhatt/strapd",
     ],
     not_match = [
-        "gh issue close 21 --repo dhwaneetbhatt/strapd",
+        "gh issue close 123 --repo dhwaneetbhatt/strapd",
     ],
 )

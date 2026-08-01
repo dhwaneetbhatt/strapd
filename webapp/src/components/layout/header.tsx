@@ -71,11 +71,11 @@ export const Header: React.FC<HeaderProps> = ({
 
         {/* Navigation and Action buttons */}
         <HStack spacing={2}>
-          <Tooltip label="Saved pipes" hasArrow>
+          <Tooltip label="Pipes" hasArrow>
             <IconButton
               as={Link}
               to="/pipes"
-              aria-label="Saved pipes"
+              aria-label="Pipes"
               icon={<FiGitMerge />}
               variant={isPipesPage ? "solid" : "ghost"}
               colorScheme={isPipesPage ? "brand" : undefined}

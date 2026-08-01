@@ -3,7 +3,7 @@ THESIS: A runner-first saved-workflow codebench; editing is a focused secondary 
 OWN-WORLD: Existing neutral workbench planes, quiet one-pixel dividers, practical rectangles, and one blue interaction signal.
 STORY: Choose a saved pipe, paste or generate input, run it, inspect the final output, then edit frozen steps deliberately.
 FIRST VIEWPORT: Saved rail at left; dominant input/output workbench and Run bridge at center; frozen step ribbon below; contextual inspector in edit mode.
-FORM: Runner-first workspace, approved seed gh21-pipes-runner-first.
+FORM: Runner-first workspace.
 FINISH: unreviewed and undocumented is unfinished; this build ends with the finish review, the verdict, and DESIGN.md
 */
 import {
