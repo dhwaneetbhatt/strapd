@@ -6,7 +6,6 @@ import {
   waitFor,
   within,
 } from "@testing-library/react";
-import userEvent from "@testing-library/user-event";
 import type React from "react";
 import { MemoryRouter } from "react-router-dom";
 import { beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
@@ -118,8 +117,17 @@ const selectedWorkspace = () => ({
   canRun: true,
 });
 
-const openPipeActions = async (user: ReturnType<typeof userEvent.setup>) => {
-  await user.click(screen.getByRole("button", { name: "More pipe actions" }));
+const openPipeActions = async () => {
+  fireEvent.click(screen.getByRole("button", { name: "More pipe actions" }));
+  await screen.findByRole("menu");
+};
+
+const choosePipeAction = async (name: string) => {
+  await openPipeActions();
+  fireEvent.click(await screen.findByRole("menuitem", { name }));
+  await waitFor(() =>
+    expect(screen.queryByRole("menu")).not.toBeInTheDocument(),
+  );
 };
 
 const wrapper = ({ children }: { children: React.ReactNode }) => (
@@ -131,6 +139,10 @@ const wrapper = ({ children }: { children: React.ReactNode }) => (
 );
 
 beforeAll(() => {
+  Object.defineProperty(window, "scrollTo", {
+    configurable: true,
+    value: vi.fn(),
+  });
   Object.defineProperty(HTMLElement.prototype, "scrollTo", {
     configurable: true,
     value: vi.fn(),
@@ -156,28 +168,26 @@ describe("Pipes page correctness states", () => {
     workspaceState = baseWorkspace();
   });
 
-  it("uses a real button to trigger the existing hidden import input", async () => {
-    const user = userEvent.setup();
+  it("uses a real button to trigger the existing hidden import input", () => {
     render(<Pipes />, { wrapper });
     const fileInput = screen.getByLabelText("Import pipe JSON");
     const clickInput = vi.spyOn(fileInput, "click");
 
-    await user.click(screen.getByRole("button", { name: "Import JSON" }));
+    fireEvent.click(screen.getByRole("button", { name: "Import JSON" }));
 
     expect(clickInput).toHaveBeenCalledOnce();
   });
 
   it("shows an accessible confirmation for global header navigation", async () => {
-    const user = userEvent.setup();
     workspaceState = { ...baseWorkspace(), hasUnsavedChanges: true };
     render(<Pipes />, { wrapper });
 
-    await user.click(screen.getByRole("link", { name: "CLI Tool" }));
+    fireEvent.click(screen.getByRole("link", { name: "CLI Tool" }));
 
     expect(
       screen.getByRole("alertdialog", { name: "Leave without saving?" }),
     ).toBeInTheDocument();
-    await user.click(
+    fireEvent.click(
       screen.getByRole("button", { name: "Stay and keep editing" }),
     );
     await waitFor(() =>
@@ -256,86 +266,115 @@ describe("Pipes page correctness states", () => {
     expect(within(sequence).getByText("Separator: _")).toBeInTheDocument();
   });
 
-  it("wires selected-pipe run, edit, export, duplicate, input, and reset actions", async () => {
-    const user = userEvent.setup();
+  it("wires selected-pipe run, edit, input, and reset actions", () => {
     const state = selectedWorkspace();
     workspaceState = state;
     render(<Pipes />, { wrapper });
 
-    await user.click(screen.getByRole("button", { name: "Run" }));
-    await user.click(screen.getByRole("button", { name: "Edit" }));
+    fireEvent.click(screen.getByRole("button", { name: "Run" }));
+    fireEvent.click(screen.getByRole("button", { name: "Edit" }));
     fireEvent.change(screen.getByLabelText("Pipe input"), {
       target: { value: "next payload" },
     });
-    await user.click(screen.getByRole("button", { name: "Run pipe" }));
-    await user.click(screen.getByRole("button", { name: "Reset run" }));
-
-    await openPipeActions(user);
-    await user.click(screen.getByRole("menuitem", { name: "Export" }));
-    await openPipeActions(user);
-    await user.click(screen.getByRole("menuitem", { name: "Duplicate" }));
+    fireEvent.click(screen.getByRole("button", { name: "Run pipe" }));
+    fireEvent.click(screen.getByRole("button", { name: "Reset run" }));
 
     expect(state.run).toHaveBeenCalledTimes(2);
     expect(state.startEdit).toHaveBeenCalledOnce();
     expect(state.setInput).toHaveBeenCalledWith("next payload");
     expect(state.resetRun).toHaveBeenCalledOnce();
-    expect(state.exportSelected).toHaveBeenCalledOnce();
-    expect(state.duplicate).toHaveBeenCalledOnce();
-  }, 10_000);
+  });
 
-  it("keeps rename open after rejection, closes on success, and cancels with Escape", async () => {
-    const user = userEvent.setup();
+  it("dispatches the responsive export action", async () => {
     const state = selectedWorkspace();
     workspaceState = state;
     render(<Pipes />, { wrapper });
 
-    await openPipeActions(user);
-    await user.click(screen.getByRole("menuitem", { name: "Rename" }));
+    await choosePipeAction("Export");
+
+    expect(state.exportSelected).toHaveBeenCalledOnce();
+  });
+
+  it("dispatches the responsive duplicate action", async () => {
+    const state = selectedWorkspace();
+    workspaceState = state;
+    render(<Pipes />, { wrapper });
+
+    await choosePipeAction("Duplicate");
+
+    expect(state.duplicate).toHaveBeenCalledOnce();
+  });
+
+  it("keeps rename open after rejection", async () => {
+    const state = selectedWorkspace();
+    workspaceState = state;
+    render(<Pipes />, { wrapper });
+
+    await choosePipeAction("Rename");
     const nameInput = screen.getByLabelText("Pipe name");
     fireEvent.change(nameInput, { target: { value: "Renamed pipe" } });
-    await user.click(screen.getByRole("button", { name: "Save name" }));
+    fireEvent.click(screen.getByRole("button", { name: "Save name" }));
 
     expect(state.rename).toHaveBeenLastCalledWith("Renamed pipe");
     expect(screen.getByLabelText("Pipe name")).toBeInTheDocument();
-
-    state.rename.mockReturnValueOnce(true);
-    await user.keyboard("{Enter}");
-    expect(screen.queryByLabelText("Pipe name")).not.toBeInTheDocument();
-
-    await openPipeActions(user);
-    await user.click(screen.getByRole("menuitem", { name: "Rename" }));
-    await user.keyboard("{Escape}");
-    expect(screen.queryByLabelText("Pipe name")).not.toBeInTheDocument();
-    expect(state.rename).toHaveBeenCalledTimes(2);
   });
 
-  it("cancels and confirms deletion through the protected dialog", async () => {
-    const user = userEvent.setup();
+  it("closes rename after successful keyboard confirmation", async () => {
+    const state = selectedWorkspace();
+    state.rename.mockReturnValueOnce(true);
+    workspaceState = state;
+    render(<Pipes />, { wrapper });
+
+    await choosePipeAction("Rename");
+    const nameInput = screen.getByLabelText("Pipe name");
+    fireEvent.change(nameInput, { target: { value: "Renamed pipe" } });
+    fireEvent.keyDown(nameInput, { key: "Enter" });
+
+    expect(state.rename).toHaveBeenCalledWith("Renamed pipe");
+    expect(screen.queryByLabelText("Pipe name")).not.toBeInTheDocument();
+  });
+
+  it("cancels rename with Escape", async () => {
     const state = selectedWorkspace();
     workspaceState = state;
     render(<Pipes />, { wrapper });
 
-    await openPipeActions(user);
-    await user.click(screen.getByRole("menuitem", { name: "Delete" }));
+    await choosePipeAction("Rename");
+    fireEvent.keyDown(screen.getByLabelText("Pipe name"), { key: "Escape" });
+
+    expect(screen.queryByLabelText("Pipe name")).not.toBeInTheDocument();
+    expect(state.rename).not.toHaveBeenCalled();
+  });
+
+  it("cancels deletion through the protected dialog", async () => {
+    const state = selectedWorkspace();
+    workspaceState = state;
+    render(<Pipes />, { wrapper });
+
+    await choosePipeAction("Delete");
     expect(
       await screen.findByRole("alertdialog", { name: "Delete this pipe?" }),
     ).toHaveTextContent("Local pipe will be removed");
-    await user.click(screen.getByRole("button", { name: "Cancel" }));
+    fireEvent.click(screen.getByRole("button", { name: "Cancel" }));
     await waitFor(() =>
       expect(
         screen.queryByRole("alertdialog", { name: "Delete this pipe?" }),
       ).not.toBeInTheDocument(),
     );
     expect(state.deleteSelected).not.toHaveBeenCalled();
+  });
 
-    await openPipeActions(user);
-    await user.click(screen.getByRole("menuitem", { name: "Delete" }));
-    await user.click(screen.getByRole("button", { name: "Delete pipe" }));
+  it("confirms deletion through the protected dialog", async () => {
+    const state = selectedWorkspace();
+    workspaceState = state;
+    render(<Pipes />, { wrapper });
+
+    await choosePipeAction("Delete");
+    fireEvent.click(screen.getByRole("button", { name: "Delete pipe" }));
     expect(state.deleteSelected).toHaveBeenCalledOnce();
-  }, 10_000);
+  });
 
-  it("dispatches every import conflict decision", async () => {
-    const user = userEvent.setup();
+  it("dispatches every import conflict decision", () => {
     const state = {
       ...baseWorkspace(),
       importConflict: {
@@ -347,17 +386,16 @@ describe("Pipes page correctness states", () => {
     workspaceState = state;
     render(<Pipes />, { wrapper });
 
-    await user.click(screen.getByRole("button", { name: "Import as copy" }));
-    await user.click(screen.getByRole("button", { name: "Replace existing" }));
-    await user.click(screen.getByRole("button", { name: "Cancel" }));
+    fireEvent.click(screen.getByRole("button", { name: "Import as copy" }));
+    fireEvent.click(screen.getByRole("button", { name: "Replace existing" }));
+    fireEvent.click(screen.getByRole("button", { name: "Cancel" }));
 
     expect(state.resolveConflict).toHaveBeenNthCalledWith(1, "copy");
     expect(state.resolveConflict).toHaveBeenNthCalledWith(2, "replace");
     expect(state.dismissImportConflict).toHaveBeenCalledOnce();
   });
 
-  it("dismisses workspace errors and explains an unrunnable selected pipe", async () => {
-    const user = userEvent.setup();
+  it("dismisses workspace errors and explains an unrunnable selected pipe", () => {
     const state = selectedWorkspace();
     workspaceState = {
       ...state,
@@ -372,13 +410,12 @@ describe("Pipes page correctness states", () => {
       screen.getByText(/unavailable or incompatible step/i),
     ).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Run" })).toBeDisabled();
-    await user.click(screen.getByRole("button", { name: "Dismiss error" }));
+    fireEvent.click(screen.getByRole("button", { name: "Dismiss error" }));
 
     expect(state.clearError).toHaveBeenCalledOnce();
   });
 
-  it("wires create-mode naming, tool selection, save, and cancel", async () => {
-    const user = userEvent.setup();
+  it("wires create-mode naming, tool selection, save, and cancel", () => {
     const state = {
       ...baseWorkspace(),
       mode: "edit",
@@ -396,12 +433,12 @@ describe("Pipes page correctness states", () => {
     fireEvent.change(screen.getByLabelText("Pipe name"), {
       target: { value: "New workflow" },
     });
-    await user.click(
+    fireEvent.focus(
       screen.getByRole("combobox", { name: "Find a tool to add" }),
     );
-    await user.keyboard("{Enter}");
-    await user.click(screen.getByRole("button", { name: "Save pipe" }));
-    await user.click(screen.getByRole("button", { name: "Cancel" }));
+    fireEvent.click(screen.getByRole("option", { name: /Reverse Text/ }));
+    fireEvent.click(screen.getByRole("button", { name: "Save pipe" }));
+    fireEvent.click(screen.getByRole("button", { name: "Cancel" }));
 
     expect(state.setDraftName).toHaveBeenCalledWith("New workflow");
     expect(state.addStep).toHaveBeenCalledWith(tool.id);
@@ -409,8 +446,7 @@ describe("Pipes page correctness states", () => {
     expect(state.cancelEdit).toHaveBeenCalledOnce();
   });
 
-  it("wires existing-edit inspector and runner interactions", async () => {
-    const user = userEvent.setup();
+  it("wires existing-edit inspector and runner interactions", () => {
     const state = {
       ...selectedWorkspace(),
       mode: "edit",
@@ -428,10 +464,10 @@ describe("Pipes page correctness states", () => {
     fireEvent.change(screen.getByLabelText("Pipe name"), {
       target: { value: "Edited workflow" },
     });
-    await user.click(screen.getByRole("button", { name: "Remove" }));
-    await user.click(screen.getByRole("button", { name: "Run pipe" }));
-    await user.click(screen.getByRole("button", { name: "Save pipe" }));
-    await user.click(screen.getByRole("button", { name: "Cancel" }));
+    fireEvent.click(screen.getByRole("button", { name: "Remove" }));
+    fireEvent.click(screen.getByRole("button", { name: "Run pipe" }));
+    fireEvent.click(screen.getByRole("button", { name: "Save pipe" }));
+    fireEvent.click(screen.getByRole("button", { name: "Cancel" }));
 
     expect(state.setDraftName).toHaveBeenCalledWith("Edited workflow");
     expect(state.removeStep).toHaveBeenCalledWith(step.id);
@@ -475,12 +511,11 @@ describe("Pipes page correctness states", () => {
   });
 
   it("confirms guarded navigation when the user chooses to discard changes", async () => {
-    const user = userEvent.setup();
     workspaceState = { ...baseWorkspace(), hasUnsavedChanges: true };
     render(<Pipes />, { wrapper });
 
-    await user.click(screen.getByRole("link", { name: "CLI Tool" }));
-    await user.click(
+    fireEvent.click(screen.getByRole("link", { name: "CLI Tool" }));
+    fireEvent.click(
       screen.getByRole("button", { name: "Leave without saving" }),
     );
 

@@ -1,11 +1,37 @@
 import { ChakraProvider } from "@chakra-ui/react";
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
-import userEvent from "@testing-library/user-event";
 import type React from "react";
 import { beforeAll, describe, expect, it, vi } from "vitest";
 import theme from "../../config/theme";
 import { toolGroups } from "../../tools";
 import { Sidebar } from "./sidebar";
+
+vi.mock("../../tools", () => ({
+  toolGroups: [
+    {
+      category: "string",
+      name: "Text Tools",
+      description: "Text utilities",
+      icon: "📝",
+      tools: [
+        {
+          id: "string-case-converter",
+          name: "Case Converter",
+          description: "Convert text case",
+          category: "string",
+          operation: vi.fn(),
+        },
+        {
+          id: "string-analysis",
+          name: "Text Analysis",
+          description: "Analyze text",
+          category: "string",
+          operation: vi.fn(),
+        },
+      ],
+    },
+  ],
+}));
 
 const firstTool = toolGroups[0].tools[0];
 const secondTool = toolGroups[0].tools[1];
@@ -22,6 +48,10 @@ const wrapper = ({ children }: { children: React.ReactNode }) => (
 );
 
 beforeAll(() => {
+  Object.defineProperty(window, "scrollTo", {
+    configurable: true,
+    value: vi.fn(),
+  });
   Object.defineProperty(window, "matchMedia", {
     configurable: true,
     writable: true,
@@ -40,7 +70,6 @@ beforeAll(() => {
 
 describe("Sidebar", () => {
   it("supports grouped pointer and keyboard navigation", async () => {
-    const user = userEvent.setup();
     const onToolSelect = vi.fn();
     const onToggle = vi.fn();
     const { container, rerender } = render(
@@ -85,12 +114,10 @@ describe("Sidebar", () => {
     const groupButton = screen.getByRole("button", {
       name: new RegExp(toolGroups[0].name),
     });
-    await user.click(groupButton);
-    await user.click(groupButton);
-    await user.click(
-      screen.getAllByRole("button", { name: firstTool.name })[0],
-    );
-    await user.click(
+    fireEvent.click(groupButton);
+    fireEvent.click(groupButton);
+    fireEvent.click(screen.getAllByRole("button", { name: firstTool.name })[0]);
+    fireEvent.click(
       container.querySelector('[aria-label="Toggle sidebar"]') as Element,
     );
     const navigation = screen.getByRole("navigation", {
