@@ -83,7 +83,7 @@ export const RandomStringToolComponent: React.FC<BaseToolProps> = ({
                 value={Number(inputs.length)}
                 onChange={(_, val) => updateInput("length", val)}
                 min={1}
-                max={1000}
+                max={255}
               >
                 <NumberInputField />
                 <NumberInputStepper>

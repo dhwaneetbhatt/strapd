@@ -3,6 +3,7 @@
 import { HashToolComponent, HmacToolComponent } from "../components/tools";
 import type { ToolDefinition } from "../components/tools/base-tool";
 import { CATEGORY_ICONS } from "../constants/category-icons";
+import { createPipeToolContract } from "../lib/pipes/tool-contract";
 import { securityUtils } from "../lib/utils/security";
 import type { Tool, ToolGroup } from "../types";
 
@@ -14,6 +15,10 @@ type HashResult = {
   sha512?: string;
 };
 
+type HashAlgorithm = "MD5" | "SHA-1" | "SHA-256" | "SHA-512";
+
+const DEFAULT_HASH_ALGORITHM: HashAlgorithm = "MD5";
+
 // Define hash tool
 const hashToolDefinition: ToolDefinition<HashResult> = {
   id: "security-hash",
@@ -21,6 +26,19 @@ const hashToolDefinition: ToolDefinition<HashResult> = {
   description: "Generate MD5, SHA1, SHA256, SHA512",
   category: "security",
   aliases: ["hash", "md5", "sha1", "sha256", "sha512", "checksum"],
+  pipe: createPipeToolContract({
+    input: { kind: "transform", key: "text" },
+    config: [
+      {
+        id: "algorithm",
+        name: "Algorithm",
+        type: "select",
+        defaultValue: DEFAULT_HASH_ALGORITHM,
+        description: "Hash algorithm applied to the incoming value",
+        options: ["MD5", "SHA-1", "SHA-256", "SHA-512"],
+      },
+    ],
+  }),
   component: HashToolComponent,
   operation: (inputs) => {
     const text = String(inputs.text || "");
@@ -41,6 +59,7 @@ const hashToolDefinition: ToolDefinition<HashResult> = {
     const sha1Result = securityUtils.hash.sha1(text);
     const sha256Result = securityUtils.hash.sha256(text);
     const sha512Result = securityUtils.hash.sha512(text);
+    const algorithm = String(inputs.algorithm ?? DEFAULT_HASH_ALGORITHM);
 
     // Check if any operation failed
     if (
@@ -55,13 +74,22 @@ const hashToolDefinition: ToolDefinition<HashResult> = {
       };
     }
 
+    const result =
+      algorithm === "SHA-1"
+        ? sha1Result.result
+        : algorithm === "SHA-256"
+          ? sha256Result.result
+          : algorithm === "SHA-512"
+            ? sha512Result.result
+            : md5Result.result;
+
     return {
       success: true,
       md5: md5Result.result,
       sha1: sha1Result.result,
       sha256: sha256Result.result,
       sha512: sha512Result.result,
-      result: md5Result.result, // Default result for compatibility
+      result,
     };
   },
 };
@@ -72,6 +100,10 @@ type HmacResult = {
   sha512?: string;
 };
 
+type HmacAlgorithm = "SHA-256" | "SHA-512";
+
+const DEFAULT_HMAC_ALGORITHM: HmacAlgorithm = "SHA-256";
+
 // Define hmac tool
 const hmacToolDefinition: ToolDefinition<HmacResult> = {
   id: "security-hmac",
@@ -79,10 +111,31 @@ const hmacToolDefinition: ToolDefinition<HmacResult> = {
   description: "Generate SHA256/SHA512 HMAC signatures",
   category: "security",
   aliases: ["hmac", "mac", "auth"],
+  pipe: createPipeToolContract({
+    input: { kind: "transform", key: "text" },
+    config: [
+      {
+        id: "key",
+        name: "Secret key",
+        type: "string",
+        defaultValue: "",
+        description: "Secret key used to sign the incoming value",
+      },
+      {
+        id: "algorithm",
+        name: "Algorithm",
+        type: "select",
+        defaultValue: DEFAULT_HMAC_ALGORITHM,
+        description: "HMAC algorithm applied to the incoming value",
+        options: ["SHA-256", "SHA-512"],
+      },
+    ],
+  }),
   component: HmacToolComponent,
   operation: (inputs) => {
     const text = String(inputs.text || "");
     const key = String(inputs.key || "");
+    const algorithm = String(inputs.algorithm ?? DEFAULT_HMAC_ALGORITHM);
 
     // If input is empty, return empty hashes
     if (!text) {
@@ -90,6 +143,7 @@ const hmacToolDefinition: ToolDefinition<HmacResult> = {
         success: true,
         sha256: "",
         sha512: "",
+        result: "",
       };
     }
 
@@ -108,6 +162,8 @@ const hmacToolDefinition: ToolDefinition<HmacResult> = {
       success: true,
       sha256: sha256Result.result,
       sha512: sha512Result.result,
+      result:
+        algorithm === "SHA-512" ? sha512Result.result : sha256Result.result,
     };
   },
 };

@@ -1,12 +1,13 @@
 # Makefile for strapd project
 
-.PHONY: all rust-fmt rust-fmt-check rust-lint rust-install rust-install-coverage rust-build cli-build cli-release rust-test rust-coverage rust-coverage-report wasm-build webapp-install webapp-fmt webapp-fmt-check webapp-lint webapp-dev webapp-build webapp-test webapp-coverage webapp-coverage-open coverage help lint fmt fmt-check test install-hooks brew-formula-check brew-update-checksums
+.PHONY: all setup rust-fmt rust-fmt-check rust-lint rust-install rust-install-coverage rust-build cli-build cli-release rust-test rust-coverage rust-coverage-report wasm-build webapp-install webapp-fmt webapp-fmt-check webapp-lint webapp-dev webapp-build webapp-test webapp-coverage webapp-coverage-open coverage help lint fmt fmt-check test install-hooks brew-formula-check brew-update-checksums
 
 # -------------------
 # Help
 # -------------------
 help:
 	@echo "Available targets:"
+	@echo "  setup                 - Install development tools and project dependencies"
 	@echo "  rust-fmt              - Format all Rust code"
 	@echo "  rust-fmt-check        - Check Rust code formatting"
 	@echo "  rust-lint             - Run Rust linter (clippy)"
@@ -39,6 +40,10 @@ help:
 # -------------------
 # Rust
 # -------------------
+
+# Install development tools and project dependencies
+setup:
+	./scripts/setup.sh
 
 # Format all Rust code
 rust-fmt:

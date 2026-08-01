@@ -13,6 +13,7 @@ import {
   Text,
   VStack,
 } from "@chakra-ui/react";
+import { useRef } from "react";
 import {
   FiDownload,
   FiGithub,
@@ -58,6 +59,12 @@ const FeatureCard: React.FC<FeatureCardProps> = ({
 };
 
 export const CLI: React.FC = () => {
+  const installationRef = useRef<HTMLDivElement>(null);
+
+  const scrollToInstallation = () => {
+    installationRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
+
   return (
     <Layout>
       <Box minH="calc(100vh - 80px)" bg="surface.base">
@@ -87,11 +94,10 @@ export const CLI: React.FC = () => {
 
               <HStack justify="center" spacing={4}>
                 <Button
-                  as="a"
-                  href="#installation"
                   leftIcon={<FiDownload />}
                   colorScheme="brand"
                   size="lg"
+                  onClick={scrollToInstallation}
                 >
                   Install CLI
                 </Button>
@@ -142,7 +148,7 @@ export const CLI: React.FC = () => {
             <Divider />
 
             {/* Installation Section */}
-            <Box id="installation">
+            <Box id="installation" ref={installationRef}>
               <Heading size="lg" mb={6} color="text.primary">
                 Installation 📥
               </Heading>

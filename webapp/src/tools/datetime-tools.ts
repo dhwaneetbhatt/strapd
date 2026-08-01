@@ -3,6 +3,7 @@
 import { TimestampToolComponent } from "../components/tools";
 import type { ToolDefinition } from "../components/tools/base-tool";
 import { CATEGORY_ICONS } from "../constants/category-icons";
+import { createPipeToolContract } from "../lib/pipes/tool-contract";
 import { fromTimestamp, now } from "../lib/utils/datetime";
 import type { Tool, ToolGroup } from "../types";
 
@@ -12,6 +13,26 @@ const timestampToolDefinition: ToolDefinition = {
   description: "Convert Unix timestamps to human readable",
   category: "datetime",
   aliases: ["timestamp", "date", "time", "now", "unix"],
+  pipe: createPipeToolContract({
+    input: { kind: "transform", key: "timestamp" },
+    config: [
+      {
+        id: "isMillis",
+        name: "Milliseconds",
+        type: "boolean",
+        defaultValue: false,
+        description: "Interpret the incoming timestamp as milliseconds",
+      },
+      {
+        id: "format",
+        name: "Format",
+        type: "select",
+        defaultValue: "Human",
+        description: "Human-readable or ISO output",
+        options: ["Human", "Iso"],
+      },
+    ],
+  }),
   component: TimestampToolComponent,
   operation: (inputs) => {
     const isMillis = Boolean(inputs.isMillis);

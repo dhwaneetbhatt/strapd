@@ -4,6 +4,7 @@ import { UuidGeneratorToolComponent } from "../components/tools";
 import type { ToolDefinition } from "../components/tools/base-tool";
 import { UlidGeneratorToolComponent } from "../components/tools/identifiers/ulid-generator-tool";
 import { CATEGORY_ICONS } from "../constants/category-icons";
+import { createPipeToolContract } from "../lib/pipes/tool-contract";
 import { identifierOperations } from "../lib/utils/identifiers";
 import type { Tool, ToolGroup } from "../types";
 
@@ -14,6 +15,30 @@ const uuidGeneratorToolDefinition: ToolDefinition = {
   description: "Generate v4 and v7 UUID identifiers",
   category: "identifiers",
   aliases: ["uuid", "guid", "id"],
+  pipe: createPipeToolContract({
+    input: { kind: "source" },
+    config: [
+      {
+        id: "version",
+        name: "UUID version",
+        type: "select",
+        defaultValue: "v4",
+        description: "UUID version to generate",
+        options: ["v4", "v7"],
+      },
+      {
+        id: "count",
+        name: "Count",
+        type: "number",
+        defaultValue: 1,
+        description: "Number of UUIDs to generate",
+        min: 1,
+        max: 100,
+        step: 1,
+        validations: [{ rule: "integer" }],
+      },
+    ],
+  }),
   component: UuidGeneratorToolComponent,
   operation: (inputs) => {
     const version = String(inputs.version || "v4");
@@ -43,6 +68,22 @@ const ulidGeneratorToolDefinition: ToolDefinition = {
   description: "Generate sortable, timestamp-based ULIDs",
   category: "identifiers",
   aliases: ["ulid", "sortable-id"],
+  pipe: createPipeToolContract({
+    input: { kind: "source" },
+    config: [
+      {
+        id: "count",
+        name: "Count",
+        type: "number",
+        defaultValue: 1,
+        description: "Number of ULIDs to generate",
+        min: 1,
+        max: 100,
+        step: 1,
+        validations: [{ rule: "integer" }],
+      },
+    ],
+  }),
   component: UlidGeneratorToolComponent,
   operation: (inputs) => {
     const count = Number(inputs.count || 1);

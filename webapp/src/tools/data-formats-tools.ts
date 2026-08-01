@@ -5,8 +5,9 @@ import {
 } from "../components/tools";
 import type { ToolDefinition } from "../components/tools/base-tool";
 import { CATEGORY_ICONS } from "../constants/category-icons";
+import { createPipeToolContract } from "../lib/pipes/tool-contract";
 import type { DataFormat } from "../lib/utils/data-formats";
-import { dataFormatsOperations } from "../lib/utils/data-formats";
+import { dataFormatsOperations, detectFormat } from "../lib/utils/data-formats";
 import type { Tool, ToolGroup } from "../types";
 
 // JSON Tool
@@ -16,6 +17,36 @@ const jsonToolDefinition: ToolDefinition = {
   description: "Format, minify, and sort JSON",
   category: "dataFormats",
   aliases: ["json", "format", "beautify", "minify"],
+  pipe: createPipeToolContract({
+    input: { kind: "transform", key: "text" },
+    config: [
+      {
+        id: "sort",
+        name: "Sort keys",
+        type: "boolean",
+        defaultValue: false,
+        description: "Sort object keys alphabetically",
+      },
+      {
+        id: "minify",
+        name: "Minify",
+        type: "boolean",
+        defaultValue: false,
+        description: "Remove unnecessary whitespace",
+      },
+      {
+        id: "indentSize",
+        name: "Indent size",
+        type: "number",
+        defaultValue: 2,
+        description: "Number of spaces used for indentation",
+        min: 1,
+        max: 8,
+        step: 1,
+        validations: [{ rule: "integer" }],
+      },
+    ],
+  }),
   component: JsonToolComponent,
   operation: (inputs) => {
     const text = String(inputs.text || "");
@@ -52,6 +83,29 @@ const xmlToolDefinition: ToolDefinition = {
   description: "Format and minify XML data",
   category: "dataFormats",
   aliases: ["xml", "format"],
+  pipe: createPipeToolContract({
+    input: { kind: "transform", key: "text" },
+    config: [
+      {
+        id: "minify",
+        name: "Minify",
+        type: "boolean",
+        defaultValue: false,
+        description: "Remove unnecessary whitespace",
+      },
+      {
+        id: "indentSize",
+        name: "Indent size",
+        type: "number",
+        defaultValue: 2,
+        description: "Number of spaces used for indentation",
+        min: 1,
+        max: 8,
+        step: 1,
+        validations: [{ rule: "integer" }],
+      },
+    ],
+  }),
   component: XmlToolComponent,
   operation: (inputs) => {
     const text = String(inputs.text || "");
@@ -87,12 +141,47 @@ const converterToolDefinition: ToolDefinition = {
   description: "Convert between JSON, YAML, and XML formats",
   category: "dataFormats",
   aliases: ["convert", "converter", "transform", "json", "yaml", "xml"],
+  pipe: createPipeToolContract({
+    input: { kind: "transform", key: "text" },
+    config: [
+      {
+        id: "sourceFormat",
+        name: "Source format",
+        type: "select",
+        defaultValue: "auto",
+        description: "Input format, or automatic detection",
+        options: ["auto", "json", "yaml", "xml"],
+      },
+      {
+        id: "targetFormat",
+        name: "Target format",
+        type: "select",
+        defaultValue: "yaml",
+        description: "Output format",
+        options: ["json", "yaml", "xml"],
+      },
+      {
+        id: "rootName",
+        name: "XML root name",
+        type: "string",
+        defaultValue: "root",
+        description: "Root element name used when producing XML",
+      },
+      {
+        id: "minify",
+        name: "Minify",
+        type: "boolean",
+        defaultValue: false,
+        description: "Minify supported target formats",
+      },
+    ],
+  }),
   component: ConverterToolComponent,
   operation: (inputs) => {
     const text = String(inputs.text || "");
     const sourceFormat = String(inputs.sourceFormat || "auto");
     const targetFormat = String(inputs.targetFormat || "yaml");
-    const detectedFormat = String(inputs.detectedFormat || "unknown");
+    const detectedFormat = String(inputs.detectedFormat || detectFormat(text));
     const rootName = inputs.rootName ? String(inputs.rootName) : undefined;
     const minify = Boolean(inputs.minify);
 

@@ -10,8 +10,8 @@ pub fn random_string(
     digits: bool,
     symbols: bool,
     custom_charset: Option<String>,
-) -> String {
-    match random::string(
+) -> Result<String, JsValue> {
+    random::string(
         count,
         length,
         lowercase,
@@ -19,10 +19,9 @@ pub fn random_string(
         digits,
         symbols,
         custom_charset.as_deref(),
-    ) {
-        Ok(v) => v.join("\n"),
-        Err(e) => format!("Error: {}", e),
-    }
+    )
+    .map(|values| values.join("\n"))
+    .map_err(crate::wasm_error)
 }
 
 #[wasm_bindgen]

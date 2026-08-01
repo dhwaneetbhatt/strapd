@@ -54,7 +54,12 @@ export const fuzzyMatch = (query: string, target: string): number => {
  * Search and rank results by fuzzy matching
  */
 export const fuzzySearch = <
-  T extends { name: string; description?: string; aliases?: string[] },
+  T extends {
+    name: string;
+    description?: string;
+    aliases?: string[];
+    category?: string;
+  },
 >(
   query: string,
   items: T[],
@@ -72,11 +77,15 @@ export const fuzzySearch = <
       const descriptionScore = item.description
         ? fuzzyMatch(query, item.description)
         : 0;
+      const categoryScore = item.category
+        ? fuzzyMatch(query, item.category)
+        : 0;
       // Name and alias matches are weighted higher than description matches
       const score = Math.max(
         nameScore * 1.5,
         aliasScore * 1.3,
         descriptionScore,
+        categoryScore,
       );
       return { item, score };
     })
@@ -84,4 +93,36 @@ export const fuzzySearch = <
     .sort((a, b) => b.score - a.score);
 
   return results;
+};
+
+/**
+ * Shared tool discovery behavior used by every tool-search surface.
+ * Direct name, alias, and category matches retain registry order; fuzzy
+ * matching supplies ranked fallback results for misspellings and gaps.
+ */
+export const searchItems = <
+  T extends {
+    name: string;
+    description?: string;
+    aliases?: string[];
+    category?: string;
+  },
+>(
+  query: string,
+  items: T[],
+): T[] => {
+  const normalizedQuery = query.toLowerCase().trim();
+  if (!normalizedQuery) return [];
+
+  const directMatches = items.filter(
+    (item) =>
+      item.name.toLowerCase().includes(normalizedQuery) ||
+      item.aliases?.some((alias) =>
+        alias.toLowerCase().includes(normalizedQuery),
+      ) ||
+      item.category?.toLowerCase().includes(normalizedQuery),
+  );
+
+  if (directMatches.length > 0) return directMatches;
+  return fuzzySearch(query, items).map(({ item }) => item);
 };

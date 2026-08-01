@@ -280,6 +280,11 @@ const toolDefinition: ToolDefinition = {
 
 ## Common Tasks for AI Agents
 
+### OpenSpec Workflow
+- Every feature, fix, or other implementation change must go through the OpenSpec workflow before code changes begin.
+- Name each OpenSpec change with its GitHub issue prefix: `gh-<issue-number>-<short-kebab-case-description>` (for example, `gh-123-example-change`).
+- Explore and clarify requirements first, create the OpenSpec proposal and required artifacts, apply the change, validate it, then archive it when complete.
+
 ### Adding a New Tool
 1. Implement in `crates/core/src/<category>/`
 2. Add WASM bindings in `crates/wasm/src/<category>_ops.rs`

@@ -1,0 +1,128 @@
+# Project-scoped commands used by strapd's documented development workflow.
+# Keep global installs, release/publish operations, destructive Git commands,
+# hook installation, and GUI-opening targets approval-gated.
+
+prefix_rule(
+    pattern = [
+        "make",
+        [
+            "help",
+            "rust-fmt",
+            "rust-fmt-check",
+            "rust-lint",
+            "rust-build",
+            "cli-build",
+            "cli-release",
+            "rust-test",
+            "rust-coverage",
+            "rust-coverage-report",
+            "wasm-build",
+            "webapp-install",
+            "webapp-fmt",
+            "webapp-fmt-check",
+            "webapp-lint",
+            "webapp-dev",
+            "webapp-build",
+            "webapp-test",
+            "webapp-coverage",
+            "lint",
+            "fmt",
+            "fmt-check",
+            "test",
+            "coverage",
+            "brew-formula-check",
+        ],
+    ],
+    decision = "allow",
+    justification = "Allow documented strapd build, formatting, lint, test, coverage, and local development targets.",
+    match = [
+        "make webapp-test",
+        "make webapp-build",
+        "make wasm-build",
+        "make test",
+    ],
+    not_match = [
+        "make setup",
+        "make rust-install",
+        "make install-hooks",
+        "make webapp-coverage-open",
+        "make brew-update-checksums",
+    ],
+)
+
+prefix_rule(
+    pattern = [
+        "cargo",
+        ["build", "check", "clippy", "fetch", "fmt", "run", "test"],
+    ],
+    decision = "allow",
+    justification = "Allow standard Rust development commands without permitting global cargo installs or publishing.",
+    match = [
+        "cargo test",
+        "cargo clippy -- -D warnings",
+        "cargo run -p strapd -- --help",
+    ],
+    not_match = [
+        "cargo install wasm-pack",
+        "cargo publish",
+    ],
+)
+
+prefix_rule(
+    pattern = [
+        "pnpm",
+        ["biome", "build", "dev", "install", "test"],
+    ],
+    decision = "allow",
+    justification = "Allow the webapp's declared package, build, formatting, development, and test commands.",
+    match = [
+        "pnpm install",
+        "pnpm biome check",
+        "pnpm test --run",
+    ],
+    not_match = [
+        "pnpm add zod",
+        "pnpm publish",
+    ],
+)
+
+prefix_rule(
+    pattern = ["wasm-pack", "build"],
+    decision = "allow",
+    justification = "Allow rebuilding strapd's local WASM package.",
+    match = [
+        "wasm-pack build crates/wasm",
+    ],
+    not_match = [
+        "wasm-pack publish",
+    ],
+)
+
+prefix_rule(
+    pattern = [
+        "openspec",
+        ["instructions", "list", "new", "status", "validate", "view"],
+    ],
+    decision = "allow",
+    justification = "Allow project-local OpenSpec planning and validation while keeping archive operations approval-gated.",
+    match = [
+        "openspec list --json",
+        "openspec new change gh-123-example-change",
+        "openspec validate gh-123-example-change",
+    ],
+    not_match = [
+        "openspec archive gh-123-example-change",
+    ],
+)
+
+prefix_rule(
+    pattern = ["gh", "issue", "view"],
+    decision = "allow",
+    justification = "Allow read-only inspection of GitHub issues referenced by project work.",
+    match = [
+        "gh issue view 123 --repo dhwaneetbhatt/strapd",
+    ],
+    not_match = [
+        "gh issue close 123 --repo dhwaneetbhatt/strapd",
+    ],
+)

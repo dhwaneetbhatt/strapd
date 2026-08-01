@@ -10,7 +10,7 @@ import {
   useColorMode,
 } from "@chakra-ui/react";
 import type React from "react";
-import { FiGithub, FiTerminal } from "react-icons/fi";
+import { FiGithub, FiGitMerge, FiTerminal } from "react-icons/fi";
 import { RiKeyboardLine } from "react-icons/ri";
 import { Link, useLocation } from "react-router-dom";
 import { appConfig } from "../../config";
@@ -19,12 +19,18 @@ import { SearchBar } from "../common";
 interface HeaderProps {
   onSearchOpen?: () => void;
   onHelpOpen?: () => void;
+  onNavigationRequest?: (to: string) => boolean;
 }
 
-export const Header: React.FC<HeaderProps> = ({ onSearchOpen, onHelpOpen }) => {
+export const Header: React.FC<HeaderProps> = ({
+  onSearchOpen,
+  onHelpOpen,
+  onNavigationRequest,
+}) => {
   const { colorMode, toggleColorMode } = useColorMode();
   const location = useLocation();
   const isCliPage = location.pathname === "/cli";
+  const isPipesPage = location.pathname === "/pipes";
 
   return (
     <Box
@@ -41,7 +47,14 @@ export const Header: React.FC<HeaderProps> = ({ onSearchOpen, onHelpOpen }) => {
     >
       <Flex alignItems="center" maxW="full" mx="auto" gap={6}>
         {/* Logo */}
-        <Link to="/">
+        <Link
+          to="/"
+          onClick={(event) => {
+            if (onNavigationRequest && !onNavigationRequest("/")) {
+              event.preventDefault();
+            }
+          }}
+        >
           <Heading size="lg" color="text.brand" _hover={{ opacity: 0.8 }}>
             {appConfig.name}
           </Heading>
@@ -58,6 +71,24 @@ export const Header: React.FC<HeaderProps> = ({ onSearchOpen, onHelpOpen }) => {
 
         {/* Navigation and Action buttons */}
         <HStack spacing={2}>
+          <Tooltip label="Pipes" hasArrow>
+            <IconButton
+              as={Link}
+              to="/pipes"
+              aria-label="Pipes"
+              icon={<FiGitMerge />}
+              variant={isPipesPage ? "solid" : "ghost"}
+              colorScheme={isPipesPage ? "brand" : undefined}
+              color={!isPipesPage ? "text.brand.subtle" : undefined}
+              size="md"
+              onClick={(event) => {
+                if (onNavigationRequest && !onNavigationRequest("/pipes")) {
+                  event.preventDefault();
+                }
+              }}
+            />
+          </Tooltip>
+
           {/* Keyboard shortcuts help */}
           {onHelpOpen && (
             <Tooltip label="Keyboard Shortcuts" hasArrow>
@@ -83,6 +114,11 @@ export const Header: React.FC<HeaderProps> = ({ onSearchOpen, onHelpOpen }) => {
               colorScheme={isCliPage ? "brand" : undefined}
               color={!isCliPage ? "text.brand.subtle" : undefined}
               size="md"
+              onClick={(event) => {
+                if (onNavigationRequest && !onNavigationRequest("/cli")) {
+                  event.preventDefault();
+                }
+              }}
             />
           </Tooltip>
 

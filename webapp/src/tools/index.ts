@@ -1,5 +1,7 @@
 // Tool registry - central place for all tools
-import { fuzzySearch } from "../lib/utils/search";
+
+import type { ToolDefinition } from "../components/tools/base-tool";
+import { searchItems } from "../lib/utils/search";
 import type { Tool, ToolGroup } from "../types";
 import {
   TOOL_REGISTRY as CALCULATOR_TOOL_REGISTRY,
@@ -48,7 +50,7 @@ export const toolGroups: ToolGroup[] = [
 // Flatten all tools for easy access
 export const allTools: Tool[] = toolGroups.flatMap((group) => group.tools);
 
-export const TOOL_REGISTRY = {
+export const TOOL_REGISTRY: Record<string, ToolDefinition> = {
   ...STRING_TOOL_REGISTRY,
   ...DATETIME_TOOL_REGISTRY,
   ...IDENTIFIER_TOOL_REGISTRY,
@@ -58,6 +60,19 @@ export const TOOL_REGISTRY = {
   ...DATA_FORMATS_TOOL_REGISTRY,
   ...CALCULATOR_TOOL_REGISTRY,
 };
+
+export const getPipeToolById = (id: string): ToolDefinition | undefined => {
+  return TOOL_REGISTRY[id];
+};
+
+export const getPipeTools = (): ToolDefinition[] =>
+  Object.values(TOOL_REGISTRY).filter((tool) => Boolean(tool.pipe));
+
+export const getPipeSourceTools = (): ToolDefinition[] =>
+  getPipeTools().filter((tool) => tool.pipe?.input.kind === "source");
+
+export const getPipeTransformTools = (): ToolDefinition[] =>
+  getPipeTools().filter((tool) => tool.pipe?.input.kind === "transform");
 
 // Tool lookup functions
 export const getToolById = (id: string): Tool | undefined => {
@@ -69,24 +84,5 @@ export const getToolsByCategory = (category: string): Tool[] => {
 };
 
 export const searchTools = (query: string): Tool[] => {
-  const normalizedQuery = query.toLowerCase().trim();
-
-  if (!normalizedQuery) return [];
-
-  // First try exact/substring matches (faster, higher priority)
-  const exactMatches = allTools.filter(
-    (tool) =>
-      tool.name.toLowerCase().includes(normalizedQuery) ||
-      tool.aliases?.some((alias) =>
-        alias.toLowerCase().includes(normalizedQuery),
-      ),
-  );
-
-  if (exactMatches.length > 0) {
-    return exactMatches;
-  }
-
-  // Fall back to fuzzy search for better discovery
-  const fuzzyResults = fuzzySearch(query, allTools);
-  return fuzzyResults.map(({ item }) => item);
+  return searchItems(query, allTools);
 };
