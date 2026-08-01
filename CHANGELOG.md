@@ -8,6 +8,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### webapp
 
+- feat: add reusable local Pipes for chaining tools with frozen configuration
 - feat: add syntax highlighter for data format tools
 - feat: add Progressive Web App (PWA) support
 - feat: add file upload and download support for data format tools
