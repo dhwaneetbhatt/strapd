@@ -102,6 +102,8 @@ importers:
         specifier: ^4.0.17
         version: 4.0.18(@vitest/ui@4.0.18)(jsdom@27.4.0)(terser@5.46.0)
 
+  wasm: {}
+
 packages:
 
   '@acemir/cssom@0.9.31':

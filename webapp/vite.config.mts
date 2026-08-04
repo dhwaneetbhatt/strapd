@@ -16,6 +16,7 @@ export default defineConfig(({ mode }) => ({
       includeAssets: ["favicon.svg", "icon-192.png", "icon-512.png"],
       workbox: {
         globPatterns: ["**/*.{js,css,html,ico,png,svg,wasm}"],
+        maximumFileSizeToCacheInBytes: 3 * 1024 * 1024,
         runtimeCaching: [
           {
             urlPattern: /^https:\/\/fonts\.googleapis\.com\/.*/i,

@@ -67,6 +67,14 @@ const pipe = (overrides: Partial<Pipe> = {}): Pipe => ({
 });
 
 describe("pipe repository", () => {
+  it("starts empty without pre-created pipes or recipes", () => {
+    const storage = new MemoryStorage();
+    const repository = createPipeRepository({ storage, registry });
+
+    expect(repository.list()).toEqual([]);
+    expect(storage.value).toBeNull();
+  });
+
   it("persists CRUD changes across repository reloads with stable edit identities", () => {
     const storage = new MemoryStorage();
     const timestamps = ["2026-08-01T01:00:00.000Z", "2026-08-01T02:00:00.000Z"];
@@ -146,6 +154,32 @@ describe("pipe repository", () => {
     const exported = serializePipeDocument(original);
     const imported = parsePipeImport(exported, registry);
     expect(imported.pipe).toEqual(original);
+  });
+
+  it("preserves a user-configured JWT signing secret through storage and export", () => {
+    const storage = new MemoryStorage();
+    const repository = createPipeRepository({ storage, registry });
+    const original = pipe({
+      steps: [
+        {
+          ...pipe().steps[0],
+          config: {
+            secret: "user-configured-secret",
+            algorithm: "HS512",
+            expiration: 300,
+          },
+        },
+      ],
+    });
+
+    repository.create(original);
+    expect(repository.get(ids.pipe)?.steps[0].config).toEqual(
+      original.steps[0].config,
+    );
+    expect(
+      parsePipeImport(serializePipeDocument(original), registry).pipe.steps[0]
+        .config,
+    ).toEqual(original.steps[0].config);
   });
 
   it("migrates older document and tool-contract versions with pure migrations", () => {

@@ -40,6 +40,12 @@ export interface WasmModule {
   hash_sha512: (input: string) => string;
   hmac_sha256: (input: string, key: string) => string;
   hmac_sha512: (input: string, key: string) => string;
+  jwt_decode: (input: string) => string;
+  jwt_decode_with_analysis: (input: string) => string;
+  jwt_header: (input: string) => string;
+  jwt_payload: (input: string) => string;
+  jwt_verify: (input: string, secret: string) => string;
+  jwt_sign: (payload: string, secret: string, algorithm: string, expiresInSeconds?: bigint) => string;
 
   // Random
   random_string: (count: number, length: number, lowercase: boolean, uppercase: boolean, digits: boolean, symbols: boolean, customCharset: string) => string;
@@ -289,6 +295,58 @@ export class WasmWrapper {
     return this.safeWasmCall(
       () => this.wasmModule.hmac_sha512(input, key),
       'hmac_sha512'
+    );
+  }
+
+  public jwt_decode(input: string): ToolResult {
+    return this.safeWasmCall(
+      () => this.wasmModule.jwt_decode(input),
+      'jwt_decode'
+    );
+  }
+
+  public jwt_decode_with_analysis(input: string): ToolResult {
+    return this.safeWasmCall(
+      () => this.wasmModule.jwt_decode_with_analysis(input),
+      'jwt_decode_with_analysis'
+    );
+  }
+
+  public jwt_header(input: string): ToolResult {
+    return this.safeWasmCall(
+      () => this.wasmModule.jwt_header(input),
+      'jwt_header'
+    );
+  }
+
+  public jwt_payload(input: string): ToolResult {
+    return this.safeWasmCall(
+      () => this.wasmModule.jwt_payload(input),
+      'jwt_payload'
+    );
+  }
+
+  public jwt_verify(input: string, secret: string): ToolResult {
+    return this.safeWasmCall(
+      () => this.wasmModule.jwt_verify(input, secret),
+      'jwt_verify'
+    );
+  }
+
+  public jwt_sign(
+    payload: string,
+    secret: string,
+    algorithm: string,
+    expiresInSeconds?: number,
+  ): ToolResult {
+    return this.safeWasmCall(
+      () => this.wasmModule.jwt_sign(
+        payload,
+        secret,
+        algorithm,
+        expiresInSeconds === undefined ? undefined : BigInt(expiresInSeconds),
+      ),
+      'jwt_sign'
     );
   }
   

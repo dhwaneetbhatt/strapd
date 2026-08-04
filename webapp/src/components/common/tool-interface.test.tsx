@@ -39,6 +39,15 @@ vi.mock("../../tools", () => ({
       ),
       operation: () => ({ success: true, result: "test" }),
     },
+    "page-scroll-tool": {
+      id: "page-scroll-tool",
+      name: "Page Scroll Tool",
+      description: "A taller test tool",
+      category: "string",
+      scrollMode: "page",
+      component: () => <div>Page Scroll Tool Component</div>,
+      operation: () => ({ success: true, result: "test" }),
+    },
   },
 }));
 
@@ -108,6 +117,28 @@ describe("ToolInterface", () => {
 
       // Component should render successfully
       expect(screen.getByTestId("mock-tool-component")).toBeInTheDocument();
+    });
+
+    it("opts taller tools into page scrolling", () => {
+      render(
+        <ToolInterface
+          tool={{
+            ...mockTool,
+            id: "page-scroll-tool",
+            name: "Page Scroll Tool",
+          }}
+        />,
+        { wrapper },
+      );
+
+      expect(
+        screen.getByText("Page Scroll Tool Component").closest("div"),
+      ).toBeInTheDocument();
+      expect(
+        screen
+          .getByRole("heading", { name: "Page Scroll Tool" })
+          .closest('[data-scroll-mode="page"]'),
+      ).toBeInTheDocument();
     });
   });
 

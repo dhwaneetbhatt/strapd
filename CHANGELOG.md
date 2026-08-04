@@ -6,8 +6,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+### cli
+
+- feat: add offline JWT decoding, header and payload extraction, expiration analysis, HMAC verification, and HS256/HS384/HS512 signing
+
 ### webapp
 
+- feat: add JWT inspector, verifier, and signer tools with reusable Pipe operations
+- feat: redesign the CLI guide with real composable commands, Homebrew-first installation, responsive sections, and page-specific SEO metadata
 - feat: add reusable local Pipes for chaining tools with frozen configuration
 - feat: add syntax highlighter for data format tools
 - feat: add Progressive Web App (PWA) support

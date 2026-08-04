@@ -16,6 +16,8 @@ import type { Tool, ToolResult } from "../../types";
 // Tool definition interface with component
 export interface ToolDefinition<T = object> extends Omit<Tool<T>, "operation"> {
   component: React.ComponentType<BaseToolProps>;
+  scrollMode?: "contained" | "page";
+  sensitiveInputs?: string[];
   operation: (
     inputs: Record<string, unknown>,
   ) => ToolResult<T> | Promise<ToolResult<T>>;

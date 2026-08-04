@@ -28,7 +28,7 @@ It's primarily CLI-focused, but also includes a webapp interface for those who p
 - **Encoding**: Base64, URL, Hex
 - **Data Formatting**: JSON, YAML, XML, SQL (beautify, minify, sort)
 - **Format Conversion**: YAML ⇄ JSON, XML ⇄ JSON
-- **Security**: Hash (MD5, SHA-1, SHA-256, SHA-512), HMAC (SHA-256, SHA-512)
+- **Security**: Hash (MD5, SHA-1, SHA-256, SHA-512), HMAC (SHA-256, SHA-512), JWT
 - **Random**: numbers, strings
 - **Date/Time**: timestamps
 - **Webapp Pipes**: reusable, sequential workflows composed from compatible tools

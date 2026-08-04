@@ -7,9 +7,41 @@ import { CommandPalette, HelpModal, ToolInterface } from "../components/common";
 import { Layout, Sidebar } from "../components/layout";
 import { useSettings } from "../contexts/settings-context";
 import { useCommandI, useCommandR, useEscapeBlur } from "../hooks/use-keyboard";
-import { getToolById } from "../tools";
+import { getToolById, TOOL_REGISTRY } from "../tools";
 import { caseConverterTool } from "../tools/string-tools";
 import type { Tool } from "../types";
+
+export const inputsFromSearchParams = (
+  searchParams: URLSearchParams,
+  sensitiveInputs: ReadonlySet<string>,
+): Record<string, unknown> => {
+  const inputs: Record<string, unknown> = {};
+  searchParams.forEach((value, key) => {
+    if (sensitiveInputs.has(key)) return;
+    if (value === "true") inputs[key] = true;
+    else if (value === "false") inputs[key] = false;
+    else inputs[key] = value;
+  });
+  return inputs;
+};
+
+export const shareableToolInputs = (
+  inputs: Record<string, unknown>,
+  sensitiveInputs: ReadonlySet<string>,
+): Record<string, string> => {
+  const params: Record<string, string> = {};
+  Object.entries(inputs).forEach(([key, value]) => {
+    if (
+      !sensitiveInputs.has(key) &&
+      value !== undefined &&
+      value !== null &&
+      value !== ""
+    ) {
+      params[key] = String(value);
+    }
+  });
+  return params;
+};
 
 export const Tools: React.FC = () => {
   const { toolId } = useParams<{ toolId?: string }>();
@@ -18,6 +50,10 @@ export const Tools: React.FC = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const [selectedTool, setSelectedTool] = useState(caseConverterTool);
   const debounceRef = useRef<number>();
+  const sensitiveInputs = useMemo(
+    () => new Set(TOOL_REGISTRY[selectedTool.id]?.sensitiveInputs ?? []),
+    [selectedTool.id],
+  );
 
   // Handle URL-based tool selection and redirect logic
   useEffect(() => {
@@ -113,24 +149,18 @@ export const Tools: React.FC = () => {
           />
 
           {/* Main Tool Interface */}
-          <Flex flex={1} p={8}>
+          <Flex
+            flex={1}
+            minW={0}
+            px={{ base: 4, md: 8 }}
+            pt={{ base: 16, md: 8 }}
+            pb={8}
+          >
             <ToolInterface
               tool={selectedTool}
               initialInput={useMemo(() => {
-                const params: Record<string, unknown> = {};
-                searchParams.forEach((value, key) => {
-                  // Parse boolean strings from URL
-                  if (value === "true") {
-                    params[key] = true;
-                  } else if (value === "false") {
-                    params[key] = false;
-                  } else {
-                    // Keep as string, will be converted by components/operations as needed
-                    params[key] = value;
-                  }
-                });
-                return params;
-              }, [searchParams])}
+                return inputsFromSearchParams(searchParams, sensitiveInputs);
+              }, [searchParams, sensitiveInputs])}
               onInputChange={(inputs: Record<string, unknown>) => {
                 // Debounce URL updates to prevent history spam/crashes
                 if (debounceRef.current) {
@@ -139,12 +169,7 @@ export const Tools: React.FC = () => {
 
                 debounceRef.current = setTimeout(() => {
                   // Serialize inputs to URL params
-                  const params: Record<string, string> = {};
-                  Object.entries(inputs).forEach(([key, value]) => {
-                    if (value !== undefined && value !== null && value !== "") {
-                      params[key] = String(value);
-                    }
-                  });
+                  const params = shareableToolInputs(inputs, sensitiveInputs);
                   setSearchParams(params, { replace: true });
                 }, 300);
               }}

@@ -156,6 +156,7 @@ const DataPane: React.FC<{
             language={dataType.language}
             maxHeight="100%"
             showLineNumbers
+            wrapLongLines={false}
           />
         </Box>
       ) : onChange ? (
