@@ -24,6 +24,26 @@ const wasmMocks = vi.hoisted(() => ({
   hashSha512: vi.fn(() => ({ success: true, result: "sha512-output" })),
   hmacSha256: vi.fn(() => ({ success: true, result: "hmac-sha256-output" })),
   hmacSha512: vi.fn(() => ({ success: true, result: "hmac-sha512-output" })),
+  jwtDecode: vi.fn(() => ({
+    success: true,
+    result: '{"header":{"alg":"HS256"},"payload":{"sub":"123"}}',
+  })),
+  jwtDecodeWithAnalysis: vi.fn(() => ({
+    success: true,
+    result:
+      '{"header":{"alg":"HS256"},"payload":{"sub":"123"},"analysis":{"expiration":{"status":"NOT_PRESENT"},"signature":{"status":"UNVERIFIED"}}}',
+  })),
+  jwtHeader: vi.fn(() => ({
+    success: true,
+    result: '{"alg":"HS256"}',
+  })),
+  jwtPayload: vi.fn(
+    (): { success: boolean; result?: string; error?: string } => ({
+      success: true,
+      result: '{"sub":"123"}',
+    }),
+  ),
+  jwtSign: vi.fn(() => ({ success: true, result: "signed.jwt.token" })),
 }));
 
 vi.mock("../lib/wasm", () => ({
@@ -40,6 +60,11 @@ vi.mock("../lib/wasm", () => ({
       hash_sha512: wasmMocks.hashSha512,
       hmac_sha256: wasmMocks.hmacSha256,
       hmac_sha512: wasmMocks.hmacSha512,
+      jwt_decode: wasmMocks.jwtDecode,
+      jwt_decode_with_analysis: wasmMocks.jwtDecodeWithAnalysis,
+      jwt_header: wasmMocks.jwtHeader,
+      jwt_payload: wasmMocks.jwtPayload,
+      jwt_sign: wasmMocks.jwtSign,
     },
     {
       get: (target, property) =>
@@ -50,6 +75,7 @@ vi.mock("../lib/wasm", () => ({
 }));
 
 import { executePipe } from "../lib/pipes/executor";
+import { searchItems } from "../lib/utils/search";
 import { wasmWrapper } from "../lib/wasm";
 import {
   getPipeSourceTools,
@@ -65,9 +91,17 @@ const sampleRuntimeInputs: Record<string, string> = {
   "data-formats-converter": '{"value":1}',
   "calculator-unit-converter": "1024",
   "datetime-timestamp": "0",
+  "security-jwt-decode": "header.payload.signature",
+  "security-jwt-sign": '{"sub":"123"}',
 };
 
 describe("pipe tool contracts", () => {
+  it("discovers JWT signing through encode terminology", () => {
+    const matches = searchItems("encode", Object.values(TOOL_REGISTRY));
+
+    expect(matches.map(({ id }) => id)).toContain("security-jwt-sign");
+  });
+
   it("discovers compatible tools and source/transform subsets automatically", () => {
     const compatible = getPipeTools();
     expect(compatible.length).toBeGreaterThan(0);
@@ -91,9 +125,15 @@ describe("pipe tool contracts", () => {
       expect(contract, tool.id).toBeDefined();
       if (!contract) continue;
 
-      expect(contract.validateConfig(contract.defaults), tool.id).toEqual({
-        valid: true,
-      });
+      const validation = contract.validateConfig(contract.defaults);
+      if (tool.id === "security-jwt-sign") {
+        expect(validation).toEqual({
+          valid: false,
+          issues: [{ field: "secret", message: "Secret is required" }],
+        });
+      } else {
+        expect(validation, tool.id).toEqual({ valid: true });
+      }
       if (contract.input.kind === "transform") {
         expect(contract.defaults, tool.id).not.toHaveProperty(
           contract.input.key,
@@ -112,6 +152,7 @@ describe("pipe tool contracts", () => {
       if (!contract) continue;
 
       const inputs: Record<string, unknown> = { ...contract.defaults };
+      if (tool.id === "security-jwt-sign") inputs.secret = "pipe-secret";
       if (contract.input.kind === "transform") {
         inputs[contract.input.key] = sampleRuntimeInputs[tool.id] ?? "hello";
       }
@@ -338,5 +379,121 @@ describe("pipe tool contracts", () => {
     );
 
     expect(result).toEqual({ success: true, output: "hmac-sha512-output" });
+  });
+
+  it("discovers and executes each JWT decode output mode", async () => {
+    const jwtDecode = getPipeToolById("security-jwt-decode")?.pipe;
+    expect(jwtDecode?.input).toEqual({ kind: "transform", key: "token" });
+    expect(jwtDecode?.defaults).toEqual({
+      outputMode: "Payload",
+      autoStripBearer: true,
+      includeAnalysis: false,
+    });
+
+    const tool = getPipeToolById("security-jwt-decode");
+    expect(tool).toBeDefined();
+    if (!tool) return;
+
+    expect(
+      tool.operation({
+        token: "header.payload.signature",
+        ...jwtDecode?.defaults,
+      }),
+    ).toEqual({ success: true, result: '{"sub":"123"}' });
+    expect(
+      tool.operation({
+        token: "header.payload.signature",
+        ...jwtDecode?.defaults,
+        outputMode: "Header",
+      }),
+    ).toEqual({ success: true, result: '{"alg":"HS256"}' });
+
+    await tool.operation({
+      token: "header.payload.signature",
+      ...jwtDecode?.defaults,
+      outputMode: "Full",
+      includeAnalysis: true,
+    });
+    expect(wasmMocks.jwtDecodeWithAnalysis).toHaveBeenCalled();
+  });
+
+  it("freezes JWT signing configuration and emits a compact string", async () => {
+    const result = await executePipe(
+      {
+        id: "88888888-8888-4888-8888-888888888888",
+        name: "Sign claims",
+        createdAt: "2026-08-01T00:00:00.000Z",
+        updatedAt: "2026-08-01T00:00:00.000Z",
+        steps: [
+          {
+            id: "99999999-9999-4999-8999-999999999999",
+            toolId: "security-jwt-sign",
+            toolVersion: 1,
+            config: {
+              secret: "persisted-secret",
+              algorithm: "HS512",
+              expiration: 300,
+            },
+          },
+        ],
+      },
+      '{"sub":"123"}',
+    );
+
+    expect(result).toEqual({ success: true, output: "signed.jwt.token" });
+    expect(wasmMocks.jwtSign).toHaveBeenCalledWith(
+      '{"sub":"123"}',
+      "persisted-secret",
+      "HS512",
+      300,
+    );
+  });
+
+  it("stops a pipe at a failing JWT step", async () => {
+    wasmMocks.jwtPayload.mockReturnValueOnce({
+      success: false,
+      result: undefined,
+      error: "JWT payload segment is not valid JSON",
+    });
+    const downstreamCalls = wasmMocks.stringToUppercase.mock.calls.length;
+    const result = await executePipe(
+      {
+        id: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+        name: "Decode then transform",
+        createdAt: "2026-08-01T00:00:00.000Z",
+        updatedAt: "2026-08-01T00:00:00.000Z",
+        steps: [
+          {
+            id: "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb",
+            toolId: "security-jwt-decode",
+            toolVersion: 1,
+            config: {
+              outputMode: "Payload",
+              autoStripBearer: true,
+              includeAnalysis: false,
+            },
+          },
+          {
+            id: "cccccccc-cccc-4ccc-8ccc-cccccccccccc",
+            toolId: "string-case-converter",
+            toolVersion: 1,
+            config: { outputCase: "Uppercase" },
+          },
+        ],
+      },
+      "malformed.jwt.token",
+    );
+
+    expect(result).toEqual({
+      success: false,
+      failure: {
+        code: "operation-failed",
+        message: "JWT payload segment is not valid JSON",
+        stepId: "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb",
+        stepIndex: 0,
+        toolId: "security-jwt-decode",
+      },
+    });
+    expect(wasmMocks.stringToUppercase).toHaveBeenCalledTimes(downstreamCalls);
   });
 });

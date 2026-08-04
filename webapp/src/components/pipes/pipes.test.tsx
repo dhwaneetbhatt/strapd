@@ -413,6 +413,36 @@ describe("pipe components", () => {
     expect(screen.getAllByText("UTF-8")).toHaveLength(2);
   });
 
+  it("keeps long minified JSON intact in the output pane", () => {
+    const output = JSON.stringify({
+      analysis: { expiration: { status: "NOT_PRESENT" } },
+      payload: { name: "John Doe", subject: "a".repeat(300) },
+    });
+
+    render(
+      <PipeRunner
+        pipeName="Inspect JWT"
+        steps={steps}
+        requiresInput
+        input="header.payload.signature"
+        output={output}
+        runState={{ status: "success", durationMs: 12 }}
+        onInputChange={vi.fn()}
+        onRun={vi.fn()}
+        onReset={vi.fn()}
+      />,
+      { wrapper },
+    );
+
+    const outputRegion = screen.getByRole("region", {
+      name: "Final pipe output",
+    });
+    expect(outputRegion.querySelector("code")).toHaveStyle({
+      whiteSpace: "pre",
+      wordBreak: "normal",
+    });
+  });
+
   it("synchronizes the input line gutter and expands the pane accessibly", async () => {
     const user = userEvent.setup();
     render(

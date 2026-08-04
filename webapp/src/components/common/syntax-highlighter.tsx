@@ -13,6 +13,7 @@ interface SyntaxHighlighterComponentProps {
   fontSize?: string;
   maxHeight?: string;
   showLineNumbers?: boolean;
+  wrapLongLines?: boolean;
 }
 
 // Performance threshold - fallback to plain text for very large outputs
@@ -33,6 +34,7 @@ export const SyntaxHighlighterComponent: React.FC<SyntaxHighlighterComponentProp
       fontSize = "sm",
       maxHeight = "full",
       showLineNumbers = false,
+      wrapLongLines = true,
     }) => {
       const { colorMode } = useColorMode();
 
@@ -72,15 +74,15 @@ export const SyntaxHighlighterComponent: React.FC<SyntaxHighlighterComponentProp
             overflowY="auto"
             maxH={maxHeight}
             h={maxHeight}
-            whiteSpace="pre-wrap"
-            wordBreak="break-word"
+            whiteSpace={wrapLongLines ? "pre-wrap" : "pre"}
+            wordBreak={wrapLongLines ? "break-word" : "normal"}
           >
             <Code
               fontSize={fontSize}
               bg="transparent"
               color="text.primary"
-              whiteSpace="pre-wrap"
-              wordBreak="break-word"
+              whiteSpace={wrapLongLines ? "pre-wrap" : "pre"}
+              wordBreak={wrapLongLines ? "break-word" : "normal"}
             >
               {code}
             </Code>
@@ -122,13 +124,13 @@ export const SyntaxHighlighterComponent: React.FC<SyntaxHighlighterComponentProp
               color: textPrimary,
             }}
             wrapLines={true}
-            wrapLongLines={true}
+            wrapLongLines={wrapLongLines}
             showLineNumbers={showLineNumbers}
             PreTag="div"
             codeTagProps={{
               style: {
-                whiteSpace: "pre-wrap",
-                wordBreak: "break-word",
+                whiteSpace: wrapLongLines ? "pre-wrap" : "pre",
+                wordBreak: wrapLongLines ? "break-word" : "normal",
               },
             }}
           >

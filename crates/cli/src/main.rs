@@ -4,8 +4,8 @@ use std::io::{self, Write};
 use strapd::args::{Cli, Commands};
 use strapd::handlers::{
     calculator_handler, clipboard_handler, conversion_handler, data_formats_handler,
-    datetime_handler, encoding_handler, identifiers_handler, random_handler, security_handler,
-    string_handler,
+    datetime_handler, encoding_handler, identifiers_handler, jwt_handler, random_handler,
+    security_handler, string_handler,
 };
 
 fn main() {
@@ -24,6 +24,7 @@ fn main() {
         Commands::Sql { operation } => data_formats_handler::handle_sql(operation),
         Commands::Hash { operation } => security_handler::handle_hash(operation),
         Commands::Hmac { operation } => security_handler::handle_hmac(operation),
+        Commands::Jwt { operation } => jwt_handler::handle(operation),
         Commands::Random { operation } => random_handler::handle(operation),
         Commands::Time { operation } => datetime_handler::handle(operation),
         Commands::Copy { input } => clipboard_handler::handle_copy(input),

@@ -27,6 +27,7 @@ strapd/
 │   │   │   ├── identifiers/ # UUID, ULID
 │   │   │   ├── string/     # String manipulation
 │   │   │   ├── security/   # Hashing, HMAC
+│   │   │   ├── jwt/        # JWT decoding, analysis, verification, signing
 │   │   │   ├── random/     # Random generation
 │   │   │   ├── datetime/   # Date/time utilities
 │   │   │   └── data_formats/ # JSON, YAML, XML, SQL
@@ -104,6 +105,7 @@ User Input → React Component → Tool Definition → WASM Wrapper → strapd_w
 ### Security
 - **Hash**: MD5, SHA-1, SHA-256, SHA-512
 - **HMAC**: SHA-256, SHA-512
+- **JWT**: decode/extract, expiration analysis, HS256/HS384/HS512 verification and signing
 
 ### Random
 - **Numbers**: generate random numbers

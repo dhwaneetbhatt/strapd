@@ -173,9 +173,28 @@ describe("SyntaxHighlighterComponent", () => {
       // Check if code element has word wrapping styles
       const codeElement = container.querySelector("code");
       expect(codeElement).toBeInTheDocument();
+      expect(codeElement).toHaveStyle({
+        whiteSpace: "pre-wrap",
+        wordBreak: "break-word",
+      });
+    });
 
-      // Verify that codeTagProps are applied (whiteSpace and wordBreak)
-      // Note: styles are applied via inline styles in codeTagProps
+    it("preserves long lines when wrapping is disabled", () => {
+      const longCode = `{"payload":{"name":"${"a".repeat(300)}"}}`;
+
+      const { container } = render(
+        <SyntaxHighlighterComponent
+          code={longCode}
+          language="json"
+          wrapLongLines={false}
+        />,
+        { wrapper },
+      );
+
+      expect(container.querySelector("code")).toHaveStyle({
+        whiteSpace: "pre",
+        wordBreak: "normal",
+      });
     });
 
     it("enables wrapLines for proper wrapping behavior", () => {

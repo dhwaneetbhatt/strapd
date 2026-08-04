@@ -38,14 +38,14 @@ export const Header: React.FC<HeaderProps> = ({
       bg="header.bg"
       borderBottom="1px"
       borderColor="header.border"
-      px={6}
+      px={{ base: 3, md: 6 }}
       py={4}
       position="sticky"
       top={0}
       zIndex={10}
       boxShadow="sm"
     >
-      <Flex alignItems="center" maxW="full" mx="auto" gap={6}>
+      <Flex alignItems="center" maxW="full" mx="auto" gap={{ base: 2, md: 6 }}>
         {/* Logo */}
         <Link
           to="/"
@@ -70,7 +70,7 @@ export const Header: React.FC<HeaderProps> = ({
         <Spacer />
 
         {/* Navigation and Action buttons */}
-        <HStack spacing={2}>
+        <HStack spacing={{ base: 0, md: 2 }}>
           <Tooltip label="Pipes" hasArrow>
             <IconButton
               as={Link}
@@ -80,7 +80,7 @@ export const Header: React.FC<HeaderProps> = ({
               variant={isPipesPage ? "solid" : "ghost"}
               colorScheme={isPipesPage ? "brand" : undefined}
               color={!isPipesPage ? "text.brand.subtle" : undefined}
-              size="md"
+              size={{ base: "sm", md: "md" }}
               onClick={(event) => {
                 if (onNavigationRequest && !onNavigationRequest("/pipes")) {
                   event.preventDefault();
@@ -96,7 +96,7 @@ export const Header: React.FC<HeaderProps> = ({
                 aria-label="Show keyboard shortcuts"
                 icon={<RiKeyboardLine />}
                 variant="ghost"
-                size="md"
+                size={{ base: "sm", md: "md" }}
                 onClick={onHelpOpen}
                 color="text.brand.subtle"
               />
@@ -113,7 +113,7 @@ export const Header: React.FC<HeaderProps> = ({
               variant={isCliPage ? "solid" : "ghost"}
               colorScheme={isCliPage ? "brand" : undefined}
               color={!isCliPage ? "text.brand.subtle" : undefined}
-              size="md"
+              size={{ base: "sm", md: "md" }}
               onClick={(event) => {
                 if (onNavigationRequest && !onNavigationRequest("/cli")) {
                   event.preventDefault();
@@ -128,7 +128,7 @@ export const Header: React.FC<HeaderProps> = ({
               aria-label="View on GitHub"
               icon={<FiGithub />}
               variant="ghost"
-              size="md"
+              size={{ base: "sm", md: "md" }}
               as="a"
               href={appConfig.links.github}
               target="_blank"
@@ -147,7 +147,7 @@ export const Header: React.FC<HeaderProps> = ({
               icon={colorMode === "light" ? <MoonIcon /> : <SunIcon />}
               onClick={toggleColorMode}
               variant="ghost"
-              size="md"
+              size={{ base: "sm", md: "md" }}
             />
           </Tooltip>
         </HStack>

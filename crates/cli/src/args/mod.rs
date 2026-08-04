@@ -5,6 +5,7 @@ pub mod data_formats;
 pub mod datetime;
 pub mod encoding;
 pub mod identifiers;
+pub mod jwt;
 pub mod random;
 pub mod security;
 pub mod string;
@@ -68,6 +69,11 @@ pub enum Commands {
     Hmac {
         #[clap(subcommand)]
         operation: security::HmacOperation,
+    },
+    /// Decode, inspect, verify, and sign JSON Web Tokens
+    Jwt {
+        #[clap(subcommand)]
+        operation: jwt::JwtOperation,
     },
     Random {
         #[clap(subcommand)]

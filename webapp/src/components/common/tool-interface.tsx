@@ -4,10 +4,12 @@ import {
   Heading,
   HStack,
   IconButton,
+  Spinner,
   Text,
   VStack,
 } from "@chakra-ui/react";
 import type React from "react";
+import { Suspense } from "react";
 import { BsPinAngle, BsPinFill, BsStar, BsStarFill } from "react-icons/bs";
 import { getCategoryIcon } from "../../constants/category-icons";
 import { useSettings } from "../../contexts/settings-context";
@@ -47,14 +49,24 @@ export const ToolInterface: React.FC<ToolInterfaceProps> = ({
 
   // Render the tool's custom component
   const ToolComponent = toolDefinition.component;
+  const usesPageScroll = toolDefinition.scrollMode === "page";
 
   return (
-    <VStack w="full" h="tool.container" align="stretch" spacing={6}>
+    <VStack
+      w="full"
+      maxW={{ base: "calc(100vw - 2rem)", md: "100%" }}
+      minW={0}
+      h={usesPageScroll ? "auto" : "tool.container"}
+      minH={usesPageScroll ? "tool.container" : undefined}
+      data-scroll-mode={usesPageScroll ? "page" : "contained"}
+      align="stretch"
+      spacing={6}
+    >
       {/* Tool Header */}
       <VStack align="stretch" spacing={4}>
-        <HStack spacing={3}>
+        <HStack spacing={3} flexWrap="wrap" minW={0}>
           <Text fontSize="2xl">{getCategoryIcon(tool.category)}</Text>
-          <Heading size="lg" color="text.primary">
+          <Heading size="lg" color="text.primary" minW={0}>
             {tool.name}
           </Heading>
 
@@ -81,18 +93,29 @@ export const ToolInterface: React.FC<ToolInterfaceProps> = ({
             />
           </HStack>
         </HStack>
-        <Text fontSize="md" color="text.secondary">
+        <Text fontSize="md" color="text.secondary" overflowWrap="anywhere">
           {tool.description}
         </Text>
         <Divider />
       </VStack>
 
-      <Box flex={1} minH="0">
-        <ToolComponent
-          tool={toolDefinition}
-          initialInputs={initialInput || {}}
-          onInputChange={onInputChange}
-        />
+      <Box flex={usesPageScroll ? undefined : 1} minH="0">
+        <Suspense
+          fallback={
+            <VStack h="full" justify="center" spacing={3} role="status">
+              <Spinner color="text.brand" />
+              <Text color="text.secondary" fontSize="sm">
+                Loading tool…
+              </Text>
+            </VStack>
+          }
+        >
+          <ToolComponent
+            tool={toolDefinition}
+            initialInputs={initialInput || {}}
+            onInputChange={onInputChange}
+          />
+        </Suspense>
       </Box>
     </VStack>
   );
