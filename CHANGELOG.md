@@ -6,6 +6,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+## [v1.4.0] - 2026-10-03
+
 ### cli
 
 - feat: add offline JWT decoding, header and payload extraction, expiration analysis, HMAC verification, and HS256/HS384/HS512 signing
