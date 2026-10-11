@@ -1,0 +1,66 @@
+name: Manual Browser E2E
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  browser-e2e:
+    name: Responsive browser flows
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v5
+
+      - name: Install Rust toolchain
+        uses: actions-rust-lang/setup-rust-toolchain@v1
+        with:
+          target: wasm32-unknown-unknown
+
+      - name: Cache Cargo dependencies
+        uses: actions/cache@v6
+        with:
+          path: |
+            ~/.cargo/bin
+            ~/.cargo/registry
+            ~/.cargo/git
+            target
+          key: ${{ runner.os }}-browser-e2e-cargo-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-browser-e2e-cargo-
+
+      - name: Install wasm-pack
+        run: cargo install wasm-pack --version 0.15.0 --locked
+
+      - name: Build WASM
+        run: make wasm-build
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: '24'
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v6
+        with:
+          version: 10
+
+      - name: Cache pnpm dependencies
+        uses: actions/cache@v6
+        with:
+          path: ~/.pnpm-store
+          key: ${{ runner.os }}-browser-e2e-pnpm-${{ hashFiles('webapp/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-browser-e2e-pnpm-
+
+      - name: Install webapp dependencies
+        run: make webapp-install
+
+      - name: Install Playwright browser
+        run: cd webapp && pnpm exec playwright install --with-deps chromium
+
+      - name: Test responsive browser flows
+        run: make webapp-e2e

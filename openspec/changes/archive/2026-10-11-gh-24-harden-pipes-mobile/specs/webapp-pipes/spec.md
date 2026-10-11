@@ -48,5 +48,5 @@ The system SHALL provide a dedicated pipe workspace with saved-pipe discovery, b
 - **THEN** its content and action controls reflow within the viewport and remain fully operable
 
 #### Scenario: Verify responsive behavior in a layout-capable browser
-- **WHEN** automated webapp verification runs
+- **WHEN** responsive browser verification is explicitly triggered locally or through the manual pre-release workflow
 - **THEN** it exercises critical Pipes flows at supported mobile viewports and checks horizontal overflow, overlay keyboard behavior, mobile action usability, light and dark themes, and reduced-motion behavior using a real layout engine

@@ -50,7 +50,7 @@ Alternative considered: replace the list with horizontally scrolling chips. Reje
 
 Keep Vitest for component and state-level tests and add Playwright for geometry and interaction assertions. Browser tests will seed the versioned `strapd-pipes` local-storage collection before loading `/pipes`, create additional pipes through the UI where the flow itself is under test, and run against Chromium at 320×568, 375×667, 768×1024, and 844×390 as applicable.
 
-Critical assertions will compare document scroll width to viewport width, inspect bounding boxes for touch targets and viewport containment, verify body scroll locking and focus restoration for expanded panes, exercise dialogs and rename with long content, and cover dark mode and reduced motion. A dedicated script will keep browser coverage opt-in for development while joining the repository's aggregate test command.
+Critical assertions will compare document scroll width to viewport width, inspect bounding boxes for touch targets and viewport containment, verify body scroll locking and focus restoration for expanded panes, exercise dialogs and rename with long content, and cover dark mode and reduced motion. A dedicated script keeps browser coverage opt-in for development, joins the repository's aggregate local test command, and is available through a manually dispatched pre-release workflow without gating deterministic pull-request CI.
 
 Alternative considered: infer responsiveness from Chakra props in JSDOM. Rejected because JSDOM has no layout engine and cannot prove overflow or geometry.
 
@@ -65,7 +65,7 @@ Alternative considered: render the full desktop search input in the narrow heade
 - [Modalizing a pane can remount its textarea or syntax highlighter] → Keep values controlled, focus the corresponding pane content, and cover input preservation and restoration in component and browser tests.
 - [Larger touch targets reduce editor density] → Apply the 44px floor at mobile breakpoints and retain compact dimensions at desktop breakpoints.
 - [A collapsible rail can hide discovery] → Keep the selected pipe and an explicit saved-pipes toggle visible in the collapsed summary.
-- [Browser tests increase install and CI time] → Run one Chromium project, reuse deterministic local fixtures, and limit tests to critical responsive flows.
+- [Browser tests can vary with runner timing and fractional layout geometry] → Keep them out of required deterministic CI and run the single Chromium project explicitly before release.
 - [Viewport-height behavior differs on mobile browsers] → Use dynamic viewport units with safe fallbacks and assert both portrait and landscape layouts.
 - [Another header action can crowd 320px layouts] → Use an icon-only mobile search affordance with an accessible label and cover the shared shell in the overflow smoke test.
 

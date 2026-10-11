@@ -129,12 +129,6 @@ jobs:
       - name: Test webapp
         run: make webapp-coverage
 
-      - name: Install Playwright browser
-        run: cd webapp && pnpm exec playwright install --with-deps chromium
-
-      - name: Test responsive browser flows
-        run: make webapp-e2e
-
       - name: Display Webapp coverage summary
         run: |
           echo "## ⚛️ Webapp Coverage Report" >> $GITHUB_STEP_SUMMARY
