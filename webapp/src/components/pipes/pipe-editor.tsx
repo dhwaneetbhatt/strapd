@@ -207,6 +207,8 @@ export const PipeEditor: React.FC<PipeEditorProps> = ({
                             icon={<FiArrowUp />}
                             variant="ghost"
                             size="sm"
+                            w={{ base: "44px", md: "32px" }}
+                            h={{ base: "44px", md: "32px" }}
                             isDisabled={index === 0}
                             onClick={() => onMoveStep(step.id, -1)}
                           />
@@ -217,6 +219,8 @@ export const PipeEditor: React.FC<PipeEditorProps> = ({
                             icon={<FiArrowDown />}
                             variant="ghost"
                             size="sm"
+                            w={{ base: "44px", md: "32px" }}
+                            h={{ base: "44px", md: "32px" }}
                             isDisabled={index === steps.length - 1}
                             onClick={() => onMoveStep(step.id, 1)}
                           />
@@ -228,6 +232,8 @@ export const PipeEditor: React.FC<PipeEditorProps> = ({
                             variant="ghost"
                             color="text.error"
                             size="sm"
+                            w={{ base: "44px", md: "32px" }}
+                            h={{ base: "44px", md: "32px" }}
                             onClick={() => onRemoveStep(step.id)}
                           />
                         </Tooltip>
@@ -266,8 +272,13 @@ export const PipeEditor: React.FC<PipeEditorProps> = ({
           </Box>
         </Box>
 
-        <HStack justify="flex-end" mt="auto">
-          <Button leftIcon={<FiX />} variant="ghost" onClick={onCancel}>
+        <HStack justify="flex-end" mt="auto" flexWrap="wrap">
+          <Button
+            leftIcon={<FiX />}
+            variant="ghost"
+            onClick={onCancel}
+            h={{ base: "44px", md: "40px" }}
+          >
             Cancel
           </Button>
           <Button
@@ -275,6 +286,7 @@ export const PipeEditor: React.FC<PipeEditorProps> = ({
             onClick={onSave}
             isLoading={isSaving}
             loadingText="Saving"
+            h={{ base: "44px", md: "40px" }}
           >
             Save pipe
           </Button>

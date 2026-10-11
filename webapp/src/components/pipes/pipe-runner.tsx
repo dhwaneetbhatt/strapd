@@ -10,6 +10,10 @@ import {
   HStack,
   IconButton,
   Kbd,
+  Modal,
+  ModalBody,
+  ModalContent,
+  ModalOverlay,
   Spinner,
   Text,
   Textarea,
@@ -75,6 +79,8 @@ const DataPane: React.FC<{
   const lineCount = value ? value.split("\n").length : 1;
   const [isExpanded, setIsExpanded] = useState(false);
   const gutterRef = useRef<HTMLPreElement>(null);
+  const expandButtonRef = useRef<HTMLButtonElement>(null);
+  const modalCloseRef = useRef<HTMLButtonElement>(null);
   const paneName = label === "INPUT" ? "input" : "output";
   const lineNumbers = Array.from(
     { length: Math.min(lineCount, 10_000) },
@@ -83,27 +89,25 @@ const DataPane: React.FC<{
 
   useEffect(() => {
     if (!isExpanded) return;
-    const collapseOnEscape = (event: KeyboardEvent) => {
-      if (event.key === "Escape") setIsExpanded(false);
+
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+
+    return () => {
+      document.body.style.overflow = previousOverflow;
     };
-    window.addEventListener("keydown", collapseOnEscape);
-    return () => window.removeEventListener("keydown", collapseOnEscape);
   }, [isExpanded]);
 
-  return (
+  const renderPane = (expanded: boolean) => (
     <Flex
       direction="column"
       minH={{ base: "280px", lg: "400px" }}
-      h={isExpanded ? "calc(100vh - 2rem)" : "auto"}
+      h={expanded ? "100%" : "auto"}
       border="1px solid"
       borderColor="border.base"
       borderRadius="md"
       bg="surface.raised"
       overflow="hidden"
-      position={isExpanded ? "fixed" : "relative"}
-      inset={isExpanded ? { base: 2, md: 4 } : undefined}
-      zIndex={isExpanded ? 1400 : "auto"}
-      boxShadow={isExpanded ? "0 12px 32px rgba(0, 0, 0, 0.18)" : "none"}
     >
       <HStack
         justify="space-between"
@@ -128,16 +132,19 @@ const DataPane: React.FC<{
             }
           >
             <IconButton
+              ref={expanded ? modalCloseRef : expandButtonRef}
               aria-label={
-                isExpanded
+                expanded
                   ? `Restore ${paneName} pane`
                   : `Expand ${paneName} pane`
               }
-              aria-expanded={isExpanded}
-              icon={isExpanded ? <FiMinimize2 /> : <FiMaximize2 />}
+              aria-expanded={expanded}
+              icon={expanded ? <FiMinimize2 /> : <FiMaximize2 />}
               size="sm"
+              w={{ base: "44px", md: "32px" }}
+              h={{ base: "44px", md: "32px" }}
               variant="ghost"
-              onClick={() => setIsExpanded((expanded) => !expanded)}
+              onClick={() => setIsExpanded(!expanded)}
             />
           </Tooltip>
         </HStack>
@@ -243,6 +250,33 @@ const DataPane: React.FC<{
       </HStack>
     </Flex>
   );
+
+  return (
+    <>
+      {renderPane(false)}
+      <Modal
+        isOpen={isExpanded}
+        onClose={() => setIsExpanded(false)}
+        finalFocusRef={expandButtonRef}
+        initialFocusRef={modalCloseRef}
+        size="full"
+      >
+        <ModalOverlay bg="overlay.base" />
+        <ModalContent
+          m={{ base: 2, md: 4 }}
+          maxW={{ base: "calc(100vw - 1rem)", md: "calc(100vw - 2rem)" }}
+          h={{ base: "calc(100dvh - 2rem)", md: "calc(100dvh - 3rem)" }}
+          maxH={{ base: "calc(100dvh - 2rem)", md: "calc(100dvh - 3rem)" }}
+          bg="transparent"
+          boxShadow="0 12px 32px rgba(0, 0, 0, 0.18)"
+        >
+          <ModalBody p={0} minH={0}>
+            {renderPane(true)}
+          </ModalBody>
+        </ModalContent>
+      </Modal>
+    </>
+  );
 };
 
 export const PipeRunner: React.FC<PipeRunnerProps> = ({
@@ -332,6 +366,8 @@ export const PipeRunner: React.FC<PipeRunnerProps> = ({
                 aria-label="Copy final output"
                 icon={<FiCopy />}
                 size="sm"
+                w={{ base: "44px", md: "32px" }}
+                h={{ base: "44px", md: "32px" }}
                 variant="ghost"
                 onClick={onCopy}
                 isDisabled={!output}
@@ -382,6 +418,7 @@ export const PipeRunner: React.FC<PipeRunnerProps> = ({
           leftIcon={<FiRotateCcw />}
           variant="ghost"
           size="sm"
+          h={{ base: "44px", md: "32px" }}
           onClick={onReset}
           isDisabled={
             isRunning || (!input && !output && runState.status === "idle")

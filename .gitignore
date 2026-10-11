@@ -19,6 +19,8 @@ node_modules/
 
 # Test coverage output
 coverage/
+playwright-report/
+test-results/
 lcov.info
 *.profraw
 *.profdata

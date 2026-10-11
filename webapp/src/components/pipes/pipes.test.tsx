@@ -1,5 +1,5 @@
 import { ChakraProvider } from "@chakra-ui/react";
-import { fireEvent, render, screen } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import type React from "react";
 import { beforeAll, describe, expect, it, vi } from "vitest";
@@ -473,17 +473,23 @@ describe("pipe components", () => {
     expect(gutter.scrollTop).toBe(48);
 
     await user.click(screen.getByRole("button", { name: "Expand input pane" }));
+    expect(screen.getByRole("dialog")).toBeInTheDocument();
     expect(
       screen.getByRole("button", { name: "Restore input pane" }),
     ).toHaveAttribute("aria-expanded", "true");
     expect(
-      screen.getByRole("button", { name: "Expand output pane" }),
-    ).toBeInTheDocument();
+      screen.getByRole("button", { name: "Restore input pane" }),
+    ).toHaveFocus();
 
     await user.keyboard("{Escape}");
-    expect(
-      screen.getByRole("button", { name: "Expand input pane" }),
-    ).toHaveAttribute("aria-expanded", "false");
+    await waitFor(() =>
+      expect(screen.queryByRole("dialog")).not.toBeInTheDocument(),
+    );
+    const expandInput = screen.getByRole("button", {
+      name: "Expand input pane",
+    });
+    expect(expandInput).toHaveAttribute("aria-expanded", "false");
+    expect(expandInput).toHaveFocus();
   });
 
   it("uses a focused edit inspector without a numbered kicker", () => {
@@ -634,7 +640,7 @@ describe("pipe components", () => {
     ).toBeInTheDocument();
   });
 
-  it("disables collection navigation while a working copy is active", () => {
+  it("disables collection navigation while a working copy is active", async () => {
     render(
       <SavedPipesRail
         pipes={[
@@ -654,6 +660,9 @@ describe("pipe components", () => {
       { wrapper },
     );
 
+    await userEvent.click(
+      screen.getByRole("button", { name: "Browse saved pipes" }),
+    );
     expect(screen.getByRole("button", { name: "New pipe" })).toBeDisabled();
     expect(screen.getByRole("button", { name: "Import" })).toBeDisabled();
     expect(screen.getByRole("button", { name: /Saved pipe/ })).toBeDisabled();
@@ -704,6 +713,12 @@ describe("pipe components", () => {
       }),
     );
 
+    await user.click(
+      screen.getByRole("button", { name: "Browse saved pipes" }),
+    );
+    expect(
+      screen.getByRole("button", { name: /Runnable pipe/ }),
+    ).toHaveAttribute("aria-current", "page");
     await user.click(screen.getByRole("button", { name: "New pipe" }));
     await user.click(screen.getByRole("button", { name: /Unavailable pipe/ }));
     const file = new File(["{}"], "pipe.json", { type: "application/json" });
@@ -713,8 +728,8 @@ describe("pipe components", () => {
     expect(onSelect).toHaveBeenCalledWith("pipe-two");
     expect(onImport).toHaveBeenCalledWith(file);
     expect(
-      screen.getByRole("button", { name: /Runnable pipe/ }),
-    ).toHaveAttribute("aria-current", "page");
+      screen.getByRole("button", { name: "Browse saved pipes" }),
+    ).toHaveAttribute("aria-expanded", "false");
   });
 
   it("supports complete keyboard and pointer tool-search interaction", async () => {

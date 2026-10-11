@@ -141,6 +141,8 @@ export const Pipes: React.FC = () => {
                 icon={<FiX />}
                 variant="ghost"
                 size="sm"
+                w={{ base: "44px", md: "32px" }}
+                h={{ base: "44px", md: "32px" }}
                 onClick={workspace.clearError}
               />
             </Alert>
@@ -243,7 +245,12 @@ export const Pipes: React.FC = () => {
                       <VisuallyHidden>
                         <Heading as="h1">{workspace.selectedPipe.name}</Heading>
                       </VisuallyHidden>
-                      <HStack>
+                      <Flex
+                        direction={{ base: "column", sm: "row" }}
+                        align={{ base: "stretch", sm: "center" }}
+                        gap={2}
+                        w="full"
+                      >
                         <Input
                           aria-label="Pipe name"
                           value={renameValue}
@@ -256,18 +263,27 @@ export const Pipes: React.FC = () => {
                           }}
                           autoFocus
                           maxW="420px"
+                          minW={0}
+                          w="full"
                         />
-                        <Button onClick={confirmRename} size="sm">
+                        <Button
+                          onClick={confirmRename}
+                          size="sm"
+                          h={{ base: "44px", md: "32px" }}
+                          flexShrink={0}
+                        >
                           Save name
                         </Button>
                         <IconButton
                           aria-label="Cancel rename"
                           icon={<FiX />}
                           size="sm"
+                          w={{ base: "44px", md: "32px" }}
+                          h={{ base: "44px", md: "32px" }}
                           variant="ghost"
                           onClick={() => setIsRenaming(false)}
                         />
-                      </HStack>
+                      </Flex>
                     </>
                   ) : (
                     <HStack align="baseline" spacing={4} flexWrap="wrap">
@@ -288,6 +304,7 @@ export const Pipes: React.FC = () => {
                     isLoading={workspace.runState.status === "running"}
                     loadingText="Running"
                     isDisabled={!workspace.canRun}
+                    h={{ base: "44px", md: "40px" }}
                   >
                     Run
                   </Button>
@@ -295,6 +312,7 @@ export const Pipes: React.FC = () => {
                     leftIcon={<FiEdit3 />}
                     variant="outline"
                     onClick={workspace.startEdit}
+                    h={{ base: "44px", md: "40px" }}
                   >
                     Edit
                   </Button>
@@ -303,6 +321,7 @@ export const Pipes: React.FC = () => {
                     variant="outline"
                     onClick={workspace.exportSelected}
                     display={{ base: "none", md: "inline-flex" }}
+                    minH={10}
                   >
                     Export
                   </Button>
@@ -311,15 +330,18 @@ export const Pipes: React.FC = () => {
                     variant="outline"
                     onClick={workspace.duplicate}
                     display={{ base: "none", xl: "inline-flex" }}
+                    minH={10}
                   >
                     Duplicate
                   </Button>
-                  <Menu>
+                  <Menu key={workspace.selectedPipe.id}>
                     <MenuButton
                       as={IconButton}
                       aria-label="More pipe actions"
                       icon={<FiMoreVertical />}
                       variant="ghost"
+                      w={{ base: "44px", md: "40px" }}
+                      h={{ base: "44px", md: "40px" }}
                     />
                     <MenuList>
                       <MenuItem
@@ -436,21 +458,33 @@ export const Pipes: React.FC = () => {
         isCentered
       >
         <AlertDialogOverlay>
-          <AlertDialogContent>
+          <AlertDialogContent mx={4} maxW="calc(100vw - 2rem)">
             <AlertDialogHeader>Delete this pipe?</AlertDialogHeader>
             <AlertDialogBody>
               {workspace.selectedPipe?.name} will be removed from this browser.
               This cannot be undone unless you exported a copy.
             </AlertDialogBody>
-            <AlertDialogFooter>
+            <AlertDialogFooter
+              flexDirection={{ base: "column-reverse", sm: "row" }}
+              alignItems="stretch"
+              gap={2}
+            >
               <Button
                 ref={deleteCancelRef}
                 variant="ghost"
                 onClick={closeDelete}
+                w={{ base: "full", sm: "auto" }}
+                minH="44px"
               >
                 Cancel
               </Button>
-              <Button colorScheme="red" ml={3} onClick={confirmDelete}>
+              <Button
+                colorScheme="red"
+                ml={{ base: 0, sm: 1 }}
+                onClick={confirmDelete}
+                w={{ base: "full", sm: "auto" }}
+                minH="44px"
+              >
                 Delete pipe
               </Button>
             </AlertDialogFooter>
@@ -465,7 +499,7 @@ export const Pipes: React.FC = () => {
         isCentered
       >
         <AlertDialogOverlay>
-          <AlertDialogContent>
+          <AlertDialogContent mx={4} maxW="calc(100vw - 2rem)">
             <AlertDialogHeader>Pipe already exists</AlertDialogHeader>
             <AlertDialogBody>
               A local pipe and the imported pipe share the same stable ID.
@@ -486,21 +520,34 @@ export const Pipes: React.FC = () => {
                 </Alert>
               )}
             </AlertDialogBody>
-            <AlertDialogFooter gap={2} flexWrap="wrap">
+            <AlertDialogFooter
+              gap={2}
+              flexWrap="wrap"
+              flexDirection={{ base: "column-reverse", sm: "row" }}
+              alignItems="stretch"
+            >
               <Button
                 ref={conflictCancelRef}
                 variant="ghost"
                 onClick={workspace.dismissImportConflict}
+                w={{ base: "full", sm: "auto" }}
+                minH="44px"
               >
                 Cancel
               </Button>
               <Button
                 variant="outline"
                 onClick={() => workspace.resolveConflict("copy")}
+                w={{ base: "full", sm: "auto" }}
+                minH="44px"
               >
                 Import as copy
               </Button>
-              <Button onClick={() => workspace.resolveConflict("replace")}>
+              <Button
+                onClick={() => workspace.resolveConflict("replace")}
+                w={{ base: "full", sm: "auto" }}
+                minH="44px"
+              >
                 Replace existing
               </Button>
             </AlertDialogFooter>
@@ -515,24 +562,32 @@ export const Pipes: React.FC = () => {
         isCentered
       >
         <AlertDialogOverlay>
-          <AlertDialogContent>
+          <AlertDialogContent mx={4} maxW="calc(100vw - 2rem)">
             <AlertDialogHeader>Leave without saving?</AlertDialogHeader>
             <AlertDialogBody>
               Your pipe changes have not been saved. Leaving this page will
               discard the working copy.
             </AlertDialogBody>
-            <AlertDialogFooter>
+            <AlertDialogFooter
+              flexDirection={{ base: "column-reverse", sm: "row" }}
+              alignItems="stretch"
+              gap={2}
+            >
               <Button
                 ref={navigationCancelRef}
                 variant="ghost"
                 onClick={navigationGuard.cancelNavigation}
+                w={{ base: "full", sm: "auto" }}
+                minH="44px"
               >
                 Stay and keep editing
               </Button>
               <Button
                 colorScheme="red"
-                ml={3}
+                ml={{ base: 0, sm: 1 }}
                 onClick={navigationGuard.confirmNavigation}
+                w={{ base: "full", sm: "auto" }}
+                minH="44px"
               >
                 Leave without saving
               </Button>

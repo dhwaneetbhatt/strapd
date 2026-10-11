@@ -23,13 +23,15 @@ export const Layout: React.FC<LayoutProps> = ({
   useHelpKey(() => onHelpOpen?.());
   useCommandH(() => onSidebarToggle?.());
   return (
-    <Flex direction="column" minH="100vh">
+    <Flex direction="column" minH="100vh" w="full" overflowX="hidden">
       <Header
         onSearchOpen={onSearchOpen}
         onHelpOpen={onHelpOpen}
         onNavigationRequest={onNavigationRequest}
       />
-      <Box flex={1}>{children}</Box>
+      <Box flex={1} minW={0}>
+        {children}
+      </Box>
     </Flex>
   );
 };

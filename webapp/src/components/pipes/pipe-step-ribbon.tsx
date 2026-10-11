@@ -131,8 +131,8 @@ export const PipeStepRibbon: React.FC<PipeStepRibbonProps> = ({
                           aria-label={`Edit ${step.toolName}`}
                           icon={<FiEdit3 />}
                           size="xs"
-                          minW={{ base: 10, md: 8 }}
-                          h={{ base: 10, md: 8 }}
+                          w={{ base: "44px", md: "32px" }}
+                          h={{ base: "44px", md: "32px" }}
                           variant="ghost"
                           onClick={() => onSelectStep(step.id)}
                         />
