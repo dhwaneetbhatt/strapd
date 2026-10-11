@@ -298,21 +298,23 @@ export const Sidebar: React.FC<SidebarProps> = ({
       >
         {/* Toggle Button - Desktop */}
         <IconButton
-          aria-label="Toggle sidebar"
+          aria-label={isOpen ? "Close navigation" : "Open navigation"}
           icon={<HamburgerIcon />}
           variant="ghost"
           size="sm"
           position="absolute"
           top={2}
           right={2}
-          display={{ base: "none", md: "flex" }}
+          display="flex"
+          w={{ base: "44px", md: "32px" }}
+          h={{ base: "44px", md: "32px" }}
           onClick={onToggle}
         />
 
         {/* Sidebar Content */}
         <Box
           p={4}
-          pt={8}
+          pt={{ base: 16, md: 8 }}
           height="100%"
           overflowY="auto"
           sx={{
@@ -324,7 +326,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
             },
             "&::-webkit-scrollbar-thumb": {
               background: "border.base",
-              borderRadius: "3px",
+              borderRadius: "var(--chakra-radii-sm)",
             },
             "&::-webkit-scrollbar-thumb:hover": {
               background: "border.hover",

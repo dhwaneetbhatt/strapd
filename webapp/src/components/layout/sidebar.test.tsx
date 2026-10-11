@@ -118,7 +118,7 @@ describe("Sidebar", () => {
     fireEvent.click(groupButton);
     fireEvent.click(screen.getAllByRole("button", { name: firstTool.name })[0]);
     fireEvent.click(
-      container.querySelector('[aria-label="Toggle sidebar"]') as Element,
+      container.querySelector('[aria-label="Close navigation"]') as Element,
     );
     const navigation = screen.getByRole("navigation", {
       name: "Developer tools navigation",

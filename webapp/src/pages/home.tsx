@@ -95,11 +95,14 @@ export const Home: React.FC = () => {
           aria-label="Toggle navigation"
           icon={<HamburgerIcon />}
           variant="ghost"
-          display={{ base: "flex", md: "none" }}
+          display={{ base: isSidebarOpen ? "none" : "flex", md: "none" }}
           position="absolute"
           top={4}
           left={4}
           zIndex={15}
+          minW="44px"
+          h="44px"
+          aria-expanded={isSidebarOpen}
           onClick={onSidebarToggle}
         />
 

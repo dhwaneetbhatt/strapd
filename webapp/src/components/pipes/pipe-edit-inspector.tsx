@@ -115,6 +115,8 @@ export const PipeEditInspector: React.FC<PipeEditInspectorProps> = ({
                     icon={<FiArrowUp />}
                     variant="ghost"
                     size="sm"
+                    w={{ base: "44px", md: "32px" }}
+                    h={{ base: "44px", md: "32px" }}
                     isDisabled={selectedIndex <= 0}
                     onClick={() => onMoveStep(selectedStep.id, -1)}
                   />
@@ -125,6 +127,8 @@ export const PipeEditInspector: React.FC<PipeEditInspectorProps> = ({
                     icon={<FiArrowDown />}
                     variant="ghost"
                     size="sm"
+                    w={{ base: "44px", md: "32px" }}
+                    h={{ base: "44px", md: "32px" }}
                     isDisabled={selectedIndex === steps.length - 1}
                     onClick={() => onMoveStep(selectedStep.id, 1)}
                   />
@@ -135,6 +139,7 @@ export const PipeEditInspector: React.FC<PipeEditInspectorProps> = ({
                 variant="ghost"
                 color="text.error"
                 size="sm"
+                h={{ base: "44px", md: "32px" }}
                 onClick={() => onRemoveStep(selectedStep.id)}
               >
                 Remove
@@ -194,11 +199,20 @@ export const PipeEditInspector: React.FC<PipeEditInspectorProps> = ({
           />
         </FormControl>
 
-        <HStack justify="flex-end" pt={2}>
-          <Button leftIcon={<FiX />} variant="ghost" onClick={onCancel}>
+        <HStack justify="flex-end" pt={2} flexWrap="wrap">
+          <Button
+            leftIcon={<FiX />}
+            variant="ghost"
+            onClick={onCancel}
+            h={{ base: "44px", md: "40px" }}
+          >
             Cancel
           </Button>
-          <Button leftIcon={<FiSave />} onClick={onSave}>
+          <Button
+            leftIcon={<FiSave />}
+            onClick={onSave}
+            h={{ base: "44px", md: "40px" }}
+          >
             Save pipe
           </Button>
         </HStack>

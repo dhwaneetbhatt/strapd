@@ -1,6 +1,6 @@
 # Makefile for strapd project
 
-.PHONY: all setup rust-fmt rust-fmt-check rust-lint rust-audit rust-install rust-install-coverage rust-build cli-build cli-release rust-test rust-coverage rust-coverage-report wasm-build webapp-install webapp-fmt webapp-fmt-check webapp-lint webapp-audit webapp-dev webapp-build webapp-test webapp-coverage webapp-coverage-open audit coverage help lint fmt fmt-check test install-hooks brew-formula-check brew-update-checksums
+.PHONY: all setup rust-fmt rust-fmt-check rust-lint rust-audit rust-install rust-install-coverage rust-build cli-build cli-release rust-test rust-coverage rust-coverage-report wasm-build webapp-install webapp-fmt webapp-fmt-check webapp-lint webapp-audit webapp-dev webapp-build webapp-test webapp-e2e webapp-coverage webapp-coverage-open audit coverage help lint fmt fmt-check test install-hooks brew-formula-check brew-update-checksums
 
 # -------------------
 # Help
@@ -26,6 +26,7 @@ help:
 	@echo "  webapp-dev            - Start webapp development server"
 	@echo "  webapp-build          - Build webapp"
 	@echo "  webapp-test           - Run webapp tests"
+	@echo "  webapp-e2e            - Run webapp browser tests"
 	@echo "  rust-coverage         - Run Rust tests with coverage (HTML)"
 	@echo "  rust-coverage-report  - Generate Rust coverage report (LCOV)"
 	@echo "  webapp-coverage       - Run webapp tests with coverage"
@@ -137,6 +138,10 @@ webapp-build:
 webapp-test:
 	cd webapp && pnpm test
 
+# Test responsive flows in a real browser
+webapp-e2e:
+	cd webapp && pnpm test:e2e
+
 # Test webapp with coverage
 webapp-coverage:
 	cd webapp && pnpm test --coverage
@@ -159,7 +164,7 @@ fmt: rust-fmt webapp-fmt
 fmt-check: rust-fmt-check webapp-fmt-check
 
 # Run all tests
-test: rust-test webapp-test
+test: rust-test webapp-test webapp-e2e
 
 # Run all tests with coverage
 coverage: rust-coverage webapp-coverage

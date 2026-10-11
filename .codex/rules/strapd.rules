@@ -25,6 +25,7 @@ prefix_rule(
             "webapp-dev",
             "webapp-build",
             "webapp-test",
+            "webapp-e2e",
             "webapp-coverage",
             "lint",
             "fmt",
@@ -38,6 +39,7 @@ prefix_rule(
     justification = "Allow documented strapd build, formatting, lint, test, coverage, and local development targets.",
     match = [
         "make webapp-test",
+        "make webapp-e2e",
         "make webapp-build",
         "make wasm-build",
         "make test",
@@ -72,7 +74,7 @@ prefix_rule(
 prefix_rule(
     pattern = [
         "pnpm",
-        ["biome", "build", "dev", "install", "test"],
+        ["biome", "build", "dev", "install", "test", "test:e2e"],
     ],
     decision = "allow",
     justification = "Allow the webapp's declared package, build, formatting, development, and test commands.",
@@ -80,6 +82,7 @@ prefix_rule(
         "pnpm install",
         "pnpm biome check",
         "pnpm test --run",
+        "pnpm test:e2e",
     ],
     not_match = [
         "pnpm add zod",

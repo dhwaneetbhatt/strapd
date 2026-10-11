@@ -1,4 +1,4 @@
-import { MoonIcon, SunIcon } from "@chakra-ui/icons";
+import { MoonIcon, SearchIcon, SunIcon } from "@chakra-ui/icons";
 import {
   Box,
   Flex,
@@ -71,6 +71,21 @@ export const Header: React.FC<HeaderProps> = ({
 
         {/* Navigation and Action buttons */}
         <HStack spacing={{ base: 0, md: 2 }}>
+          {onSearchOpen && (
+            <Tooltip label="Search tools" hasArrow>
+              <IconButton
+                aria-label="Search tools"
+                icon={<SearchIcon />}
+                variant="ghost"
+                display={{ base: "inline-flex", md: "none" }}
+                minW="44px"
+                h="44px"
+                onClick={onSearchOpen}
+                color="text.brand.subtle"
+              />
+            </Tooltip>
+          )}
+
           <Tooltip label="Pipes" hasArrow>
             <IconButton
               as={Link}
