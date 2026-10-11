@@ -1,6 +1,7 @@
 # Project-scoped commands used by strapd's documented development workflow.
-# Keep global installs, release/publish operations, destructive Git commands,
-# hook installation, and GUI-opening targets approval-gated.
+# Keep global installs, release/publish operations, destructive Git commands
+# other than explicitly allowed pushes, PR merges, hook installation, and
+# GUI-opening targets approval-gated.
 
 prefix_rule(
     pattern = [
@@ -116,13 +117,116 @@ prefix_rule(
 )
 
 prefix_rule(
-    pattern = ["gh", "issue", "view"],
+    pattern = ["git", "add"],
     decision = "allow",
-    justification = "Allow read-only inspection of GitHub issues referenced by project work.",
+    justification = "Allow staging changes for commits in the strapd repository.",
+    match = [
+        "git add .codex/rules/strapd.rules",
+        "git add -A",
+    ],
+    not_match = [
+        "git reset --hard",
+    ],
+)
+
+prefix_rule(
+    pattern = ["git", "commit"],
+    decision = "allow",
+    justification = "Allow creating and amending local commits for the PR-gated workflow.",
+    match = [
+        "git commit -m update-rules",
+        "git commit --amend --no-edit",
+    ],
+    not_match = [
+        "git reset --hard HEAD~1",
+    ],
+)
+
+prefix_rule(
+    pattern = ["git", "push"],
+    decision = "allow",
+    justification = "Allow publishing feature-branch commits; repository branch protection and PR review remain the integration gate.",
+    match = [
+        "git push",
+        "git push -u origin gh-27-example",
+    ],
+    not_match = [
+        "git remote remove origin",
+    ],
+)
+
+prefix_rule(
+    pattern = ["git", "switch", ["-c", "--create"]],
+    decision = "allow",
+    justification = "Allow creating and switching to a feature branch.",
+    match = [
+        "git switch -c gh-27-example",
+        "git switch --create gh-27-example",
+    ],
+    not_match = [
+        "git switch main",
+        "git branch -D gh-27-example",
+    ],
+)
+
+prefix_rule(
+    pattern = ["git", "checkout", "-b"],
+    decision = "allow",
+    justification = "Allow the legacy Git syntax for creating a feature branch.",
+    match = [
+        "git checkout -b gh-27-example",
+    ],
+    not_match = [
+        "git checkout main",
+        "git checkout -B main",
+    ],
+)
+
+prefix_rule(
+    pattern = [
+        "gh",
+        "issue",
+        ["comment", "create", "edit", "list", "status", "view"],
+    ],
+    decision = "allow",
+    justification = "Allow normal GitHub issue authoring and inspection while keeping close/delete actions gated.",
     match = [
         "gh issue view 123 --repo dhwaneetbhatt/strapd",
+        "gh issue comment 123 --body progress",
+        "gh issue create --title example --body details",
     ],
     not_match = [
         "gh issue close 123 --repo dhwaneetbhatt/strapd",
+    ],
+)
+
+prefix_rule(
+    pattern = [
+        "gh",
+        "pr",
+        [
+            "checks",
+            "comment",
+            "create",
+            "diff",
+            "edit",
+            "list",
+            "ready",
+            "status",
+            "update-branch",
+            "view",
+        ],
+    ],
+    decision = "allow",
+    justification = "Allow normal PR creation, maintenance, and inspection while keeping merge, close, and review decisions gated.",
+    match = [
+        "gh pr create --title example --body details",
+        "gh pr checks 30",
+        "gh pr view 30",
+    ],
+    not_match = [
+        "gh pr merge 30",
+        "gh pr close 30",
+        "gh pr review 30 --approve",
     ],
 )
