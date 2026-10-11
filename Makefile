@@ -1,6 +1,6 @@
 # Makefile for strapd project
 
-.PHONY: all setup rust-fmt rust-fmt-check rust-lint rust-install rust-install-coverage rust-build cli-build cli-release rust-test rust-coverage rust-coverage-report wasm-build webapp-install webapp-fmt webapp-fmt-check webapp-lint webapp-dev webapp-build webapp-test webapp-coverage webapp-coverage-open coverage help lint fmt fmt-check test install-hooks brew-formula-check brew-update-checksums
+.PHONY: all setup rust-fmt rust-fmt-check rust-lint rust-audit rust-install rust-install-coverage rust-build cli-build cli-release rust-test rust-coverage rust-coverage-report wasm-build webapp-install webapp-fmt webapp-fmt-check webapp-lint webapp-audit webapp-dev webapp-build webapp-test webapp-coverage webapp-coverage-open audit coverage help lint fmt fmt-check test install-hooks brew-formula-check brew-update-checksums
 
 # -------------------
 # Help
@@ -11,6 +11,7 @@ help:
 	@echo "  rust-fmt              - Format all Rust code"
 	@echo "  rust-fmt-check        - Check Rust code formatting"
 	@echo "  rust-lint             - Run Rust linter (clippy)"
+	@echo "  rust-audit            - Audit Rust dependencies for vulnerabilities"
 	@echo "  rust-install          - Install Rust dependencies"
 	@echo "  rust-install-coverage - Install cargo-llvm-cov coverage tool"
 	@echo "  cli-build             - Build CLI crate (debug)"
@@ -21,6 +22,7 @@ help:
 	@echo "  webapp-fmt            - Format webapp code"
 	@echo "  webapp-fmt-check      - Check webapp code formatting"
 	@echo "  webapp-lint           - Lint webapp code"
+	@echo "  webapp-audit          - Audit webapp dependencies for high-severity vulnerabilities"
 	@echo "  webapp-dev            - Start webapp development server"
 	@echo "  webapp-build          - Build webapp"
 	@echo "  webapp-test           - Run webapp tests"
@@ -29,6 +31,7 @@ help:
 	@echo "  webapp-coverage       - Run webapp tests with coverage"
 	@echo "  webapp-coverage-open  - Run webapp tests with coverage and open report"
 	@echo "  coverage              - Run all tests with coverage"
+	@echo "  audit                 - Audit all dependencies for vulnerabilities"
 	@echo "  lint                  - Run all linters"
 	@echo "  fmt                   - Format all code"
 	@echo "  fmt-check             - Check formatting for all code"
@@ -57,10 +60,13 @@ rust-fmt-check:
 rust-lint:
 	cargo clippy -- -D warnings
 
+rust-audit:
+	cargo audit
+
 # Install dependencies
 rust-install:
 	cargo fetch
-	cargo install wasm-pack --version 0.13.1
+	cargo install wasm-pack --version 0.15.0
 
 # Install coverage tools
 rust-install-coverage:
@@ -116,6 +122,9 @@ webapp-fmt-check:
 webapp-lint:
 	cd webapp && pnpm biome check
 
+webapp-audit:
+	cd webapp && pnpm audit --audit-level high
+
 # Start webapp dev server
 webapp-dev:
 	cd webapp && pnpm dev
@@ -154,6 +163,8 @@ test: rust-test webapp-test
 
 # Run all tests with coverage
 coverage: rust-coverage webapp-coverage
+
+audit: rust-audit webapp-audit
 
 # Install git pre-commit hooks
 install-hooks:

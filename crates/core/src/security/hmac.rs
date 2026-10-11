@@ -1,4 +1,4 @@
-use hmac::{Hmac, Mac};
+use hmac::{Hmac, KeyInit, Mac};
 use sha2::{Sha256, Sha512};
 
 pub fn sha256(input: &str, secret_key: &str) -> Result<String, String> {

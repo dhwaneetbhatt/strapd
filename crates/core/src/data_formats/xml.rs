@@ -116,8 +116,7 @@ fn xml_to_json_element(reader: &mut Reader<&[u8]>) -> Result<JsonValue, String> 
     loop {
         match reader.read_event_into(&mut buf) {
             Ok(Event::Start(ref e)) => {
-                let tag_name = String::from_utf8(e.name().as_ref().to_vec())
-                    .map_err(|_| "Failed to decode tag name".to_string())?;
+                let tag_name = e.name().as_ref().to_owned();
                 let element_value = read_element(reader, &tag_name)?;
 
                 if root.is_none() {
@@ -152,31 +151,27 @@ fn read_element(reader: &mut Reader<&[u8]>, tag_name: &str) -> Result<JsonValue,
     loop {
         match reader.read_event_into(&mut buf) {
             Ok(Event::Start(ref e)) => {
-                let child_tag = String::from_utf8(e.name().as_ref().to_vec())
-                    .map_err(|_| "Failed to decode tag name".to_string())?;
+                let child_tag = e.name().as_ref().to_owned();
                 let child_value = read_element(reader, &child_tag)?;
                 children.entry(child_tag).or_default().push(child_value);
             }
             Ok(Event::Text(ref e)) => {
                 // Convert bytes to string and unescape XML entities
-                let text = String::from_utf8(e.as_ref().to_vec())
-                    .map_err(|_| "Failed to decode text".to_string())?;
-                let unescaped = unescape(&text);
+                let text = e.as_ref();
+                let unescaped = unescape(text);
                 text_content.push_str(&unescaped);
             }
             Ok(Event::GeneralRef(ref e)) => {
                 // Handle XML entity references (e.g., &amp; &lt; &gt; &quot; &apos;)
-                let entity_name = String::from_utf8(e.as_ref().to_vec())
-                    .map_err(|_| "Failed to decode entity name".to_string())?;
-                if let Some(entity_char) = entity_to_char(&entity_name) {
+                let entity_name = e.as_ref();
+                if let Some(entity_char) = entity_to_char(entity_name) {
                     text_content.push_str(entity_char);
                 } else {
                     return Err(format!("Unsupported entity reference: &{};", entity_name));
                 }
             }
             Ok(Event::End(ref e)) => {
-                let end_tag = String::from_utf8(e.name().as_ref().to_vec())
-                    .map_err(|_| "Failed to decode end tag".to_string())?;
+                let end_tag = e.name().as_ref().to_owned();
                 if end_tag == tag_name {
                     break;
                 }

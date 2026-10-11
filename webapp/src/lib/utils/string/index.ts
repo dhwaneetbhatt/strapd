@@ -14,8 +14,8 @@ export const stringUtils = {
 
 // Also export individual operations
 export {
-  stringCaseOperations,
   stringAnalysisOperations,
+  stringCaseOperations,
   stringTransformOperations,
   stringWhitespaceOperations,
 };

@@ -7,7 +7,7 @@ pub fn generate(number: usize) -> String {
         if i > 0 {
             out.push('\n');
         }
-        let s = Ulid::new().to_string();
+        let s = Ulid::generate().to_string();
         out.push_str(&s);
     }
     out
