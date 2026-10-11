@@ -1,11 +1,15 @@
+use std::borrow::Cow;
+
 use crate::{
     args::conversion::ConvertArgs,
-    handlers::{CommandResult, read_stdin_if_piped, text_result},
+    handlers::{CommandResult, text_result},
+    input::piped_text,
 };
 use strapd_core::conversion;
 
 pub fn handle(args: &ConvertArgs) -> CommandResult {
-    let expression = build_expression(&args.expression)?;
+    let stdin = piped_text()?;
+    let expression = build_expression(&args.expression, stdin.as_deref())?;
     let request = conversion::parser::parse_input(&expression)?;
 
     let results = if args.all {
@@ -25,8 +29,8 @@ pub fn handle(args: &ConvertArgs) -> CommandResult {
 /// 2. Stdin only: `echo "10 km to mi" | strapd convert` - use stdin as full expression
 /// 3. Combined: `echo "10 km" | strapd convert "mi"` - concatenate stdin + args
 ///    Example: stdin="10 km", args=["mi"] -> "10 km mi"
-fn build_expression(args: &[String]) -> Result<String, String> {
-    let mut stdin_content = read_stdin_if_piped()?;
+fn build_expression<'a>(args: &[String], stdin: Option<&'a str>) -> Result<Cow<'a, str>, String> {
+    let stdin_content = stdin.unwrap_or_default().trim();
     let has_stdin = !stdin_content.is_empty();
     let has_args = !args.is_empty();
 
@@ -35,16 +39,13 @@ fn build_expression(args: &[String]) -> Result<String, String> {
     }
 
     if !has_stdin {
-        return Ok(args.join(" "));
+        return Ok(Cow::Owned(args.join(" ")));
     }
 
     if !has_args {
-        return Ok(stdin_content);
+        return Ok(Cow::Borrowed(stdin_content));
     }
 
     // Both stdin and args present - combine them
-    let args_str = args.join(" ");
-    stdin_content.push(' ');
-    stdin_content.push_str(&args_str);
-    Ok(stdin_content)
+    Ok(Cow::Owned(format!("{stdin_content} {}", args.join(" "))))
 }

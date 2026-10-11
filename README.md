@@ -106,7 +106,12 @@ strapd string case --help  # See string case operations
 
 ### Flexible Input
 
-All operations work with stdin for seamless integration:
+Input-taking operations accept either a positional argument or piped stdin. If
+neither is available, commands fail immediately with input guidance instead of
+waiting on an interactive terminal. Text commands retain their existing
+surrounding-whitespace normalization for piped input. Base64 and Hex encoding
+preserve piped bytes exactly; hash and HMAC accept arbitrary piped bytes while
+retaining their existing surrounding-whitespace normalization.
 
 ```bash
 echo "hello world" | strapd str upper

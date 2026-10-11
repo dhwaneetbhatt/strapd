@@ -256,3 +256,15 @@ fn test_all_hash_outputs_lowercase_hex() {
         assert!(result.chars().all(|c| !c.is_uppercase()));
     }
 }
+
+#[test]
+fn byte_apis_match_text_wrappers_and_accept_arbitrary_bytes() {
+    let text = "Hello 世界";
+    assert_eq!(hash::md5(text), hash::md5_bytes(text.as_bytes()));
+    assert_eq!(hash::sha1(text), hash::sha1_bytes(text.as_bytes()));
+    assert_eq!(hash::sha256(text), hash::sha256_bytes(text.as_bytes()));
+    assert_eq!(hash::sha512(text), hash::sha512_bytes(text.as_bytes()));
+
+    let binary = [0, 0xff, b'\n'];
+    assert_eq!(hash::sha256_bytes(&binary).len(), 64);
+}

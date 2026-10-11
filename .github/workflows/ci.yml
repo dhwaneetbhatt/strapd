@@ -24,7 +24,7 @@ jobs:
           target: wasm32-unknown-unknown
 
       - name: Cache Cargo registry
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: |
             ~/.cargo/bin
@@ -46,6 +46,9 @@ jobs:
 
       - name: Build Rust
         run: make rust-build
+
+      - name: Smoke test CLI
+        run: STRAPD_BIN=target/debug/strapd ./scripts/smoke-test-cli.sh
 
       - name: Test Rust and generate coverage
         run: |
@@ -73,7 +76,7 @@ jobs:
         run: make wasm-build
 
       - name: Upload WASM artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: wasm-build
           path: webapp/wasm/
@@ -98,7 +101,7 @@ jobs:
           version: 10
 
       - name: Cache pnpm dependencies
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: ~/.pnpm-store
           key: ${{ runner.os }}-pnpm-${{ hashFiles('webapp/pnpm-lock.yaml') }}
@@ -109,7 +112,7 @@ jobs:
         run: make webapp-install
 
       - name: Download WASM artifacts
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: wasm-build
           path: webapp/wasm/

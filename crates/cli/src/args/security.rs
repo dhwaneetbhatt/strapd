@@ -4,22 +4,22 @@ use clap::Subcommand;
 pub enum HashOperation {
     /// Generate MD5 hash of the data
     Md5 {
-        /// The string that needs to be hashed (if not provided, reads from stdin)
+        /// Message to hash; stdin also accepts arbitrary bytes
         input: Option<String>,
     },
     /// Generate SHA1 hash of the data
     Sha1 {
-        /// The string that needs to be hashed (if not provided, reads from stdin)
+        /// Message to hash; stdin also accepts arbitrary bytes
         input: Option<String>,
     },
     /// Generate SHA256 hash of the data
     Sha256 {
-        /// The string that needs to be hashed (if not provided, reads from stdin)
+        /// Message to hash; stdin also accepts arbitrary bytes
         input: Option<String>,
     },
     /// Generate SHA512 hash of the data
     Sha512 {
-        /// The string that needs to be hashed (if not provided, reads from stdin)
+        /// Message to hash; stdin also accepts arbitrary bytes
         input: Option<String>,
     },
 }
@@ -31,7 +31,7 @@ pub enum HmacOperation {
         /// The secret key
         secret: String,
 
-        /// The string that needs to be hashed (if not provided, reads from stdin)
+        /// Message to authenticate; stdin also accepts arbitrary bytes
         input: Option<String>,
     },
     /// Generate SHA512 hash of the data
@@ -39,7 +39,7 @@ pub enum HmacOperation {
         /// The secret key
         secret: String,
 
-        /// The string that needs to be hashed (if not provided, reads from stdin)
+        /// Message to authenticate; stdin also accepts arbitrary bytes
         input: Option<String>,
     },
 }

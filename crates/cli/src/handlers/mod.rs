@@ -1,9 +1,3 @@
-// Handlers for various command line operations
-use std::{
-    io::{self, IsTerminal, Read},
-    str::FromStr,
-};
-
 pub mod calculator_handler;
 pub mod clipboard_handler;
 pub mod conversion_handler;
@@ -28,62 +22,4 @@ pub fn binary_result(bytes: Vec<u8>) -> CommandResult {
 
 pub fn error_result(msg: &str) -> CommandResult {
     Err(msg.to_string())
-}
-
-pub fn get_input_string(input: &Option<String>) -> String {
-    match input.as_ref() {
-        Some(s) => s.clone(),
-        None => {
-            let mut buf = String::new();
-            io::stdin()
-                .read_to_string(&mut buf)
-                .expect("Failed to read from stdin");
-            buf.trim().to_string()
-        }
-    }
-}
-
-pub fn get_input_bytes(input: &Option<String>) -> Result<Vec<u8>, String> {
-    match input.as_ref() {
-        Some(s) => Ok(s.as_bytes().to_vec()),
-        None => {
-            let mut buf = Vec::new();
-            io::stdin()
-                .read_to_end(&mut buf)
-                .map_err(|e| format!("Failed to read from stdin: {e}"))?;
-            Ok(buf)
-        }
-    }
-}
-
-pub fn read_stdin_if_piped() -> Result<String, String> {
-    let mut stdin = io::stdin();
-    if stdin.is_terminal() {
-        return Ok(String::new());
-    }
-
-    let mut buf = String::new();
-    stdin
-        .read_to_string(&mut buf)
-        .map_err(|e| format!("Failed to read from stdin: {}", e))?;
-    Ok(buf.trim().to_string())
-}
-
-pub fn get_input_int<T>(input: &Option<T>) -> T
-where
-    T: FromStr + Copy,
-    T::Err: std::fmt::Debug,
-{
-    match input {
-        Some(v) => *v,
-        None => {
-            let mut buf = String::new();
-            io::stdin()
-                .read_to_string(&mut buf)
-                .expect("Failed to read from stdin");
-            buf.trim()
-                .parse::<T>()
-                .expect("Failed to parse integer from stdin")
-        }
-    }
 }

@@ -262,7 +262,8 @@ const toolDefinition: ToolDefinition = {
 ## Testing Strategy
 
 ### Rust Tests
-- Unit tests in `crates/core/src/` modules
+- Keep production code and tests in separate files; do not place `#[cfg(test)]` test bodies in implementation files.
+- Put module-level Rust tests in a sibling `tests.rs` file or a dedicated `tests/` tree, and integration tests under each crate's `tests/` directory.
 - Integration tests in `crates/core/tests/`
 - Run with `make rust-test`
 

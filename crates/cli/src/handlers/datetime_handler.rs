@@ -1,6 +1,7 @@
 use crate::{
     args::datetime::{TimeOperation, TimestampFormat},
-    handlers::{CommandResult, error_result, get_input_int, text_result},
+    handlers::{CommandResult, error_result, text_result},
+    input::{required_text, text_with_piped_trim},
 };
 use strapd_core::datetime::timestamp::{self, TimestampFormat as core_ts_format};
 
@@ -21,7 +22,16 @@ pub fn handle(operation: &TimeOperation) -> CommandResult {
             millis,
             format,
         } => {
-            let input = get_input_int(timestamp);
+            let input = match timestamp {
+                Some(timestamp) => *timestamp,
+                None => {
+                    let input = required_text(None, "timestamp")?;
+                    let input = text_with_piped_trim(&input);
+                    input.parse::<i64>().map_err(|_| {
+                        format!("Invalid timestamp '{input}': expected a whole number")
+                    })?
+                }
+            };
             let format = format.as_ref().unwrap_or(&TimestampFormat::Human);
             format_timestamp(input, *millis, format)
         }

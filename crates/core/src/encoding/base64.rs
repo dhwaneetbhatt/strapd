@@ -1,6 +1,6 @@
 use base64::{Engine, prelude::BASE64_STANDARD};
 
-pub fn encode(input: &Vec<u8>) -> String {
+pub fn encode(input: &[u8]) -> String {
     BASE64_STANDARD.encode(input)
 }
 
