@@ -36,7 +36,7 @@ jobs:
         run: curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh
 
       - name: Cache Rust dependencies
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: |
             ~/.cargo/registry
@@ -58,7 +58,7 @@ jobs:
           version: 10
 
       - name: Cache pnpm dependencies
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: ~/.pnpm-store
           key: ${{ runner.os }}-pnpm-${{ hashFiles('webapp/pnpm-lock.yaml') }}
@@ -75,7 +75,7 @@ jobs:
         uses: actions/configure-pages@v5
 
       - name: Upload artifact
-        uses: actions/upload-pages-artifact@v4
+        uses: actions/upload-pages-artifact@v5
         with:
           path: ./webapp/dist
 
