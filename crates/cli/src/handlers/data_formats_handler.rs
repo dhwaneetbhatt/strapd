@@ -1,6 +1,7 @@
 use crate::{
     args::data_formats::{JsonOperation, SqlOperation, XmlOperation, YamlOperation},
-    handlers::{CommandResult, error_result, get_input_string, text_result},
+    handlers::{CommandResult, error_result, text_result},
+    input::{required_text, text_with_piped_trim},
 };
 use strapd_core::data_formats::{json, sql, xml, yaml};
 
@@ -11,34 +12,35 @@ pub fn handle_json(operation: &JsonOperation) -> CommandResult {
             spaces,
             sort,
         } => {
-            let input = get_input_string(input);
-            match json::beautify(&input, *spaces, *sort) {
+            let input = required_text(input.as_deref(), "JSON input")?;
+            match json::beautify(text_with_piped_trim(&input), *spaces, *sort) {
                 Ok(json) => text_result(json),
                 Err(e) => error_result(e),
             }
         }
         JsonOperation::Minify { input, sort } => {
-            let input = get_input_string(input);
-            match json::minify(&input, *sort) {
+            let input = required_text(input.as_deref(), "JSON input")?;
+            match json::minify(text_with_piped_trim(&input), *sort) {
                 Ok(json) => text_result(json),
                 Err(e) => error_result(e),
             }
         }
         JsonOperation::Sort { input, format } => {
-            let input = get_input_string(input);
-            match json::sort(&input, *format) {
+            let input = required_text(input.as_deref(), "JSON input")?;
+            match json::sort(text_with_piped_trim(&input), *format) {
                 Ok(json) => text_result(json),
                 Err(e) => error_result(e),
             }
         }
         JsonOperation::Convert { input, to, root } => {
-            let input = get_input_string(input);
+            let input = required_text(input.as_deref(), "JSON input")?;
+            let input = text_with_piped_trim(&input);
             match to.as_str() {
-                "yaml" => match json::convert_to_yaml(&input) {
+                "yaml" => match json::convert_to_yaml(input) {
                     Ok(json) => text_result(json),
                     Err(e) => error_result(&e),
                 },
-                "xml" => match json::convert_to_xml(&input, root.as_deref()) {
+                "xml" => match json::convert_to_xml(input, root.as_deref()) {
                     Ok(xml) => text_result(xml),
                     Err(e) => error_result(&e),
                 },
@@ -54,8 +56,8 @@ pub fn handle_yaml(operation: &YamlOperation) -> CommandResult {
             if *to != "json" {
                 return error_result("YAML can only be converted to json");
             }
-            let input = get_input_string(input);
-            match yaml::convert_to_json(&input) {
+            let input = required_text(input.as_deref(), "YAML input")?;
+            match yaml::convert_to_json(text_with_piped_trim(&input)) {
                 Ok(json) => text_result(json),
                 Err(e) => error_result(&e),
             }
@@ -66,15 +68,15 @@ pub fn handle_yaml(operation: &YamlOperation) -> CommandResult {
 pub fn handle_xml(operation: &XmlOperation) -> CommandResult {
     match operation {
         XmlOperation::Beautify { input, spaces } => {
-            let input = get_input_string(input);
-            match xml::beautify(&input, *spaces) {
+            let input = required_text(input.as_deref(), "XML input")?;
+            match xml::beautify(text_with_piped_trim(&input), *spaces) {
                 Ok(xml) => text_result(xml),
                 Err(e) => error_result(&e),
             }
         }
         XmlOperation::Minify { input } => {
-            let input = get_input_string(input);
-            match xml::minify(&input) {
+            let input = required_text(input.as_deref(), "XML input")?;
+            match xml::minify(text_with_piped_trim(&input)) {
                 Ok(xml) => text_result(xml),
                 Err(e) => error_result(&e),
             }
@@ -83,8 +85,8 @@ pub fn handle_xml(operation: &XmlOperation) -> CommandResult {
             if *to != "json" {
                 return error_result("XML can only be converted to json");
             }
-            let input = get_input_string(input);
-            match xml::convert_to_json(&input) {
+            let input = required_text(input.as_deref(), "XML input")?;
+            match xml::convert_to_json(text_with_piped_trim(&input)) {
                 Ok(json) => text_result(json),
                 Err(e) => error_result(&e),
             }
@@ -95,12 +97,12 @@ pub fn handle_xml(operation: &XmlOperation) -> CommandResult {
 pub fn handle_sql(operation: &SqlOperation) -> CommandResult {
     match operation {
         SqlOperation::Beautify { input, spaces } => {
-            let input = get_input_string(input);
-            text_result(sql::beautify(&input, *spaces))
+            let input = required_text(input.as_deref(), "SQL input")?;
+            text_result(sql::beautify(text_with_piped_trim(&input), *spaces))
         }
         SqlOperation::Minify { input } => {
-            let input = get_input_string(input);
-            text_result(sql::minify(&input))
+            let input = required_text(input.as_deref(), "SQL input")?;
+            text_result(sql::minify(text_with_piped_trim(&input)))
         }
     }
 }

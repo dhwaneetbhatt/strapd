@@ -3,7 +3,7 @@ use wasm_bindgen::prelude::*;
 
 #[wasm_bindgen]
 pub fn base64_encode(input: &str) -> String {
-    encoding::base64::encode(&input.as_bytes().to_vec())
+    encoding::base64::encode(input.as_bytes())
 }
 
 #[wasm_bindgen]
@@ -25,7 +25,7 @@ pub fn url_decode(input: &str) -> Result<String, JsValue> {
 
 #[wasm_bindgen]
 pub fn hex_encode(input: &str) -> String {
-    encoding::hex::encode(&input.as_bytes().to_vec())
+    encoding::hex::encode(input.as_bytes())
 }
 
 #[wasm_bindgen]

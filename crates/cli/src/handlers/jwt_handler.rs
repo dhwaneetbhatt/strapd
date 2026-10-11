@@ -4,7 +4,8 @@ use strapd_core::jwt::{self, SignOptions};
 
 use crate::{
     args::jwt::{JwtOperation, SecretArgs},
-    handlers::{CommandResult, read_stdin_if_piped, text_result},
+    handlers::{CommandResult, text_result},
+    input::{required_text, text_with_piped_trim},
 };
 
 pub fn handle(operation: &JwtOperation) -> CommandResult {
@@ -14,26 +15,26 @@ pub fn handle(operation: &JwtOperation) -> CommandResult {
             include_analysis,
         } => {
             let token = required_input(token, "JWT token")?;
-            jwt::decode_json(&token, *include_analysis)
+            jwt::decode_json(text_with_piped_trim(&token), *include_analysis)
                 .map_err(|error| error.to_string())
                 .and_then(text_result)
         }
         JwtOperation::Payload { token } => {
             let token = required_input(token, "JWT token")?;
-            jwt::payload_json(&token)
+            jwt::payload_json(text_with_piped_trim(&token))
                 .map_err(|error| error.to_string())
                 .and_then(text_result)
         }
         JwtOperation::Header { token } => {
             let token = required_input(token, "JWT token")?;
-            jwt::header_json(&token)
+            jwt::header_json(text_with_piped_trim(&token))
                 .map_err(|error| error.to_string())
                 .and_then(text_result)
         }
         JwtOperation::Verify { token, secret } => {
             let token = required_input(token, "JWT token")?;
             let secret = resolve_secret(secret)?;
-            jwt::verify(&token, &secret)
+            jwt::verify(text_with_piped_trim(&token), &secret)
                 .map(|verification| {
                     format!(
                         "SUCCESS: Signature valid (Algorithm: {})",
@@ -52,7 +53,7 @@ pub fn handle(operation: &JwtOperation) -> CommandResult {
             let payload = required_input(payload, "JSON payload")?;
             let secret = resolve_secret(secret)?;
             jwt::sign(
-                &payload,
+                text_with_piped_trim(&payload),
                 &secret,
                 SignOptions {
                     algorithm: (*algorithm).into(),
@@ -66,20 +67,17 @@ pub fn handle(operation: &JwtOperation) -> CommandResult {
 }
 
 fn required_input<'a>(input: &'a Option<String>, name: &str) -> Result<Cow<'a, str>, String> {
-    if let Some(input) = input {
-        if input.trim().is_empty() {
-            return Err(format!("No {name} provided"));
+    let value = required_text(input.as_deref(), name)?;
+    if text_with_piped_trim(&value).is_empty() {
+        if input.is_some() {
+            Err(format!("No {name} provided"))
+        } else {
+            Err(format!(
+                "No {name} provided. Pass it as an argument or pipe it through stdin."
+            ))
         }
-        return Ok(Cow::Borrowed(input));
-    }
-
-    let input = read_stdin_if_piped()?;
-    if input.is_empty() {
-        Err(format!(
-            "No {name} provided. Pass it as an argument or pipe it through stdin."
-        ))
     } else {
-        Ok(Cow::Owned(input))
+        Ok(value)
     }
 }
 

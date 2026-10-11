@@ -4,26 +4,26 @@ use clap::Subcommand;
 pub enum Base64Operation {
     /// Encode bytes to base64
     Encode {
-        /// The string to convert (if not provided, reads from stdin)
+        /// Text argument or exact bytes from stdin
         input: Option<String>,
     },
     /// Decode a base64 string
     Decode {
-        /// The string to convert (if not provided, reads from stdin)
+        /// Base64 text (if not provided, reads from stdin)
         input: Option<String>,
     },
 }
 
 #[derive(Subcommand, Debug)]
 pub enum UrlOperation {
-    /// URL encode the string
+    /// Hex encode bytes
     Encode {
-        /// The string to convert (if not provided, reads from stdin)
+        /// Text argument or exact bytes from stdin
         input: Option<String>,
     },
-    /// Decode the URL encoded string
+    /// Decode a hex string
     Decode {
-        /// The string to convert (if not provided, reads from stdin)
+        /// Hex text (if not provided, reads from stdin)
         input: Option<String>,
     },
 }

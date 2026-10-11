@@ -1,4 +1,4 @@
-pub fn encode(input: &Vec<u8>) -> String {
+pub fn encode(input: &[u8]) -> String {
     hex::encode(input)
 }
 

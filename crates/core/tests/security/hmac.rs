@@ -225,3 +225,19 @@ fn test_hmac_sha512_both_empty() {
     assert!(result.is_ok());
     assert_eq!(result.unwrap().len(), 128);
 }
+
+#[test]
+fn byte_apis_match_text_wrappers_and_accept_arbitrary_bytes() {
+    let text = "Hello 世界";
+    assert_eq!(
+        hmac::sha256(text, "secret"),
+        hmac::sha256_bytes(text.as_bytes(), "secret")
+    );
+    assert_eq!(
+        hmac::sha512(text, "secret"),
+        hmac::sha512_bytes(text.as_bytes(), "secret")
+    );
+
+    let binary = [0, 0xff, b'\n'];
+    assert_eq!(hmac::sha256_bytes(&binary, "secret").unwrap().len(), 64);
+}
