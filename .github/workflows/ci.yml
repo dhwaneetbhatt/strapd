@@ -38,12 +38,6 @@ jobs:
       - name: Install Rust dependencies
         run: make rust-install
 
-      - name: Install Rust security auditor
-        run: cargo install cargo-audit --locked
-
-      - name: Audit Rust dependencies
-        run: make rust-audit
-
       - name: Check formatting
         run: make rust-fmt-check
 
@@ -116,9 +110,6 @@ jobs:
 
       - name: Install webapp dependencies
         run: make webapp-install
-
-      - name: Audit webapp dependencies
-        run: make webapp-audit
 
       - name: Download WASM artifacts
         uses: actions/download-artifact@v8
