@@ -1,5 +1,5 @@
 use base64::{Engine, prelude::BASE64_URL_SAFE_NO_PAD};
-use hmac::{Hmac, Mac};
+use hmac::{Hmac, KeyInit, Mac};
 use serde_json::{Map, Value, json};
 use sha2::{Sha256, Sha384, Sha512};
 
@@ -65,19 +65,19 @@ fn parse_payload(payload: &str) -> Result<Map<String, Value>, JwtError> {
 fn sign_mac(algorithm: Algorithm, input: &[u8], secret: &[u8]) -> Result<Vec<u8>, JwtError> {
     let bytes = match algorithm {
         Algorithm::HS256 => {
-            let mut mac = <Hmac<Sha256> as Mac>::new_from_slice(secret)
+            let mut mac = <Hmac<Sha256> as KeyInit>::new_from_slice(secret)
                 .map_err(|error| JwtError::Serialization(error.to_string()))?;
             mac.update(input);
             mac.finalize().into_bytes().to_vec()
         }
         Algorithm::HS384 => {
-            let mut mac = <Hmac<Sha384> as Mac>::new_from_slice(secret)
+            let mut mac = <Hmac<Sha384> as KeyInit>::new_from_slice(secret)
                 .map_err(|error| JwtError::Serialization(error.to_string()))?;
             mac.update(input);
             mac.finalize().into_bytes().to_vec()
         }
         Algorithm::HS512 => {
-            let mut mac = <Hmac<Sha512> as Mac>::new_from_slice(secret)
+            let mut mac = <Hmac<Sha512> as KeyInit>::new_from_slice(secret)
                 .map_err(|error| JwtError::Serialization(error.to_string()))?;
             mac.update(input);
             mac.finalize().into_bytes().to_vec()
@@ -94,19 +94,19 @@ fn verify_mac(
 ) -> Result<(), JwtError> {
     let result = match algorithm {
         Algorithm::HS256 => {
-            let mut mac = <Hmac<Sha256> as Mac>::new_from_slice(secret)
+            let mut mac = <Hmac<Sha256> as KeyInit>::new_from_slice(secret)
                 .map_err(|error| JwtError::Serialization(error.to_string()))?;
             mac.update(input);
             mac.verify_slice(signature)
         }
         Algorithm::HS384 => {
-            let mut mac = <Hmac<Sha384> as Mac>::new_from_slice(secret)
+            let mut mac = <Hmac<Sha384> as KeyInit>::new_from_slice(secret)
                 .map_err(|error| JwtError::Serialization(error.to_string()))?;
             mac.update(input);
             mac.verify_slice(signature)
         }
         Algorithm::HS512 => {
-            let mut mac = <Hmac<Sha512> as Mac>::new_from_slice(secret)
+            let mut mac = <Hmac<Sha512> as KeyInit>::new_from_slice(secret)
                 .map_err(|error| JwtError::Serialization(error.to_string()))?;
             mac.update(input);
             mac.verify_slice(signature)

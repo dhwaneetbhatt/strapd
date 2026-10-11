@@ -1,16 +1,14 @@
 import react from "@vitejs/plugin-react-swc";
 import { defineConfig } from "vite";
 import { VitePWA } from "vite-plugin-pwa";
-import topLevelAwait from "vite-plugin-top-level-await";
 import wasm from "vite-plugin-wasm";
-import packageJson from "./package.json";
+import packageJson from "./package.json" with { type: "json" };
 
 export default defineConfig(({ mode }) => ({
   base: mode === "production" ? "/strapd/" : "/",
   plugins: [
     react(),
     wasm(),
-    topLevelAwait(),
     VitePWA({
       registerType: "autoUpdate",
       includeAssets: ["favicon.svg", "icon-192.png", "icon-512.png"],

@@ -1,4 +1,4 @@
-use rand::{Rng, seq::SliceRandom};
+use rand::{RngExt, seq::SliceRandom};
 use std::collections::HashSet;
 
 pub fn string(

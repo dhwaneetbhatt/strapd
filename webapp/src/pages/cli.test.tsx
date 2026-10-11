@@ -18,6 +18,7 @@ const renderCliPage = () =>
 
 beforeAll(() => {
   window.scrollTo = vi.fn();
+  Element.prototype.scrollIntoView = vi.fn();
 
   Object.defineProperty(window, "matchMedia", {
     configurable: true,
@@ -56,6 +57,16 @@ describe("CLI page", () => {
     ).toBeInTheDocument();
   });
 
+  it("scrolls to the installation section from the primary action", () => {
+    renderCliPage();
+
+    fireEvent.click(screen.getByRole("button", { name: "Install strapd" }));
+
+    expect(Element.prototype.scrollIntoView).toHaveBeenCalledWith({
+      behavior: "smooth",
+    });
+  });
+
   it("presents Homebrew first and copies its documented commands", async () => {
     renderCliPage();
 
@@ -78,7 +89,7 @@ describe("CLI page", () => {
     });
   });
 
-  it("progressively exposes supported methods with auditable external links", () => {
+  it("progressively exposes supported methods with auditable external links", async () => {
     renderCliPage();
 
     fireEvent.click(screen.getByRole("tab", { name: "Install script" }));
@@ -103,7 +114,7 @@ describe("CLI page", () => {
       screen.getByRole("button", { name: "Other installation methods" }),
     );
     expect(
-      screen.getByRole("link", { name: /GitHub releases/ }),
+      await screen.findByRole("link", { name: /GitHub releases/ }),
     ).toBeInTheDocument();
     expect(screen.getByText(/make cli-release/)).toBeInTheDocument();
 

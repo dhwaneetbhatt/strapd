@@ -25,7 +25,7 @@ export const DownloadButton: React.FC<DownloadButtonProps> = ({
   const toast = useToast();
 
   const handleDownload = () => {
-    if (!content || !content.trim()) {
+    if (!content?.trim()) {
       toast({
         title: "Nothing to download",
         description: "The output is empty",
