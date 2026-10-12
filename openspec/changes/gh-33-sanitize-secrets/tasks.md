@@ -37,5 +37,6 @@
 ## 7. Local configuration follow-up
 
 - [x] 7.1 Audit the user-provided configuration locally, report keys/counts without exposing values, and record semantic-label refinements before code changes.
-- [ ] 7.2 Cover access-key, application-secret, webhook-secret, and scoped-secret labels with synthetic fixtures; preserve category isolation and public metadata.
-- [ ] 7.3 Rebuild CLI/WASM, rerun the real configuration and regression checks, and record results without committing its contents or temporary audit scripts.
+- [x] 7.2 Cover access-key, application-secret, webhook-secret, and scoped-secret labels with generic public labels and synthetic values; preserve category isolation and public metadata.
+- [x] 7.3 Rebuild CLI/WASM, rerun the real configuration and regression checks, and record results without committing its contents or temporary audit scripts.
+- [x] 7.4 Update the local wasm-pack installation to 0.15.0 to match the existing pipeline and verify the rebuilt module.

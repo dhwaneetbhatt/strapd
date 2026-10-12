@@ -24,7 +24,7 @@ results remain local; a maintained benchmark suite is outside this ticket.
 ## Checks
 
 - Full Rust workspace tests pass with `make rust-test TZ=UTC`, including 40
-  sanitizer core tests and seven CLI tests on macOS.
+  sanitizer core tests and seven CLI tests on macOS in the initial implementation.
 - Rust formatting/lint, release CLI, generated WASM, WebApp formatting/lint,
   TypeScript, and production Vite build pass.
 - All 332 WebApp tests pass across 28 files with four workers; the 33 focused
@@ -47,6 +47,32 @@ timed out opening a delete dialog. Both passed separately. The committed baselin
 mobile suite passed all four tests with matching font assets confirmed HTTP 200;
 the final current suite passed all ten tests serially without source/test edits.
 These runs do not establish the cause of the earlier intermittent failures.
+
+## Local configuration follow-up
+
+The release CLI was audited locally against the user's Java properties file
+(1,499 lines). The initial implementation changed 15 lines but missed seven
+credential fields with access-key, application-secret, webhook-secret, or scoped
+secret labels. Semantic suffix recognition now covers those generic labels while
+preserving the existing collapsed `secretaccesskey` and `clientsecret` forms.
+
+The rebuilt CLI changes 22 lines, including 21 reviewed credential properties
+and one provider-key occurrence in a comment. No reviewed credential field
+remains unchanged; salts and key-version metadata remain visible. The result is
+idempotent. This audit checks reviewed fields, not every possible secret format.
+No source file contents, proprietary configuration conventions, or temporary
+audit scripts are committed. Regression fixtures use generic public names and
+synthetic values, including category isolation and metadata exclusions.
+
+The Rust workspace suite and lint pass; the final focused core/CLI run passes
+42 core and eight CLI tests. Independent GPT-6.1-Sol high review confirmed the
+revised dotted-label contract and compatibility after the collapsed-label fix.
+Local wasm-pack was upgraded from 0.13.1 to 0.15.0, matching the existing pinned
+browser pipeline. `make wasm-build` succeeds with the new version and no outdated
+version warning. WebApp lint and TypeScript/Vite production build pass against
+the regenerated module. All six sanitizer browser tests pass serially against
+this build, including native/WASM parity for the generic scoped labels, URL
+privacy, category controls, Pipes, and desktop/375 px geometry.
 
 ## Measurement summary
 

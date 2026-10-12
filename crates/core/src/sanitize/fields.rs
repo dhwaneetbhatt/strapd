@@ -5,7 +5,7 @@ fn category(name: &str, original: &str) -> Option<Category> {
     let has_suffix = |suffix| semantic_suffix(original, name, suffix);
     match name.as_bytes().last()? {
         b'y' => {
-            if has_suffix("apikey") || has_suffix("secretaccesskey") {
+            if has_suffix("apikey") || has_suffix("accesskey") || has_suffix("secretaccesskey") {
                 Some(Category::ApiKeys)
             } else if has_suffix("privatekey")
                 || has_suffix("encryptionkey")
@@ -53,9 +53,10 @@ fn category(name: &str, original: &str) -> Option<Category> {
             if has_suffix("signingsecret")
                 || has_suffix("encryptionsecret")
                 || has_suffix("hmacsecret")
+                || has_suffix("webhooksecret")
             {
                 Some(Category::CryptoKeys)
-            } else if name == "secret" || has_suffix("clientsecret") {
+            } else if has_suffix("secret") || has_suffix("clientsecret") {
                 Some(Category::Tokens)
             } else {
                 None

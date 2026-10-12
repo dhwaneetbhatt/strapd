@@ -16,6 +16,19 @@ fn default_and_explicit_all_select_the_same_categories() {
 }
 
 #[test]
+fn scoped_application_properties_are_redacted_through_stdin() {
+    let input = b"accessKey=synthetic-access\r\nappSecret=synthetic-app\r\nwebhookSecret=synthetic-webhook\r\nstorage.secret=synthetic-storage\r\nkeyVersion=1\r\n";
+    assert_success(
+        &strapd(&["sanitize", "secrets"], Some(input)),
+        b"accessKey=[REDACTED_API_KEY]\r\nappSecret=[REDACTED_TOKEN]\r\nwebhookSecret=[REDACTED_CRYPTO_KEY]\r\nstorage.secret=[REDACTED_TOKEN]\r\nkeyVersion=1\r\n\n",
+    );
+    assert_success(
+        &strapd(&["sanitize", "secrets", "--api-keys"], Some(input)),
+        b"accessKey=[REDACTED_API_KEY]\r\nappSecret=synthetic-app\r\nwebhookSecret=synthetic-webhook\r\nstorage.secret=synthetic-storage\r\nkeyVersion=1\r\n\n",
+    );
+}
+
+#[test]
 fn each_flag_and_flag_union_only_enable_selected_categories() {
     let input = "apiKey=xy; password=short; access_token=tok\nAuthorization: Bearer opaque\nCookie: sid=secret";
 

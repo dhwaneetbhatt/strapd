@@ -46,7 +46,7 @@ The sanitizer SHALL recognize secret fields case-insensitively across snake case
 - **THEN** label recognition alone does not redact their values
 
 #### Scenario: Scoped application credential labels
-- **WHEN** dotted or indexed configuration paths end in `accessKey`, `appSecret`, `webhookSecret`, or a semantic `secret` segment
+- **WHEN** dotted configuration names end in `accessKey`, `appSecret`, `webhookSecret`, or a semantic `secret` segment
 - **THEN** access keys belong to API keys, webhook signing secrets belong to cryptographic keys, and application or generic scoped secrets belong to tokens
 - **AND** disabled categories, salts, key versions, metadata suffixes, and innocent substring matches remain unchanged
 

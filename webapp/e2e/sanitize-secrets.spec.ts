@@ -19,7 +19,7 @@ const categoryFixtures = [
     flags: ["--api-keys"],
     placeholder: "[REDACTED_API_KEY]",
     input:
-      "café 🦀 openAIAPIKey=also-short ghp_abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNTAIL0123456789 tail 🚀\n",
+      "café 🦀 openAIAPIKey=also-short ghp_abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNTAIL0123456789 tail 🚀\naccessKey=synthetic-access\r\n",
   },
   {
     name: "quoted curl authorization header",
@@ -50,7 +50,7 @@ const categoryFixtures = [
     flags: ["--crypto-keys"],
     placeholder: "[REDACTED_CRYPTO_KEY]",
     input:
-      '{"kty":"R\\u0053A","d":"private-value","n":"public-value"}\n-----BEGIN PRIVATE KEY-----\nMIIEvQIBADANBgkqhkiG9w0BAQEFAASC\n-----END PRIVATE KEY-----\n尾 🚀\n',
+      '{"kty":"R\\u0053A","d":"private-value","n":"public-value"}\n-----BEGIN PRIVATE KEY-----\nMIIEvQIBADANBgkqhkiG9w0BAQEFAASC\n-----END PRIVATE KEY-----\n尾 🚀\nwebhookSecret=synthetic-webhook\r\n',
   },
   {
     name: "passwords with quoted UTF-8 values",
@@ -65,7 +65,7 @@ const categoryFixtures = [
     flags: ["--tokens"],
     placeholder: "[REDACTED_TOKEN]",
     input:
-      'before café access_token=tok; refresh-token: "two words"; after 🧑🏽‍💻\n',
+      'before café access_token=tok; refresh-token: "two words"; after 🧑🏽‍💻\nappSecret=synthetic-app\r\nstorage.secret=synthetic-storage\r\n',
   },
   {
     name: "AWS signed URL",

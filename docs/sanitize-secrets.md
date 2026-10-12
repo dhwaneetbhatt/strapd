@@ -24,13 +24,13 @@ newline.
 
 | Flag | Recognized material | Placeholder |
 | --- | --- | --- |
-| `--api-keys` | Labeled API keys, AWS access-key components, distinctive provider credentials | `[REDACTED_API_KEY]` |
+| `--api-keys` | Labeled API/access keys, AWS access-key components, distinctive provider credentials | `[REDACTED_API_KEY]` |
 | `--auth` | Authorization and Proxy-Authorization credentials, including Digest and AWS parameters | `[REDACTED_AUTH]` |
 | `--cookies` | Every request Cookie value; first value of each Set-Cookie field | `[REDACTED_COOKIE]` |
 | `--databases` | Database URL usernames/passwords and supported connection-string credentials | `[REDACTED_DATABASE]` |
-| `--crypto-keys` | Private-key blocks, age identities, private JWK members, labeled encryption/signing/HMAC keys | `[REDACTED_CRYPTO_KEY]` |
+| `--crypto-keys` | Private-key blocks, age identities, private JWK members, labeled encryption/signing/HMAC keys and webhook secrets | `[REDACTED_CRYPTO_KEY]` |
 | `--passwords` | Labeled passwords, passphrases, passwd and pwd values | `[REDACTED_PASSWORD]` |
-| `--tokens` | Labeled access/refresh/ID/session/auth tokens and OAuth client secrets; compact JWS/JWE | `[REDACTED_TOKEN]` |
+| `--tokens` | Labeled access/refresh/ID/session/auth tokens, client/application secrets, and scoped secret fields; compact JWS/JWE | `[REDACTED_TOKEN]` |
 | `--signed-urls` | AWS signed URL credentials/signatures/session tokens and contextual Azure SAS signatures | `[REDACTED_SIGNED_URL]` |
 
 Rules can overlap. With only API keys enabled, a distinctive provider key inside
@@ -45,6 +45,12 @@ Explicitly labeled secrets are masked even when short. Metadata such as
 `api_key_id`, `token_count`, `password_length`, `private_key_path`, and
 `public_key` is preserved. Unlabeled ordinary usernames, arbitrary hexadecimal
 strings, and arbitrary base64 strings are preserved.
+
+Dotted configuration names use the same rules: `storage.accessKey` is an API
+key, `webhookSecret` is a cryptographic signing secret, and `appSecret` or
+`storage.secret` belongs to tokens. Selecting API keys alone leaves those token
+and cryptographic fields visible. Salt values and key-version metadata are
+preserved; matching does not infer secrets from how random a value looks.
 
 Provider recognition uses distinctive prefixes, compatible characters, plausible
 minimum sizes, and whole candidate boundaries. It includes GitHub personal,
@@ -123,6 +129,8 @@ objects use their separate cryptographic rules.
 - [GitLab token families](https://docs.gitlab.com/security/tokens/)
 - [Slack token types](https://docs.slack.dev/authentication/tokens/)
 - [Stripe secret and publishable keys](https://docs.stripe.com/keys)
+- [Application access keys and secrets](https://www.100ms.live/docs/get-started/v2/get-started/security-and-tokens)
+- [Non-secret salts in HKDF](https://www.rfc-editor.org/rfc/rfc5869.html#section-3.1)
 
 See the [verification report](../openspec/changes/gh-33-sanitize-secrets/verification.md)
 for measured latency and native/WASM parity evidence. A maintained benchmark

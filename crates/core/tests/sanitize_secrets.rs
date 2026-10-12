@@ -12,6 +12,60 @@ const TOKEN: &str = "[REDACTED_TOKEN]";
 const SIGNED_URL: &str = "[REDACTED_SIGNED_URL]";
 
 #[test]
+fn scoped_application_credentials_select_only_their_declared_category() {
+    let cases = [
+        ("app.media.accessKey", Category::ApiKeys, API_KEY),
+        ("app.storage.access_key", Category::ApiKeys, API_KEY),
+        ("APP_ACCESS_KEY", Category::ApiKeys, API_KEY),
+        ("app.media.appSecret", Category::Tokens, TOKEN),
+        ("app.storage.secret", Category::Tokens, TOKEN),
+        ("APP_SECRET", Category::Tokens, TOKEN),
+        ("app.media.webhookSecret", Category::CryptoKeys, CRYPTO_KEY),
+        ("WEBHOOK_SECRET", Category::CryptoKeys, CRYPTO_KEY),
+        ("app.webhook-secret", Category::CryptoKeys, CRYPTO_KEY),
+        ("app.signingSecret", Category::CryptoKeys, CRYPTO_KEY),
+        ("AWS_SECRET_ACCESS_KEY", Category::ApiKeys, API_KEY),
+        ("secretaccesskey", Category::ApiKeys, API_KEY),
+        ("SECRETACCESSKEY", Category::ApiKeys, API_KEY),
+        ("oauth.clientSecret", Category::Tokens, TOKEN),
+        ("clientsecret", Category::Tokens, TOKEN),
+        ("CLIENTSECRET", Category::Tokens, TOKEN),
+        ("oauth.clientsecret", Category::Tokens, TOKEN),
+    ];
+    for (label, category, placeholder) in cases {
+        let input = format!("{label}=synthetic-value\r\n");
+        let expected = format!("{label}={placeholder}\r\n");
+        assert_eq!(sanitize::secrets(&input, Categories::ALL), expected);
+        assert_eq!(
+            sanitize::secrets(&input, Categories::only(category)),
+            expected
+        );
+        assert_eq!(sanitize::secrets(&expected, Categories::ALL), expected);
+        let disabled = Categories::from_bits(Categories::ALL.bits() & !(category as u8));
+        assert_eq!(sanitize::secrets(&input, disabled), input);
+    }
+}
+
+#[test]
+fn scoped_credential_metadata_and_innocent_substrings_remain_visible() {
+    let input = concat!(
+        "app.storage.secret_name=setting\n",
+        "app.storage.accessKeyVersion=1\n",
+        "app.webhookSecretId=identifier\n",
+        "app.appSecretPath=/local/config\n",
+        "crypto.encryptionSalt=public-salt\n",
+        "app.keyVersion=1\n",
+        "crypto.encryptionEnabled=true\n",
+        "notsecret=ordinary\n",
+        "mysecret=ordinary\n",
+        "accesskeyboard=ordinary\n",
+        "secretary=ordinary\n",
+        "publicKey=public\n",
+    );
+    assert_eq!(sanitize::secrets(input, Categories::ALL), input);
+}
+
+#[test]
 fn every_ascii_control_character_is_preserved_without_stalling() {
     let controls: String = (0_u8..=31).map(char::from).collect();
     assert_eq!(sanitize::secrets(&controls, Categories::ALL), controls);
