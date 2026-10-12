@@ -43,4 +43,4 @@
 
 ## 8. PR preparation
 
-- [ ] 8.1 Construct synthetic provider credentials at runtime where literals trigger GitHub push protection; preserve coverage and remove flagged literals from the PR branch's unpublished history.
+- [x] 8.1 Construct synthetic provider credentials at runtime where literals trigger GitHub push protection; preserve coverage and remove flagged literals from the PR branch's unpublished history.
