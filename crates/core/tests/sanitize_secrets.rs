@@ -326,23 +326,23 @@ fn supported_database_url_schemes_and_connection_parameters_are_redacted() {
         "sqlserver://u:p@db/app",
         "jdbc:postgresql://db/app?user=alice&password=secret&sslmode=require",
     ];
-    for url in urls {
+    for (index, url) in urls.into_iter().enumerate() {
         let output = sanitize::secrets(url, Categories::only(Category::Databases));
         assert!(
             !output.contains("u:p@"),
-            "credentials remain in {url}: {output}"
+            "credentials remain in database URL fixture {index}"
         );
         assert!(
             !output.contains("user=alice"),
-            "username remains in {url}: {output}"
+            "username remains in database URL fixture {index}"
         );
         assert!(
             !output.contains("password=secret"),
-            "password remains in {url}: {output}"
+            "password remains in database URL fixture {index}"
         );
         assert!(
             output.contains(DATABASE),
-            "database placeholder missing for {url}: {output}"
+            "database placeholder missing in URL fixture {index}"
         );
         if url.contains("sslmode=require") {
             assert!(output.contains("sslmode=require"));
@@ -663,16 +663,19 @@ fn libpq_password_values_consume_braces_delimiters_and_embedded_quotes() {
         "hostaddr=192.0.2.10 dbname=app password=one\"two;TAIL",
     ];
 
-    for input in inputs {
+    for (index, input) in inputs.into_iter().enumerate() {
         let output = sanitize::secrets(input, Categories::only(Category::Databases));
-        assert!(!output.contains("one"), "password prefix remains: {output}");
+        assert!(
+            !output.contains("one"),
+            "password prefix remains in libpq fixture {index}"
+        );
         assert!(
             !output.contains("TAIL"),
-            "password suffix remains: {output}"
+            "password suffix remains in libpq fixture {index}"
         );
         assert!(
             output.contains(DATABASE),
-            "database placeholder missing: {output}"
+            "database placeholder missing in libpq fixture {index}"
         );
     }
 }
