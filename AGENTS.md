@@ -283,6 +283,16 @@ const toolDefinition: ToolDefinition = {
 
 ## Common Tasks for AI Agents
 
+### Delegation and Context Economy
+- Delegate substantial, bounded research, testing, benchmarks, and repetitive work to `gpt-6-luna`; keep requirements, core implementation decisions, integration, and final review in the primary thread.
+- Group related work into one assignment. Handle small lookups and edits directly when delegation overhead would exceed the savings.
+- Give each agent a clear deliverable, file ownership, required skill paths, allowed commands, and exclusions. Concurrent writers must own disjoint files.
+- Use fresh, narrowly scoped context for cheaper agents. Return concise findings and file references; write large reports to a file.
+- Wait for completion notifications instead of repeatedly polling or importing full transcripts. Keep at most three subagents active.
+- Before completing a substantial security or core logic change, request an independent correctness review; the primary agent resolves findings and verifies the final result.
+- Keep Git mutations and destructive operations in the primary thread. Subagents must not stash, switch branches, reset, clean, commit, or push.
+- Project defaults and focused researcher/tester roles live in `.codex/config.toml` and `.codex/agents/`. Explicit model overrides remain available when a task needs deeper reasoning.
+
 ### OpenSpec Workflow
 - Every feature, fix, or other implementation change must go through the OpenSpec workflow before code changes begin.
 - Name each OpenSpec change with its GitHub issue prefix: `gh-<issue-number>-<short-kebab-case-description>` (for example, `gh-123-example-change`).
