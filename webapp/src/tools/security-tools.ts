@@ -11,6 +11,11 @@ import {
   jwtOperations,
 } from "../lib/utils/jwt";
 import { securityUtils } from "../lib/utils/security";
+import {
+  DEFAULT_SANITIZATION_CATEGORIES,
+  SANITIZATION_CATEGORIES,
+  sanitizeSecrets,
+} from "../lib/utils/security/sanitization";
 import type { Tool, ToolGroup } from "../types";
 
 // Type definition for hash tool result
@@ -121,6 +126,37 @@ const JwtSignerToolComponent = lazy(() =>
     default: module.JwtSignerToolComponent,
   })),
 );
+
+const SanitizeSecretsToolComponent = lazy(() =>
+  import("../components/tools/security/sanitize-secrets-tool").then(
+    (module) => ({ default: module.SanitizeSecretsToolComponent }),
+  ),
+);
+
+const sanitizeSecretsToolDefinition: ToolDefinition = {
+  id: "security-sanitize-secrets",
+  name: "Sanitize Secrets",
+  scrollMode: "page",
+  description: "Redact recognizable credentials from text locally",
+  category: "security",
+  aliases: ["sanitize secrets", "redact secrets", "secret sanitizer"],
+  sensitiveInputs: ["text"],
+  pipe: createPipeToolContract({
+    input: { kind: "transform", key: "text" },
+    config: SANITIZATION_CATEGORIES.map(({ id, label }) => ({
+      id,
+      name: label,
+      type: "boolean" as const,
+      defaultValue: DEFAULT_SANITIZATION_CATEGORIES[id],
+      description: `Redact recognizable ${label.toLowerCase()}`,
+    })),
+  }),
+  component: SanitizeSecretsToolComponent,
+  operation: (inputs) => {
+    const text = String(inputs.text ?? "");
+    return sanitizeSecrets(text, inputs);
+  },
+};
 
 type JwtInspectorResult = {
   decoded?: DecodedJwt;
@@ -381,7 +417,20 @@ export const securityToolsGroup: ToolGroup = {
   name: "Security Tools",
   description: "Cryptographic and security utilities",
   icon: CATEGORY_ICONS.security,
-  tools: [hashTool, hmacTool, jwtInspectorTool, jwtSignerTool],
+  tools: [
+    hashTool,
+    hmacTool,
+    jwtInspectorTool,
+    jwtSignerTool,
+    {
+      id: sanitizeSecretsToolDefinition.id,
+      name: sanitizeSecretsToolDefinition.name,
+      description: sanitizeSecretsToolDefinition.description,
+      category: sanitizeSecretsToolDefinition.category,
+      aliases: sanitizeSecretsToolDefinition.aliases,
+      operation: sanitizeSecretsToolDefinition.operation,
+    },
+  ],
 };
 
 // Tool registry for component lookup
@@ -390,4 +439,5 @@ export const TOOL_REGISTRY: Record<string, ToolDefinition> = {
   [hmacToolDefinition.id]: hmacToolDefinition,
   [jwtInspectorToolDefinition.id]: jwtInspectorToolDefinition,
   [jwtSignerToolDefinition.id]: jwtSignerToolDefinition,
+  [sanitizeSecretsToolDefinition.id]: sanitizeSecretsToolDefinition,
 };

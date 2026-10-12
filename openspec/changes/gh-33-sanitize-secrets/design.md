@@ -42,7 +42,7 @@ Use the incumbent Operate tool layout and typography: input/output panes, compac
 
 Add broad core fixtures for every category, disabled-category isolation, overlap/idempotence, Unicode/CRLF, short/escaped values, truncated containers, repeated near-matches, and duplicate JSON members. CLI tests cover flags/conflicts/aliases/stdin/argument precedence/exact content/errors. Run real generated WASM over shared fixtures, not only mock-wrapper tests. WebApp tests cover category controls, URL exclusion, discovery, Pipes freeze/import/export, and failures. Browser verification covers actual WASM, desktop/mobile, keyboard, themes, and sanitizer-to-downstream pipe composition.
 
-Provide a reproducible release core benchmark example and a script measuring cold CLI subprocess overhead; use deterministic clean, mixed/dense, and adversarial fixture construction at several sizes. Measure actual WASM separately with the built module. Report median/p95 and first-call measurements with reference environment. Optimize observed hot paths while retaining small functions and readable interfaces. Do not infer Rust latency from the earlier Python research spike.
+Use temporary local harnesses to measure release core processing, cold CLI subprocess overhead, and actual WASM separately, with deterministic clean, mixed/dense, and adversarial fixtures at several sizes. Report median/p95 and first-call measurements with the reference environment. Keep these harnesses and raw data out of the repository; a maintained benchmark suite is outside this ticket's scope. Optimize observed hot paths while retaining small functions and readable interfaces. Do not infer Rust latency from the earlier Python research spike.
 
 ## Risks / Trade-offs
 
@@ -55,4 +55,4 @@ Provide a reproducible release core benchmark example and a script measuring col
 
 ## Migration Plan
 
-Add an additive tool and bindings; rebuild generated WASM before WebApp verification. Existing CLI commands and pipe contracts stay compatible. Commit planning artifacts before implementation, then commit verified code/documentation and archive/sync the completed capability. Rollback removes the new tool/export; existing saved sanitizer steps remain diagnosable through the existing unavailable-tool contract.
+Add an additive tool and bindings; rebuild generated WASM before WebApp verification. Existing CLI commands and pipe contracts stay compatible. Commit planning artifacts before implementation, then commit verified code and documentation. Keep the change active for the user's testing; archive and sync only after their explicit request. Rollback removes the new tool/export; existing saved sanitizer steps remain diagnosable through the existing unavailable-tool contract.

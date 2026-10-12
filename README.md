@@ -28,7 +28,7 @@ It's primarily CLI-focused, but also includes a webapp interface for those who p
 - **Encoding**: Base64, URL, Hex
 - **Data Formatting**: JSON, YAML, XML, SQL (beautify, minify, sort)
 - **Format Conversion**: YAML ⇄ JSON, XML ⇄ JSON
-- **Security**: Hash (MD5, SHA-1, SHA-256, SHA-512), HMAC (SHA-256, SHA-512), JWT
+- **Security**: Hash (MD5, SHA-1, SHA-256, SHA-512), HMAC (SHA-256, SHA-512), JWT, secret sanitization
 - **Random**: numbers, strings
 - **Date/Time**: timestamps
 - **Webapp Pipes**: reusable, sequential workflows composed from compatible tools
@@ -111,7 +111,8 @@ neither is available, commands fail immediately with input guidance instead of
 waiting on an interactive terminal. Text commands retain their existing
 surrounding-whitespace normalization for piped input. Base64 and Hex encoding
 preserve piped bytes exactly; hash and HMAC accept arbitrary piped bytes while
-retaining their existing surrounding-whitespace normalization.
+retaining their existing surrounding-whitespace normalization. Secret sanitization
+preserves text whitespace exactly.
 
 ```bash
 echo "hello world" | strapd str upper
@@ -125,6 +126,19 @@ Use `strapd copy` and `strapd paste` to work with clipboard to build easy workfl
 ```bash
 strapd copy | strapd str upper | strapd paste
 ```
+
+### Sanitize Secrets
+
+```bash
+cat application.log | strapd sanitize secrets              # All categories
+cat application.log | strapd sanitize secrets --api-keys   # API keys only
+cat application.log | strapd sanitize secrets --auth --cookies
+```
+
+`--all` explicitly selects the default. Each category has its own flag; combining
+flags selects their union. The same sanitizer is available under **Security →
+Sanitize Secrets** in the WebApp and as a Pipes transform. Everything runs
+locally. See [categories, examples, and coverage limits](docs/sanitize-secrets.md).
 
 ## Development and Contributing
 

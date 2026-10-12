@@ -7,6 +7,7 @@ pub mod encoding;
 pub mod identifiers;
 pub mod jwt;
 pub mod random;
+pub mod sanitize;
 pub mod security;
 pub mod string;
 
@@ -74,6 +75,12 @@ pub enum Commands {
     Jwt {
         #[clap(subcommand)]
         operation: jwt::JwtOperation,
+    },
+    /// Redact recognizable secrets from text using local, finite patterns
+    #[command(aliases = ["redact"])]
+    Sanitize {
+        #[clap(subcommand)]
+        operation: sanitize::SanitizeOperation,
     },
     Random {
         #[clap(subcommand)]

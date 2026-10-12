@@ -103,6 +103,7 @@ User Input → React Component → Tool Definition → WASM Wrapper → strapd_w
 - **YAML ⇄ JSON**: bidirectional conversion
 
 ### Security
+- **Sanitize secrets**: Configurable deterministic redaction shared by CLI, WASM, WebApp, and Pipes; see `docs/sanitize-secrets.md`
 - **Hash**: MD5, SHA-1, SHA-256, SHA-512
 - **HMAC**: SHA-256, SHA-512
 - **JWT**: decode/extract, expiration analysis, HS256/HS384/HS512 verification and signing
