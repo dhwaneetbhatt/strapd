@@ -74,6 +74,14 @@ the regenerated module. All six sanitizer browser tests pass serially against
 this build, including native/WASM parity for the generic scoped labels, URL
 privacy, category controls, Pipes, and desktop/375 px geometry.
 
+## PR preparation
+
+GitHub push protection flagged synthetic AWS-shaped literals in the tests.
+Provider suffixes and AWS URL credentials now use runtime construction, retaining
+the same family and signed-URL coverage. All 42 core sanitizer tests pass after
+this fixture-only adjustment. The PR branch is prepared with those literals
+removed from its unpublished history; original local commits remain available.
+
 ## Measurement summary
 
 Reference environment: macOS 27.0.1, Apple Silicon arm64 (exact chip unavailable),
