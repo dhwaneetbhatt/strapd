@@ -264,11 +264,29 @@ check_regex "HMAC SHA-256" '^[0-9a-f]{64}$' "$STRAPD_BIN" hmac sha256 secret hel
 check_pipe_regex "HMAC SHA-512 binary stdin" '\000\377' '^[0-9a-f]{128}$' "$STRAPD_BIN" hmac sha512 secret
 check_pipe_eq "SHA-256 empty stdin" '' "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855" "$STRAPD_BIN" hash sha256
 
+printf '\nSecret sanitization\n'
+check_eq "sanitize default categories" 'apiKey=[REDACTED_API_KEY]; password=[REDACTED_PASSWORD]' "$STRAPD_BIN" sanitize secrets 'apiKey=example; password=example'
+check_eq "sanitize explicit all" 'apiKey=[REDACTED_API_KEY]; password=[REDACTED_PASSWORD]' "$STRAPD_BIN" sanitize secrets --all 'apiKey=example; password=example'
+check_pipe_eq "sanitize headers from stdin" 'Authorization: Bearer example\nCookie: sid=example; theme=example\n' $'Authorization: Bearer [REDACTED_AUTH]\nCookie: sid=[REDACTED_COOKIE]; theme=[REDACTED_COOKIE]' "$STRAPD_BIN" sanitize secrets
+check_eq "sanitize API keys only" 'accessKey=[REDACTED_API_KEY]; password=example' "$STRAPD_BIN" sanitize secrets --api-keys 'accessKey=example; password=example'
+check_eq "sanitize selected category union" $'apiKey=example\nAuthorization: Bearer [REDACTED_AUTH]\nCookie: sid=[REDACTED_COOKIE]' "$STRAPD_BIN" sanitize secrets --auth --cookies $'apiKey=example\nAuthorization: Bearer example\nCookie: sid=example'
+check_eq "sanitize database URL" 'postgres://[REDACTED_DATABASE]:[REDACTED_DATABASE]@db.example/app' "$STRAPD_BIN" sanitize secrets --databases 'postgres://example:example@db.example/app'
+check_eq "sanitize webhook secret" 'webhookSecret=[REDACTED_CRYPTO_KEY]; password=example' "$STRAPD_BIN" sanitize secrets --crypto-keys 'webhookSecret=example; password=example'
+check_pipe_eq "sanitize password preserves spaces" '  password=example  ' '  password=[REDACTED_PASSWORD]  ' "$STRAPD_BIN" sanitize secrets --passwords
+check_eq "sanitize scoped application secrets" 'appSecret=[REDACTED_TOKEN]; storage.secret=[REDACTED_TOKEN]' "$STRAPD_BIN" sanitize secrets --tokens 'appSecret=example; storage.secret=example'
+check_eq "sanitize signed URL" 'https://s3.example/object?X-Amz-Signature=[REDACTED_SIGNED_URL]&expires=30' "$STRAPD_BIN" sanitize secrets --signed-urls 'https://s3.example/object?X-Amz-Signature=example&expires=30'
+printf -v SMOKE_PROVIDER_KEY 'ghp_%040d' 1
+check_eq "sanitize generated provider key" '[REDACTED_API_KEY]' "$STRAPD_BIN" sanitize secrets --api-keys "$SMOKE_PROVIDER_KEY"
+check_eq "redact command alias" 'apiKey=[REDACTED_API_KEY]' "$STRAPD_BIN" redact secrets 'apiKey=example'
+check_eq "redact operation alias" 'apiKey=[REDACTED_API_KEY]' "$STRAPD_BIN" sanitize redact 'apiKey=example'
+expect_failure "sanitize rejects all with subset" '--all' "$STRAPD_BIN" sanitize secrets --all --api-keys 'apiKey=example'
+
 printf '\nJWT tools\n'
 run_pipe "JWT sign" '{"sub":"smoke","admin":true}\n' "$STRAPD_BIN" jwt sign --secret smoke-secret --algorithm hs256 || true
 JWT_TOKEN=$OUTPUT
 if [[ $JWT_TOKEN =~ ^[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+$ ]]; then
     pass "JWT sign"
+    check_eq "sanitize generated JWT" '[REDACTED_TOKEN]' "$STRAPD_BIN" sanitize secrets --tokens "$JWT_TOKEN"
     check_contains "JWT decode" '"sub": "smoke"' "$STRAPD_BIN" jwt decode "$JWT_TOKEN"
     check_contains "JWT decode analysis" '"analysis"' "$STRAPD_BIN" jwt decode "$JWT_TOKEN" --include-analysis
     check_pipe_contains "JWT payload stdin" "$JWT_TOKEN\n" '"admin": true' "$STRAPD_BIN" jwt payload
@@ -298,7 +316,7 @@ check_pipe_eq "time from epoch stdin" '0\n' "1970-01-01T00:00:00+00:00" "$STRAPD
 expect_pipe_failure "invalid timestamp" 'not-a-number\n' "expected a whole number" "$STRAPD_BIN" time from
 
 if command -v timeout >/dev/null 2>&1; then
-    if OUTPUT=$(timeout 2 "$STRAPD_BIN" base64 encode hello < <(tail -f /dev/null) 2>&1); then
+    if OUTPUT=$(timeout 2 "$STRAPD_BIN" base64 encode hello < <(sleep 3) 2>&1); then
         if [[ $OUTPUT == "aGVsbG8=" ]]; then
             pass "argument does not wait for open stdin"
         else

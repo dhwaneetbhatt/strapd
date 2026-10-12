@@ -47,5 +47,5 @@
 
 ## 9. Smoke coverage and approved archive
 
-- [ ] 9.1 Add sanitizer commands to the existing CLI smoke suite using generic synthetic inputs and runtime-generated provider/JWT credentials; run the suite.
-- [ ] 9.2 Sync the completed secret-sanitization specification, archive the user-approved change, update moved documentation links, and push to the PR branch.
+- [x] 9.1 Add sanitizer commands to the existing CLI smoke suite using generic synthetic inputs and runtime-generated provider/JWT credentials; run the suite.
+- [x] 9.2 Sync the completed secret-sanitization specification, archive the user-approved change, update moved documentation links, and push to the PR branch.

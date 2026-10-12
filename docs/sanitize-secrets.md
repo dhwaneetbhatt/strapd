@@ -132,6 +132,6 @@ objects use their separate cryptographic rules.
 - [Application access keys and secrets](https://www.100ms.live/docs/get-started/v2/get-started/security-and-tokens)
 - [Non-secret salts in HKDF](https://www.rfc-editor.org/rfc/rfc5869.html#section-3.1)
 
-See the [verification report](../openspec/changes/gh-33-sanitize-secrets/verification.md)
+See the [verification report](../openspec/changes/archive/2026-10-12-gh-33-sanitize-secrets/verification.md)
 for measured latency and native/WASM parity evidence. A maintained benchmark
 suite is outside this change's scope.

@@ -1,8 +1,9 @@
 # Verification: secret sanitization
 
-This change remains active for user testing. Archive and specification sync
-require the user's explicit request. Temporary measurement harnesses and raw
-results remain local; a maintained benchmark suite is outside this ticket.
+The user approved archiving and specification sync on 2026-10-12 after testing.
+All 12 requirements are synced to the main secret-sanitization specification.
+Temporary measurement harnesses and raw results remain local; a maintained
+benchmark suite is outside this ticket.
 
 ## Requirement audit
 
@@ -81,6 +82,20 @@ Provider suffixes and AWS URL credentials now use runtime construction, retainin
 the same family and signed-URL coverage. All 42 core sanitizer tests pass after
 this fixture-only adjustment. The PR branch is prepared with those literals
 removed from its unpublished history; original local commits remain available.
+
+## CLI smoke coverage
+
+The maintained `scripts/smoke-test-cli.sh` suite now includes 15 sanitizer checks
+covering default/explicit all, every category flag, selected-category isolation
+and unions, stdin, whitespace preservation, both aliases, incompatible flags,
+and runtime-generated provider credentials and JWTs. Fixtures use generic public
+labels and synthetic values.
+
+The release CLI smoke suite passes all 96 checks on macOS with `TZ=UTC`, including
+the clipboard round-trip. Its sandboxed run passed 95 checks and skipped clipboard
+access; rerunning with access to the macOS clipboard passed without skips.
+Shell syntax validation also passes. The existing open-stdin check now uses a
+bounded producer instead of leaving `tail -f` running after the suite completes.
 
 ## Measurement summary
 
