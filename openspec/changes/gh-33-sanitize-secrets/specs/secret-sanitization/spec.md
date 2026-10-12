@@ -45,6 +45,11 @@ The sanitizer SHALL recognize secret fields case-insensitively across snake case
 - **WHEN** input contains `keyboard`, `api_key_id`, `token_count`, `password_length`, `private_key_path`, `public_key`, or ordinary usernames
 - **THEN** label recognition alone does not redact their values
 
+#### Scenario: Scoped application credential labels
+- **WHEN** dotted or indexed configuration paths end in `accessKey`, `appSecret`, `webhookSecret`, or a semantic `secret` segment
+- **THEN** access keys belong to API keys, webhook signing secrets belong to cryptographic keys, and application or generic scoped secrets belong to tokens
+- **AND** disabled categories, salts, key versions, metadata suffixes, and innocent substring matches remain unchanged
+
 #### Scenario: Short and escaped values
 - **WHEN** a selected secret field contains a short password or a quoted value with escaped quotes, commas, semicolons, spaces, or Unicode
 - **THEN** the complete value is replaced and surrounding quotes and fields are preserved

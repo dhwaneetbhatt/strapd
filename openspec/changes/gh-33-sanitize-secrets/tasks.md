@@ -33,3 +33,9 @@
 - [x] 6.1 Run formatting, Rust lint/tests, WASM build, WebApp lint/tests/build, and relevant browser checks; resolve failures.
 - [x] 6.2 Audit every specification requirement against code/tests/runtime evidence and record verification.
 - [x] 6.3 Commit verified implementation, documentation, and current OpenSpec state; keep the change active for user testing. Archive only after the user's explicit request.
+
+## 7. Local configuration follow-up
+
+- [x] 7.1 Audit the user-provided configuration locally, report keys/counts without exposing values, and record semantic-label refinements before code changes.
+- [ ] 7.2 Cover access-key, application-secret, webhook-secret, and scoped-secret labels with synthetic fixtures; preserve category isolation and public metadata.
+- [ ] 7.3 Rebuild CLI/WASM, rerun the real configuration and regression checks, and record results without committing its contents or temporary audit scripts.
