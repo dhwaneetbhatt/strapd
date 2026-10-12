@@ -33,3 +33,25 @@ describe("JWT tool URL state", () => {
     });
   });
 });
+
+describe("Sanitize Secrets tool URL state", () => {
+  const sensitiveInputs = new Set(["text"]);
+
+  it("does not hydrate sanitizer input from a query string", () => {
+    expect(
+      inputsFromSearchParams(
+        new URLSearchParams("text=synthetic-secret&apiKeys=false&auth=true"),
+        sensitiveInputs,
+      ),
+    ).toEqual({ apiKeys: false, auth: true });
+  });
+
+  it("excludes sanitizer input while retaining category selections", () => {
+    expect(
+      shareableToolInputs(
+        { text: "synthetic-secret", apiKeys: false, auth: true },
+        sensitiveInputs,
+      ),
+    ).toEqual({ apiKeys: "false", auth: "true" });
+  });
+});

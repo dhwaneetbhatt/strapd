@@ -7,6 +7,7 @@ pub mod encoding_handler;
 pub mod identifiers_handler;
 pub mod jwt_handler;
 pub mod random_handler;
+pub mod sanitize_handler;
 pub mod security_handler;
 pub mod string_handler;
 

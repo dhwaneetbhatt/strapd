@@ -103,6 +103,7 @@ User Input → React Component → Tool Definition → WASM Wrapper → strapd_w
 - **YAML ⇄ JSON**: bidirectional conversion
 
 ### Security
+- **Sanitize secrets**: Configurable deterministic redaction shared by CLI, WASM, WebApp, and Pipes; see `docs/sanitize-secrets.md`
 - **Hash**: MD5, SHA-1, SHA-256, SHA-512
 - **HMAC**: SHA-256, SHA-512
 - **JWT**: decode/extract, expiration analysis, HS256/HS384/HS512 verification and signing
@@ -282,6 +283,17 @@ const toolDefinition: ToolDefinition = {
 - **Release binaries**: Built for multiple platforms
 
 ## Common Tasks for AI Agents
+
+### Delegation and Context Economy
+- Use `gpt-6-luna` only for substantial, bounded testing, benchmarks, research, or exploration. Never use Luna for production coding, fixes, refactoring, or implementation.
+- Keep requirements, production implementation, integration, and final review in the primary thread. If production coding is delegated, use the primary model.
+- Group related work into one assignment. Handle small lookups and edits directly when delegation overhead would exceed the savings.
+- Give each agent a clear deliverable, file ownership, required skill paths, allowed commands, and exclusions. Concurrent writers must own disjoint files.
+- Use fresh, narrowly scoped context for cheaper agents. Return concise findings and file references; write large reports to a file.
+- Wait for completion notifications instead of repeatedly polling or importing full transcripts. Keep at most three subagents active.
+- Before completing a substantial security or core logic change, request an independent correctness review; the primary agent resolves findings and verifies the final result.
+- Keep Git mutations and destructive operations in the primary thread. Subagents must not stash, switch branches, reset, clean, commit, or push.
+- Project concurrency settings and focused Luna researcher/tester roles live in `.codex/config.toml` and `.codex/agents/`. Unspecified subagent models inherit the primary model.
 
 ### OpenSpec Workflow
 - Every feature, fix, or other implementation change must go through the OpenSpec workflow before code changes begin.

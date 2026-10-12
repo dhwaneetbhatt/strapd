@@ -44,6 +44,10 @@ const wasmMocks = vi.hoisted(() => ({
     }),
   ),
   jwtSign: vi.fn(() => ({ success: true, result: "signed.jwt.token" })),
+  sanitizeSecrets: vi.fn((input: string, _categories: number) => ({
+    success: true,
+    result: input,
+  })),
 }));
 
 vi.mock("../lib/wasm", () => ({
@@ -65,6 +69,7 @@ vi.mock("../lib/wasm", () => ({
       jwt_header: wasmMocks.jwtHeader,
       jwt_payload: wasmMocks.jwtPayload,
       jwt_sign: wasmMocks.jwtSign,
+      sanitize_secrets: wasmMocks.sanitizeSecrets,
     },
     {
       get: (target, property) =>
@@ -75,6 +80,11 @@ vi.mock("../lib/wasm", () => ({
 }));
 
 import { executePipe } from "../lib/pipes/executor";
+import {
+  parsePipeImport,
+  serializePipeDocument,
+} from "../lib/pipes/portability";
+import { createPipeRepository } from "../lib/pipes/repository";
 import { searchItems } from "../lib/utils/search";
 import { wasmWrapper } from "../lib/wasm";
 import {
@@ -100,6 +110,17 @@ describe("pipe tool contracts", () => {
     const matches = searchItems("encode", Object.values(TOOL_REGISTRY));
 
     expect(matches.map(({ id }) => id)).toContain("security-jwt-sign");
+  });
+
+  it("discovers the sanitizer as a Security tool and a Pipes transform", () => {
+    const matches = searchItems(
+      "sanitize secrets",
+      Object.values(TOOL_REGISTRY),
+    );
+    expect(matches.map(({ id }) => id)).toContain("security-sanitize-secrets");
+    expect(getPipeTransformTools().map(({ id }) => id)).toContain(
+      "security-sanitize-secrets",
+    );
   });
 
   it("discovers compatible tools and source/transform subsets automatically", () => {
@@ -379,6 +400,97 @@ describe("pipe tool contracts", () => {
     );
 
     expect(result).toEqual({ success: true, output: "hmac-sha512-output" });
+  });
+
+  it("freezes selected sanitizer categories and exports them without runtime input", async () => {
+    const sanitizer = getPipeToolById("security-sanitize-secrets");
+    expect(sanitizer?.sensitiveInputs).toEqual(["text"]);
+    expect(sanitizer?.pipe?.input).toEqual({ kind: "transform", key: "text" });
+    expect(sanitizer?.pipe?.defaults).toEqual({
+      apiKeys: true,
+      auth: true,
+      cookies: true,
+      databases: true,
+      cryptoKeys: true,
+      passwords: true,
+      tokens: true,
+      signedUrls: true,
+    });
+    expect(sanitizer?.pipe?.config).toHaveLength(8);
+    expect(sanitizer?.pipe?.config.map(({ type }) => type)).toEqual(
+      Array(8).fill("boolean"),
+    );
+    if (!sanitizer?.pipe) return;
+
+    const configuration = {
+      ...sanitizer.pipe.defaults,
+      apiKeys: true,
+      auth: false,
+      cookies: false,
+      databases: false,
+      cryptoKeys: false,
+      passwords: false,
+      tokens: false,
+      signedUrls: false,
+    };
+    const output = await sanitizer.operation({
+      text: "synthetic-token",
+      ...configuration,
+    });
+    expect(output).toEqual({ success: true, result: "synthetic-token" });
+    expect(wasmMocks.sanitizeSecrets).toHaveBeenLastCalledWith(
+      "synthetic-token",
+      1,
+    );
+
+    const identity = await sanitizer.operation({
+      text: "ordinary text",
+      apiKeys: false,
+      auth: false,
+      cookies: false,
+      databases: false,
+      cryptoKeys: false,
+      passwords: false,
+      tokens: false,
+      signedUrls: false,
+    });
+    expect(identity).toEqual({ success: true, result: "ordinary text" });
+    expect(wasmMocks.sanitizeSecrets).toHaveBeenLastCalledWith(
+      "ordinary text",
+      0,
+    );
+
+    const pipe = {
+      id: "11111111-1111-4111-8111-111111111111",
+      name: "Sanitize API keys",
+      createdAt: "2026-08-01T00:00:00.000Z",
+      updatedAt: "2026-08-01T00:00:00.000Z",
+      steps: [
+        {
+          id: "22222222-2222-4222-8222-222222222222",
+          toolId: sanitizer.id,
+          toolVersion: sanitizer.pipe.version,
+          config: configuration,
+        },
+      ],
+    };
+    const exported = serializePipeDocument(pipe);
+    expect(exported).not.toContain("synthetic-token");
+    const imported = parsePipeImport(exported);
+    expect(imported.pipe.steps[0].config).toEqual(configuration);
+
+    const storage = {
+      value: null as string | null,
+      getItem: () => storage.value,
+      setItem: (_key: string, value: string) => {
+        storage.value = value;
+      },
+    };
+    const repository = createPipeRepository({ storage });
+    repository.create(pipe);
+    expect(
+      createPipeRepository({ storage }).get(pipe.id)?.steps[0].config,
+    ).toEqual(configuration);
   });
 
   it("discovers and executes each JWT decode output mode", async () => {

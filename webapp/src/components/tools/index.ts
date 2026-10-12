@@ -19,6 +19,7 @@ export { HashToolComponent } from "./security/hash-tool";
 export { HmacToolComponent } from "./security/hmac-tool";
 export { JwtInspectorToolComponent } from "./security/jwt-inspector-tool";
 export { JwtSignerToolComponent } from "./security/jwt-signer-tool";
+export { SanitizeSecretsToolComponent } from "./security/sanitize-secrets-tool";
 export { SingleInputOutputTool } from "./single-input-output-tool";
 export { AnalysisToolComponent } from "./string/analysis-tool";
 export { CaseConverterToolComponent } from "./string/case-converter-tool";

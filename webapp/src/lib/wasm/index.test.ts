@@ -8,6 +8,7 @@ const wasmMocks = vi.hoisted(() => ({
   jwtPayload: vi.fn(),
   jwtVerify: vi.fn(),
   jwtSign: vi.fn(),
+  sanitizeSecrets: vi.fn(),
 }));
 
 vi.mock("strapd_wasm", () => ({
@@ -18,6 +19,7 @@ vi.mock("strapd_wasm", () => ({
   jwt_payload: wasmMocks.jwtPayload,
   jwt_verify: wasmMocks.jwtVerify,
   jwt_sign: wasmMocks.jwtSign,
+  sanitize_secrets: wasmMocks.sanitizeSecrets,
 }));
 vi.unmock("./index");
 
@@ -32,6 +34,7 @@ describe("WasmWrapper", () => {
     wasmMocks.jwtPayload.mockReset();
     wasmMocks.jwtVerify.mockReset();
     wasmMocks.jwtSign.mockReset();
+    wasmMocks.sanitizeSecrets.mockReset();
   });
 
   it("turns a thrown WASM error value into a failed ToolResult", () => {
@@ -66,9 +69,21 @@ describe("WasmWrapper", () => {
   });
 
   it.each([
-    ["structure", "Invalid JWT structure: expected 3 segments, found 2", () => wasmWrapper.jwt_decode("bad")],
-    ["signature", "Signature verification failed: secret key mismatch", () => wasmWrapper.jwt_verify("token", "wrong")],
-    ["payload", "JWT payload must be a JSON object", () => wasmWrapper.jwt_sign("[]", "secret", "HS256")],
+    [
+      "structure",
+      "Invalid JWT structure: expected 3 segments, found 2",
+      () => wasmWrapper.jwt_decode("bad"),
+    ],
+    [
+      "signature",
+      "Signature verification failed: secret key mismatch",
+      () => wasmWrapper.jwt_verify("token", "wrong"),
+    ],
+    [
+      "payload",
+      "JWT payload must be a JSON object",
+      () => wasmWrapper.jwt_sign("[]", "secret", "HS256"),
+    ],
   ])("preserves %s errors from WASM", (_category, message, operation) => {
     const wasmFunction =
       _category === "structure"
@@ -94,6 +109,19 @@ describe("WasmWrapper", () => {
       "secret",
       "HS512",
       3600n,
+    );
+  });
+
+  it("preserves Error-prefixed sanitizer text as successful output", () => {
+    wasmMocks.sanitizeSecrets.mockReturnValue("Error: ordinary input text");
+
+    expect(wasmWrapper.sanitize_secrets("ordinary input text", 0)).toEqual({
+      success: true,
+      result: "Error: ordinary input text",
+    });
+    expect(wasmMocks.sanitizeSecrets).toHaveBeenCalledWith(
+      "ordinary input text",
+      0,
     );
   });
 });

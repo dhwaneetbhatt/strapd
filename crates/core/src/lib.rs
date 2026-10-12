@@ -6,5 +6,6 @@ pub mod encoding;
 pub mod identifiers;
 pub mod jwt;
 pub mod random;
+pub mod sanitize;
 pub mod security;
 pub mod string;

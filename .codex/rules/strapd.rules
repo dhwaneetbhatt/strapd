@@ -1,56 +1,30 @@
 # Project-scoped commands used by strapd's documented development workflow.
 # Keep global installs, release/publish operations, destructive Git commands
-# other than explicitly allowed pushes, PR merges, hook installation, and
-# GUI-opening targets approval-gated.
+# other than explicitly allowed pushes, and PR merges approval-gated.
+# All make targets are explicitly authorized by the repository owner.
 
 prefix_rule(
-    pattern = [
-        "make",
-        [
-            "help",
-            "rust-fmt",
-            "rust-fmt-check",
-            "rust-lint",
-            "rust-build",
-            "cli-build",
-            "cli-release",
-            "rust-test",
-            "rust-coverage",
-            "rust-coverage-report",
-            "wasm-build",
-            "webapp-install",
-            "webapp-fmt",
-            "webapp-fmt-check",
-            "webapp-lint",
-            "webapp-dev",
-            "webapp-build",
-            "webapp-test",
-            "webapp-e2e",
-            "webapp-coverage",
-            "lint",
-            "fmt",
-            "fmt-check",
-            "test",
-            "coverage",
-            "brew-formula-check",
-        ],
-    ],
+    pattern = ["make"],
     decision = "allow",
-    justification = "Allow documented strapd build, formatting, lint, test, coverage, and local development targets.",
-    match = [
-        "make webapp-test",
-        "make webapp-e2e",
-        "make webapp-build",
-        "make wasm-build",
-        "make test",
-    ],
-    not_match = [
-        "make setup",
-        "make rust-install",
-        "make install-hooks",
-        "make webapp-coverage-open",
-        "make brew-update-checksums",
-    ],
+    justification = "The repository owner authorizes all make commands without approval.",
+    match = ["make", "make wasm-build", "make install-hooks", "make -C webapp test"],
+    not_match = ["cargo test"],
+)
+
+prefix_rule(
+    pattern = ["rtk", "make"],
+    decision = "allow",
+    justification = "The repository owner authorizes all RTK-prefixed make commands without approval.",
+    match = ["rtk make", "rtk make wasm-build", "rtk make test CI=true"],
+    not_match = ["rtk cargo test"],
+)
+
+prefix_rule(
+    pattern = ["rtk", "proxy", "make"],
+    decision = "allow",
+    justification = "The repository owner authorizes make commands through the RTK proxy without approval.",
+    match = ["rtk proxy make wasm-build"],
+    not_match = ["rtk proxy cargo test"],
 )
 
 prefix_rule(
