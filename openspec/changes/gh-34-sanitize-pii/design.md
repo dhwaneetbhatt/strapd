@@ -34,6 +34,18 @@ IP identity uses parsed address bytes, so equivalent IPv6 spellings match. Email
 
 Alternative: hash normalized values into stable tokens. Unkeyed hashes expose cross-document linkability and dictionary attacks, while keyed hashes require key lifecycle and configuration outside issue #34.
 
+### Distinguish email local-part punctuation from prose suffixes
+
+Track whether the current token has crossed `@` while scanning forward. A straight
+apostrophe after it ends the candidate, matching the existing curly-apostrophe
+boundary behavior; apostrophes within the supported ASCII local part remain
+intact. Render only the email span so possessive suffixes and quote delimiters
+survive. Continue scanning after the boundary so an adjacent second address is
+not skipped. This is a bounded scanner refinement with no new dependency,
+allocation, general mailbox parser, or additional input pass. Compare release
+native timings against the pre-fix implementation and verify actual WASM output
+and warm timing before accepting the fix.
+
 ### Combine strict standalone recognition with semantic label fallback
 
 Standalone phone candidates require an explicit international prefix or strong formatting; plain local digits require phone-like labels. Standalone cards require plausible grouping and Luhn. Standalone Aadhaar requires exact compact or 4-4-4 formatting and Verhoeff. Standalone PAN restricts the documented holder type and nonzero numeric series. Semantic labels allow plausible but checksum-invalid or mistyped values to be protected where context is stronger than validation. Label matching uses ASCII semantic segments and metadata exclusions rather than innocent substring matching.

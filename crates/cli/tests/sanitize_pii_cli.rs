@@ -103,3 +103,16 @@ fn long_help_explains_scope_and_offline_validation_limits() {
         assert!(help.contains(text), "missing {text} in {help}");
     }
 }
+
+#[test]
+fn email_possessives_and_local_apostrophes_work_in_both_input_forms() {
+    let input = "alice@example.com's record; alice@EXAMPLE.com’s; o'connor@example.com";
+    assert_success(
+        &strapd(&["sanitize", "pii", "--emails"], Some(input.as_bytes())),
+        "[REDACTED_EMAIL]'s record; [REDACTED_EMAIL]’s; [REDACTED_EMAIL]\n".as_bytes(),
+    );
+    assert_success(
+        &strapd(&["sanitize", "pii", "--emails", "-p", input], None),
+        "[EMAIL_1]'s record; [EMAIL_1]’s; [EMAIL_2]\n".as_bytes(),
+    );
+}

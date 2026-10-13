@@ -51,3 +51,10 @@
 - [x] 8.4 Request an independent correctness, privacy, overlap, and performance review of the completed core and interface behavior; resolve findings and add regression coverage.
 - [x] 8.5 Audit every specification requirement against code, tests, runtime behavior, documentation, and measurements; finalize the verification report and validate OpenSpec strictly.
 - [x] 8.6 Commit the verified implementation and current OpenSpec state, keep the change active for user testing, and archive only after explicit user approval.
+
+## 9. User-testing follow-up: email apostrophe boundaries
+
+- [x] 9.1 Refine the scanner's straight-apostrophe boundary after `@` without splitting supported local-part apostrophes, changing canonical identity, or skipping adjacent email candidates.
+- [x] 9.2 Add core and CLI regressions for straight/curly possessives, quote boundaries, repeated pseudonyms, local-part apostrophes, malformed addresses, category isolation and idempotence; verify actual browser WASM parity.
+- [x] 9.3 Compare release native performance with the pre-fix implementation, measure actual warm WASM on representative and apostrophe-heavy fixtures, record results in verification, and remove temporary harnesses/data.
+- [x] 9.4 Run relevant tests, formatting, lint, release CLI/WASM builds, strict OpenSpec validation and an independent correctness review; commit the verified follow-up and stop without archiving or pushing.

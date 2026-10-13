@@ -28,9 +28,15 @@ pub(super) fn scan(
         let start = i;
         let mut end = i;
         let mut ip_prefix = true;
+        let mut email_domain = false;
         while end < bytes.len() && token_byte(bytes[end]) {
-            if bytes[end] == b'\'' && !bytes.get(end + 1).is_some_and(u8::is_ascii_alphanumeric) {
+            if bytes[end] == b'\''
+                && (email_domain || !bytes.get(end + 1).is_some_and(u8::is_ascii_alphanumeric))
+            {
                 break;
+            }
+            if bytes[end] == b'@' {
+                email_domain = true;
             }
             if bytes[end] == b':' && end > start && !ip_prefix {
                 break;

@@ -424,3 +424,156 @@ No new feature validation failure remains.
 Temporary measurement scripts and raw data were removed, and staging was audited
 to exclude them. Generated build output is ignored. The OpenSpec change stays
 active for the user's manual testing; no archive, push or deployment is performed.
+
+## Follow-up: straight-apostrophe email boundaries
+
+The initial matrices above describe the implementation at `445d43c`. This
+follow-up fixes a missed email before a straight apostrophe followed by letters,
+matching the existing curly-apostrophe behavior. These measurements describe
+the final follow-up scanner, not a remeasurement of the entire initial matrix.
+
+### Correctness and scope
+
+A straight apostrophe after `@` now ends the original email candidate; supported
+apostrophes before `@` stay inside the local part. Only the email span is
+replaced, preserving `'s`, `’s` and quote delimiters. The scan resumes after the
+delimiter, so adjacent addresses are not skipped. Category flags, public APIs,
+canonical identity, Pipes configuration and dependencies are unchanged. The
+scanner adds one per-token boolean, set when it encounters `@`; there is no
+additional input pass or allocation for this boundary check.
+
+The new core regression failed on the pre-fix implementation and passes after
+the fix. Synthetic cases cover straight/curly possessives, local-part apostrophes,
+domain case folding and repeated pseudonyms, quoted/adjacent addresses, invalid
+domains, category isolation, idempotence and a suffix longer than 1,024 bytes.
+CLI tests cover stdin masking and positional pseudonyms. Real browser tests
+assert known expected output independently for actual WASM and the release CLI
+in both modes. An independent correctness review found no confirmed defect.
+
+### Follow-up performance method
+
+Same hardware/toolchain as the reference environment above. A disposable release
+harness depended on the local core crate with the same temporary Cargo lockfile
+for both versions. Save its compiled pre-fix executable before touching the
+scanner, then rebuild the identical harness against the final scanner. Run three
+rounds of each binary, alternating order by round (before/after, after/before,
+before/after). Do not run builds or tests during final timing. The shared machine
+is still subject to frequency, scheduling and background-load variation.
+
+Each case uses all categories, both modes, one first-observed call, 20 warmups
+and 201 individually timed calls. Validate independently assembled full output,
+known marker counts and idempotence outside the timing region, as in the initial
+method. Report the median across the three per-run first-call, median, p95 and
+throughput values; these are **medians of run summaries**, not a pooled
+distribution or a confidence interval. Each before/after distribution has 603
+measured warm calls per case.
+
+Clean, mixed and dense fixtures are the same exact-size rows as the initial
+measurement. Additional rows are:
+
+- Apostrophe-heavy:
+  `o'connor@example.com's alice@EXAMPLE.com's alice@example.com’s\n`.
+  Count UTF-8 bytes, repeat whole rows and pad with ASCII spaces to 65,536 bytes.
+  There are 1,008 rows. Pre-fix output replaces only the curly-apostrophe address
+  (1,008 matches); fixed output replaces all three (3,024 matches), including
+  the apostrophe-bearing local part. The two Alice addresses share one pseudonym.
+- Adversarial: 1,024 `a` characters, `@missing's `, 1,024 colons, `; `,
+  1,024 nines and newline. Repeat whole rows and pad to 64 KiB, 256 KiB and 1 MiB.
+  There are no matches in either version. This exercises invalid, overlong
+  email candidates followed by apostrophes and long colon/numeric runs.
+
+Browser timings use final release WASM through the actual typed wrapper in
+Chromium 156.0.8078.4: 20 warmups, 101 ten-call batches, sorted indices 50/95.
+First call includes possible first-use/JIT effects; median/p95 are per-call
+**batch means**, not single-call tail latency. Exact expected output, counts and
+idempotence are validated before timing. String transfer is included; page load,
+module initialization and React rendering are excluded. No pre-fix WASM A/B was
+performed: earlier-browser numbers are historical context, not a causal delta.
+
+### Results and limitations
+
+- Native 64 KiB clean medians increase from 0.370/0.356 ms to 0.393/0.401 ms
+  (mask/pseudonym): approximately +0.022/+0.045 ms in this three-round comparison.
+  This is a small measured cost, not a zero-cost claim. The clean/pseudonym
+  per-run medians range 0.343–0.392 ms before and 0.357–0.407 ms after; overlapping
+  ranges and changes in other fixtures limit attribution of small deltas.
+- Native mixed medians are 0.223/0.251 ms; both clean and mixed still meet the
+  ≤0.5 ms median and <1 ms p95 targets. Mixed/dense apparent improvements should
+  not be read as guaranteed speedups on an uncontrolled shared machine.
+- Dense native 64 KiB medians are 0.730/0.872 ms: both still miss the stricter
+  0.5 ms median target, as documented for the initial implementation.
+- The fixed apostrophe-heavy native medians are 0.632/0.970 ms, versus
+  0.640/0.688 ms before. This is not equivalent work: the fix replaces three
+  times as many values. Both exceed the 0.5 ms native median target.
+  Native pseudonym p95 is 1.283 ms, above the 1 ms target.
+- Native adversarial medians scale from 0.322/0.310 ms (64 KiB), through
+  1.320/1.315 ms (256 KiB), to 5.299/5.331 ms (1 MiB), demonstrating approximately
+  linear forward progress. The 1 MiB values are below 8 ms but slower than this
+  comparison's pre-fix 4.370/4.762 ms; the refinement is not universally faster.
+- Warm WASM mixed medians are 0.380/0.430 ms, within 1 ms. Clean, mixed,
+  adversarial and apostrophe-heavy mask cases meet the 64 KiB median target.
+  Dense pseudonyms (1.100 ms) and apostrophe-heavy pseudonyms (1.290 ms)
+  **miss the 1 ms median target in the final browser run**. Earlier exploratory
+  runs varied; this final result is retained rather than choosing a faster run.
+- Investigated the initial per-byte state-update cost and changed it to set
+  state only upon `@`. This remains a finite single-scan refinement, without
+  a general-purpose parser or weakened correctness. The measurements establish
+  typical sub-ms latency, not a universal sub-ms guarantee.
+- Only the relevant core and actual-WASM hot paths were remeasured. Initial
+  fresh CLI process/startup and full category-selection measurements remain
+  historical evidence; no new added-CLI-cost claim is made for this follow-up.
+
+### Native summarized distributions
+
+```csv
+fixture,bytes,mode,before_matches,after_matches,before_first_ms,after_first_ms,before_median_ms,after_median_ms,before_p95_ms,after_p95_ms,before_MiB_s,after_MiB_s
+clean,65536,mask,0,0,0.548,0.386,0.370,0.393,0.443,0.439,168.770,159.130
+clean,65536,pseudonym,0,0,0.375,0.384,0.356,0.401,0.458,0.436,175.560,155.700
+mixed,65536,mask,768,768,0.309,0.255,0.243,0.223,0.301,0.275,257.290,279.690
+mixed,65536,pseudonym,768,768,0.300,0.247,0.284,0.251,0.342,0.313,220.070,248.760
+dense,65536,mask,5538,5538,0.757,0.677,0.737,0.730,0.838,0.792,84.770,85.620
+dense,65536,pseudonym,5538,5538,1.074,0.888,0.998,0.872,1.114,0.976,62.610,71.670
+apostrophe,65536,mask,1008,3024,0.774,0.621,0.640,0.632,0.743,0.817,97.710,98.840
+apostrophe,65536,pseudonym,1008,3024,0.732,0.984,0.688,0.970,0.826,1.283,90.800,64.430
+adversarial,65536,mask,0,0,0.308,0.286,0.306,0.322,0.365,0.383,204.050,194.270
+adversarial,65536,pseudonym,0,0,0.347,0.273,0.304,0.310,0.359,0.379,205.480,201.450
+adversarial,262144,mask,0,0,1.323,1.229,1.172,1.320,1.320,1.728,213.270,189.380
+adversarial,262144,pseudonym,0,0,1.252,1.262,1.184,1.315,1.353,1.693,211.190,190.190
+adversarial,1048576,mask,0,0,4.508,5.321,4.370,5.299,5.218,6.303,228.850,188.700
+adversarial,1048576,pseudonym,0,0,4.418,5.363,4.762,5.331,5.102,6.067,209.980,187.590
+```
+
+### Actual WASM summarized distributions
+
+```csv
+fixture,bytes,mode,matches,first_ms,median_ms,p95_ms,MiB_s
+clean,65536,mask,0,5.100,0.620,0.730,100.806
+clean,65536,pseudonym,0,0.500,0.560,0.670,111.607
+mixed,65536,mask,768,0.700,0.380,0.390,164.474
+mixed,65536,pseudonym,768,1.000,0.430,0.430,145.349
+dense,65536,mask,5538,1.000,0.820,0.950,76.220
+dense,65536,pseudonym,5538,1.300,1.100,1.510,56.818
+apostrophe,65536,mask,3024,2.400,0.960,1.180,65.104
+apostrophe,65536,pseudonym,3024,2.500,1.290,1.530,48.450
+adversarial,65536,mask,0,0.500,0.520,0.610,120.192
+adversarial,65536,pseudonym,0,0.500,0.520,0.540,120.192
+adversarial,262144,mask,0,2.300,2.080,2.160,120.192
+adversarial,262144,pseudonym,0,2.100,2.150,2.410,116.279
+adversarial,1048576,mask,0,8.800,8.550,9.310,116.959
+adversarial,1048576,pseudonym,0,8.400,8.640,10.060,115.741
+```
+
+### Final verification and cleanup
+
+- Final Rust workspace: 739 tests pass with
+  `TZ=UTC cargo test --workspace --quiet -- --test-threads=1`.
+  An earlier concurrent-build run exceeded an existing input CLI subprocess
+  deadline; the serial final run passes without changing that test or timeout.
+- Core PII: 8 tests; existing secrets: 42; CLI PII: 4; all pass.
+- Real browser PII/secret sanitizer tests: 10 pass on the rebuilt final WASM.
+- Formatting, `make lint`, release CLI build, WASM build, WebApp build and strict
+  OpenSpec validation pass. Release smoke: 99 pass, 1 clipboard skip, 0 fail.
+- No UI production code changed. Existing bundle-size/home-page warnings remain.
+- Temporary harness sources, binaries and measurement data were removed.
+  Only these summarized results and methodology are committed. The change
+  remains active; no archive or push is performed.

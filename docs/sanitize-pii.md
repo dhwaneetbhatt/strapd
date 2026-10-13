@@ -49,7 +49,10 @@ international prefixes can therefore yield distinct pseudonyms.
   loopback and unspecified addresses. Brackets, ports and CIDR lengths remain
   outside the replacement. Zone identifiers and encoded forms are unsupported.
 - **Emails:** common ASCII local parts and dotted ASCII domains, with normal
-  punctuation boundaries. Quoted mailboxes, internationalized addresses and
+  punctuation boundaries. Straight and curly apostrophes after the domain
+  preserve prose suffixes such as `'s`; supported local-part apostrophes stay
+  inside the match (for example, `o'connor@example.com`).
+  Quoted mailboxes, internationalized addresses and
   exhaustive RFC mailbox syntax are unsupported. No DNS or deliverability check
   occurs.
 - **Phones:** 7–15 digits with an explicit international prefix, strongly grouped
@@ -109,12 +112,17 @@ by category, and renders original spans once.
 
 ## Performance
 
-On the reference Apple M4, 64 KiB mixed input takes a median 0.234 ms native /
-0.380 ms browser WASM for masking and 0.259 ms / 0.410 ms for pseudonyms.
-Dense 64 KiB input is still below 1 ms at the median, but misses the stricter
-native 0.5 ms target; dense 1 MiB input takes 10.459–16.522 ms natively.
-Dense Aadhaar/PAN-only 1 MiB input also exceeds the 8 ms target (8.243–9.293 ms).
-Fresh CLI processes take 31–45 ms total: sub-millisecond core work does not
+On the reference Apple M4, the apostrophe-boundary follow-up measures 64 KiB
+mixed input at a median 0.223 ms native / 0.380 ms browser WASM for masking and
+0.251 ms / 0.430 ms for pseudonyms. The measured native clean-input increase
+is about 0.02–0.05 ms. Dense native 64 KiB medians (0.730–0.872 ms) miss the
+stricter 0.5 ms target; dense and apostrophe-heavy WASM pseudonyms also exceed
+1 ms (1.100 and 1.290 ms). Sub-millisecond latency is not guaranteed for every
+input. Apostrophe-heavy native medians (0.632–0.970 ms) also miss the 0.5 ms
+target, with pseudonym p95 at 1.283 ms. Initial dense 1 MiB native measurements
+take 10.459–16.522 ms, or
+8.243–9.293 ms with only Aadhaar/PAN enabled, exceeding the 8 ms target.
+Initial fresh CLI processes take 31–45 ms total: sub-millisecond core work does not
 mean sub-millisecond process startup. Results vary with input and runtime.
 
 Release native, CLI and actual-browser WASM measurements, fixture construction,

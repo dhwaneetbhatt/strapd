@@ -62,6 +62,10 @@ The IP category SHALL recognize complete syntactically valid IPv4 and IPv6 addre
 - **WHEN** an unlabeled digit sequence could be an identifier, timestamp, or local telephone number and lacks strong phone formatting
 - **THEN** phone recognition leaves it unchanged
 
+#### Scenario: Preserve email possessives and local-part apostrophes
+- **WHEN** a common ASCII email is followed by a straight or curly apostrophe and a possessive suffix
+- **THEN** only the email is replaced, both apostrophe forms preserve the suffix, and supported apostrophes inside the local part remain part of the email's canonical identity
+
 #### Scenario: Labeled local phone number
 - **WHEN** a plausible local number occurs as the value of a recognized phone label
 - **THEN** the complete number and extension, if present, are treated as one phone match

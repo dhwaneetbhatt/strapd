@@ -80,6 +80,57 @@ test("real WASM equals release CLI for every category, mode, unions, and Unicode
   }
 });
 
+test("email apostrophes preserve prose suffixes and local parts in real WASM and CLI", async ({
+  page,
+}) => {
+  await page.goto("/#/");
+  const cases = [
+    {
+      input: "alice@example.com's alice@EXAMPLE.com’s o'connor@example.com's",
+      mask: "[REDACTED_EMAIL]'s [REDACTED_EMAIL]’s [REDACTED_EMAIL]'s",
+      pseudonym: "[EMAIL_1]'s [EMAIL_1]’s [EMAIL_2]'s",
+    },
+    {
+      input: "'alice@example.com'bob@example.com'",
+      mask: "'[REDACTED_EMAIL]'[REDACTED_EMAIL]'",
+      pseudonym: "'[EMAIL_1]'[EMAIL_2]'",
+    },
+    {
+      input: "alice@missing's alice@example..com's",
+      mask: "alice@missing's alice@example..com's",
+      pseudonym: "alice@missing's alice@example..com's",
+    },
+  ];
+  for (const pseudonymize of [false, true]) {
+    const results = await page.evaluate(
+      async ({ cases, pseudonymize }) => {
+        const { wasmWrapper } = await import("/src/lib/wasm/index.ts");
+        return cases.map((c) =>
+          wasmWrapper.sanitize_pii(c.input, 2, pseudonymize),
+        );
+      },
+      { cases, pseudonymize },
+    );
+    for (const [i, c] of cases.entries()) {
+      const expected = pseudonymize ? c.pseudonym : c.mask;
+      expect(results[i]).toEqual({ success: true, result: expected });
+      expect(
+        execFileSync(
+          cli,
+          [
+            "sanitize",
+            "pii",
+            "--emails",
+            ...(pseudonymize ? ["-p"] : []),
+            c.input,
+          ],
+          { encoding: "utf8" },
+        ),
+      ).toBe(`${expected}\n`);
+    }
+  }
+});
+
 test("discovers PII, supports keyboard/copy/reset, private URLs and both layouts/themes", async ({
   page,
   context,

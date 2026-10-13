@@ -218,3 +218,60 @@ fn numbered_fields_are_semantic_but_metadata_is_not() {
         assert_eq!(sanitize(input, Categories::ALL, Mode::Mask), input);
     }
 }
+
+#[test]
+fn email_apostrophe_boundaries_preserve_suffixes_and_canonical_identity() {
+    for (input, masked, pseudonymized) in [
+        (
+            "alice@example.com's record",
+            "[REDACTED_EMAIL]'s record",
+            "[EMAIL_1]'s record",
+        ),
+        (
+            "alice@example.com’s record",
+            "[REDACTED_EMAIL]’s record",
+            "[EMAIL_1]’s record",
+        ),
+        (
+            "o'connor@example.com's o'connor@EXAMPLE.com’s",
+            "[REDACTED_EMAIL]'s [REDACTED_EMAIL]’s",
+            "[EMAIL_1]'s [EMAIL_1]’s",
+        ),
+        (
+            "'o'connor@example.com'",
+            "'[REDACTED_EMAIL]'",
+            "'[EMAIL_1]'",
+        ),
+        (
+            "'alice@example.com'bob@example.com'",
+            "'[REDACTED_EMAIL]'[REDACTED_EMAIL]'",
+            "'[EMAIL_1]'[EMAIL_2]'",
+        ),
+        (
+            "alice@example.com'alice@EXAMPLE.com",
+            "[REDACTED_EMAIL]'[REDACTED_EMAIL]",
+            "[EMAIL_1]'[EMAIL_1]",
+        ),
+    ] {
+        for (mode, expected) in [(Mode::Mask, masked), (Mode::Pseudonymize, pseudonymized)] {
+            let result = sanitize(input, Categories::ALL, mode);
+            assert_eq!(result, expected, "{input}");
+            assert_eq!(sanitize(&result, Categories::ALL, mode), result);
+        }
+        assert_eq!(mask(input, Category::Pan), input);
+    }
+    for input in [
+        "alice@missing's",
+        "alice@-example.com's",
+        "alice@example..com's",
+        "alice@@example.com's",
+        "alice@exam'ple.com",
+    ] {
+        assert_eq!(mask(input, Category::Emails), input);
+    }
+    let suffix = format!("'s{}", "x".repeat(1024));
+    assert_eq!(
+        mask(&format!("alice@example.com{suffix}"), Category::Emails),
+        format!("[REDACTED_EMAIL]{suffix}")
+    );
+}
