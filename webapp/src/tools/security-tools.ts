@@ -12,6 +12,12 @@ import {
 } from "../lib/utils/jwt";
 import { securityUtils } from "../lib/utils/security";
 import {
+  DEFAULT_PII_CATEGORIES,
+  PII_CATEGORIES,
+  type PiiMode,
+  sanitizePii,
+} from "../lib/utils/security/pii";
+import {
   DEFAULT_SANITIZATION_CATEGORIES,
   SANITIZATION_CATEGORIES,
   sanitizeSecrets,
@@ -156,6 +162,56 @@ const sanitizeSecretsToolDefinition: ToolDefinition = {
     const text = String(inputs.text ?? "");
     return sanitizeSecrets(text, inputs);
   },
+};
+
+const SanitizePiiToolComponent = lazy(() =>
+  import("../components/tools/security/sanitize-pii-tool").then((module) => ({
+    default: module.SanitizePiiToolComponent,
+  })),
+);
+const sanitizePiiToolDefinition: ToolDefinition = {
+  id: "security-sanitize-pii",
+  name: "Sanitize PII",
+  scrollMode: "page",
+  description: "Mask or pseudonymize personal identifiers locally",
+  category: "security",
+  aliases: [
+    "sanitize pii",
+    "pii sanitizer",
+    "aadhaar",
+    "pan",
+    "anonymize",
+    "pseudonymize",
+    "mask emails",
+  ],
+  sensitiveInputs: ["text"],
+  pipe: createPipeToolContract({
+    input: { kind: "transform", key: "text" },
+    config: [
+      {
+        id: "mode",
+        name: "Replacement",
+        type: "select",
+        defaultValue: "Mask",
+        options: ["Mask", "Pseudonymize"],
+        description: "Mask values or preserve invocation-local relationships",
+      },
+      ...PII_CATEGORIES.map(({ id, label }) => ({
+        id,
+        name: label,
+        type: "boolean" as const,
+        defaultValue: DEFAULT_PII_CATEGORIES[id],
+        description: `Protect recognizable ${label.toLowerCase()}`,
+      })),
+    ],
+  }),
+  component: SanitizePiiToolComponent,
+  operation: (inputs) =>
+    sanitizePii(
+      String(inputs.text ?? ""),
+      inputs,
+      String(inputs.mode ?? "Mask") as PiiMode,
+    ),
 };
 
 type JwtInspectorResult = {
@@ -418,6 +474,14 @@ export const securityToolsGroup: ToolGroup = {
   description: "Cryptographic and security utilities",
   icon: CATEGORY_ICONS.security,
   tools: [
+    {
+      id: sanitizePiiToolDefinition.id,
+      name: sanitizePiiToolDefinition.name,
+      description: sanitizePiiToolDefinition.description,
+      category: sanitizePiiToolDefinition.category,
+      aliases: sanitizePiiToolDefinition.aliases,
+      operation: sanitizePiiToolDefinition.operation,
+    },
     hashTool,
     hmacTool,
     jwtInspectorTool,
@@ -435,6 +499,7 @@ export const securityToolsGroup: ToolGroup = {
 
 // Tool registry for component lookup
 export const TOOL_REGISTRY: Record<string, ToolDefinition> = {
+  [sanitizePiiToolDefinition.id]: sanitizePiiToolDefinition,
   [hashToolDefinition.id]: hashToolDefinition,
   [hmacToolDefinition.id]: hmacToolDefinition,
   [jwtInspectorToolDefinition.id]: jwtInspectorToolDefinition,

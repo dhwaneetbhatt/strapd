@@ -47,6 +47,7 @@ export interface WasmModule {
   jwt_verify: (input: string, secret: string) => string;
   jwt_sign: (payload: string, secret: string, algorithm: string, expiresInSeconds?: bigint) => string;
   sanitize_secrets: (input: string, categories: number) => string;
+  sanitize_pii: (input: string, categories: number, pseudonymize: boolean) => string;
 
   // Random
   random_string: (count: number, length: number, lowercase: boolean, uppercase: boolean, digits: boolean, symbols: boolean, customCharset: string) => string;
@@ -355,6 +356,13 @@ export class WasmWrapper {
     return this.safeWasmCall(
       () => this.wasmModule.sanitize_secrets(input, categories),
       'sanitize_secrets'
+    );
+  }
+
+  public sanitize_pii(input: string, categories: number, pseudonymize: boolean): ToolResult {
+    return this.safeWasmCall(
+      () => this.wasmModule.sanitize_pii(input, categories, pseudonymize),
+      'sanitize_pii'
     );
   }
   

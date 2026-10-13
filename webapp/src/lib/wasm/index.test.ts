@@ -9,6 +9,7 @@ const wasmMocks = vi.hoisted(() => ({
   jwtVerify: vi.fn(),
   jwtSign: vi.fn(),
   sanitizeSecrets: vi.fn(),
+  sanitizePii: vi.fn(),
 }));
 
 vi.mock("strapd_wasm", () => ({
@@ -20,6 +21,7 @@ vi.mock("strapd_wasm", () => ({
   jwt_verify: wasmMocks.jwtVerify,
   jwt_sign: wasmMocks.jwtSign,
   sanitize_secrets: wasmMocks.sanitizeSecrets,
+  sanitize_pii: wasmMocks.sanitizePii,
 }));
 vi.unmock("./index");
 
@@ -35,6 +37,7 @@ describe("WasmWrapper", () => {
     wasmMocks.jwtVerify.mockReset();
     wasmMocks.jwtSign.mockReset();
     wasmMocks.sanitizeSecrets.mockReset();
+    wasmMocks.sanitizePii.mockReset();
   });
 
   it("turns a thrown WASM error value into a failed ToolResult", () => {
@@ -123,5 +126,11 @@ describe("WasmWrapper", () => {
       "ordinary input text",
       0,
     );
+  });
+
+  it("passes PII mode and selection unchanged and preserves Error-prefixed content", () => {
+    wasmMocks.sanitizePii.mockReturnValue("Error: ordinary text");
+    expect(wasmWrapper.sanitize_pii("Error: ordinary text", 48, true)).toEqual({success: true, result: "Error: ordinary text"});
+    expect(wasmMocks.sanitizePii).toHaveBeenCalledWith("Error: ordinary text", 48, true);
   });
 });
