@@ -1,0 +1,41 @@
+name: Weekly CodeQL
+
+# Switch off GitHub's CodeQL default setup when this workflow reaches main.
+# Otherwise default setup continues to scan pushes and pull requests separately.
+on:
+  schedule:
+    # Tuesdays at 02:17 UTC (07:47 IST), on the default branch only.
+    - cron: '17 2 * * 2'
+
+permissions:
+  contents: read
+
+jobs:
+  analyze:
+    name: Analyze (${{ matrix.language }})
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    permissions:
+      contents: read
+      packages: read
+      security-events: write
+    strategy:
+      fail-fast: false
+      matrix:
+        language: [actions, javascript-typescript, python, rust]
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v5
+        with:
+          persist-credentials: false
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v4
+        with:
+          languages: ${{ matrix.language }}
+          build-mode: none
+
+      - name: Analyze code
+        uses: github/codeql-action/analyze@v4
+        with:
+          category: /language:${{ matrix.language }}
