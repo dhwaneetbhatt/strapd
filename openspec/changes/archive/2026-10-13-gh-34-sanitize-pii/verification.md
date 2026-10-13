@@ -1,5 +1,9 @@
 # GH-34 verification
 
+Archived on 2026-10-13 after user approval, with all requirements synced to the
+main specification. Lifecycle statements below describe the verification
+checkpoints before archival.
+
 ## Outcome
 
 Implemented local PII masking and invocation-local pseudonyms in the Rust library,

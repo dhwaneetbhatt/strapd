@@ -127,4 +127,4 @@ mean sub-millisecond process startup. Results vary with input and runtime.
 
 Release native, CLI and actual-browser WASM measurements, fixture construction,
 first-call costs, median/p95, throughput and limitations are recorded in the
-[OpenSpec verification report](../openspec/changes/gh-34-sanitize-pii/verification.md).
+[OpenSpec verification report](../openspec/changes/archive/2026-10-13-gh-34-sanitize-pii/verification.md).
