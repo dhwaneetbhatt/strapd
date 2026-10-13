@@ -87,21 +87,26 @@ fn positional_precedence_empty_markers_and_safe_errors() {
 }
 
 #[test]
-fn long_help_explains_scope_and_offline_validation_limits() {
+fn help_keeps_usage_concise_and_links_to_details() {
     let result = strapd(&["sanitize", "pii", "--help"], None);
     assert!(result.output.status.success());
     let help = String::from_utf8_lossy(&result.output.stdout);
     for text in [
-        "within this invocation only",
-        "UIDAI",
-        "false positives",
-        "measured latency",
+        "default: all",
+        "Pass TEXT or pipe stdin",
+        "docs/sanitize-pii.md",
+        "consistent within this run",
         "--pseudonymize",
         "--aadhaar",
         "--pan",
     ] {
         assert!(help.contains(text), "missing {text} in {help}");
     }
+    let description = help.split("Usage:").next().unwrap();
+    assert!(
+        description.split_whitespace().count() <= 30,
+        "{description}"
+    );
 }
 
 #[test]

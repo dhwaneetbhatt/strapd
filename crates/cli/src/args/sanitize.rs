@@ -1,12 +1,13 @@
 use clap::Subcommand;
 use strapd_core::sanitize::{Categories, Category};
 
-const PII_HELP: &str = "Protect recognizable IP addresses, emails, phones, payment cards, Aadhaar and PAN locally. Omit category flags to select all; combine flags for a union. Masking is the default. Pseudonyms preserve relationships within this invocation only. Standalone cards and Aadhaar use checksums; explicit labels protect plausible mistyped values. PAN uses structural rules. Coverage is finite with possible false positives and negatives: no issuer, UIDAI, Income Tax, DNS, carrier or deliverability verification occurs. Already-masked values are preserved. Pass TEXT or pipe stdin; see docs/sanitize-pii.md for formatting and measured latency.";
+const PII_HELP: &str = "Mask personal identifiers locally. Select categories with flags (default: all). Pass TEXT or pipe stdin. See docs/sanitize-pii.md for details.";
+const SECRETS_HELP: &str = "Redact secrets locally. Select categories with flags (default: all). Pass TEXT or pipe stdin. See docs/sanitize-secrets.md for details.";
 
 #[derive(Subcommand, Debug)]
 pub enum SanitizeOperation {
     /// Redact recognized secrets from text (alias: `redact`)
-    #[command(aliases = ["redact"])]
+    #[command(aliases = ["redact"], long_about = SECRETS_HELP)]
     Secrets(SecretsArgs),
     /// Mask or pseudonymize personal identifiers locally
     #[command(long_about = PII_HELP)]
@@ -39,7 +40,7 @@ pub struct PiiArgs {
     /// Mask PAN numbers
     #[arg(long)]
     pub pan: bool,
-    /// Use invocation-local ordinal pseudonyms instead of masking
+    /// Use numbered placeholders, consistent within this run
     #[arg(long, short = 'p')]
     pub pseudonymize: bool,
 }
@@ -69,10 +70,7 @@ impl PiiArgs {
 }
 
 #[derive(clap::Args, Debug)]
-#[command(
-    about = "Redact recognizable secrets from text locally",
-    long_about = "Redact recognizable secrets from text offline using finite deterministic patterns. Omit category flags to enable all categories. Aliases: `strapd redact secrets` and `strapd sanitize redact`. Public Google API keys may be redacted; truncated secret blocks are redacted through the remaining input. Opaque, encoded, and binary credentials are unsupported, and coverage or credential validity is not guaranteed. Pass TEXT as an argument or pipe text through stdin."
-)]
+#[command(about = "Redact recognizable secrets from text locally")]
 pub struct SecretsArgs {
     /// Text to sanitize; if omitted, read text from stdin
     pub text: Option<String>,
