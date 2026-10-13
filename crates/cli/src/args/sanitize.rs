@@ -1,18 +1,76 @@
 use clap::Subcommand;
 use strapd_core::sanitize::{Categories, Category};
 
+const PII_HELP: &str = "Mask personal identifiers locally. Select categories with flags (default: all). Pass TEXT or pipe stdin. See docs/sanitize-pii.md for details.";
+const SECRETS_HELP: &str = "Redact secrets locally. Select categories with flags (default: all). Pass TEXT or pipe stdin. See docs/sanitize-secrets.md for details.";
+
 #[derive(Subcommand, Debug)]
 pub enum SanitizeOperation {
     /// Redact recognized secrets from text (alias: `redact`)
-    #[command(aliases = ["redact"])]
+    #[command(aliases = ["redact"], long_about = SECRETS_HELP)]
     Secrets(SecretsArgs),
+    /// Mask or pseudonymize personal identifiers locally
+    #[command(long_about = PII_HELP)]
+    Pii(PiiArgs),
 }
 
 #[derive(clap::Args, Debug)]
-#[command(
-    about = "Redact recognizable secrets from text locally",
-    long_about = "Redact recognizable secrets from text offline using finite deterministic patterns. Omit category flags to enable all categories. Aliases: `strapd redact secrets` and `strapd sanitize redact`. Public Google API keys may be redacted; truncated secret blocks are redacted through the remaining input. Opaque, encoded, and binary credentials are unsupported, and coverage or credential validity is not guaranteed. Pass TEXT as an argument or pipe text through stdin."
-)]
+#[command(about = "Mask or pseudonymize personal identifiers offline")]
+pub struct PiiArgs {
+    /// Text to sanitize; otherwise read stdin
+    pub text: Option<String>,
+    /// Select all categories (conflicts with individual category flags)
+    #[arg(long, conflicts_with_all = ["ip_addresses", "emails", "phone_numbers", "payment_cards", "aadhaar", "pan"])]
+    pub all: bool,
+    /// Mask IPv4 and IPv6 addresses
+    #[arg(long)]
+    pub ip_addresses: bool,
+    /// Mask common ASCII email addresses
+    #[arg(long)]
+    pub emails: bool,
+    /// Mask international, formatted, or labelled phone numbers
+    #[arg(long)]
+    pub phone_numbers: bool,
+    /// Mask payment card numbers
+    #[arg(long)]
+    pub payment_cards: bool,
+    /// Mask Aadhaar numbers
+    #[arg(long)]
+    pub aadhaar: bool,
+    /// Mask PAN numbers
+    #[arg(long)]
+    pub pan: bool,
+    /// Use numbered placeholders, consistent within this run
+    #[arg(long, short = 'p')]
+    pub pseudonymize: bool,
+}
+
+impl PiiArgs {
+    pub fn categories(&self) -> strapd_core::sanitize::pii::Categories {
+        use strapd_core::sanitize::pii::{Categories, Category};
+        let mut selected = Categories::NONE;
+        for (enabled, category) in [
+            (self.ip_addresses, Category::IpAddresses),
+            (self.emails, Category::Emails),
+            (self.phone_numbers, Category::PhoneNumbers),
+            (self.payment_cards, Category::PaymentCards),
+            (self.aadhaar, Category::Aadhaar),
+            (self.pan, Category::Pan),
+        ] {
+            if enabled {
+                selected = selected.with(category);
+            }
+        }
+        if self.all || selected == Categories::NONE {
+            Categories::ALL
+        } else {
+            selected
+        }
+    }
+}
+
+#[derive(clap::Args, Debug)]
+#[command(about = "Redact recognizable secrets from text locally")]
 pub struct SecretsArgs {
     /// Text to sanitize; if omitted, read text from stdin
     pub text: Option<String>,

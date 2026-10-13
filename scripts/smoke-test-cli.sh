@@ -267,6 +267,10 @@ check_pipe_eq "SHA-256 empty stdin" '' "e3b0c44298fc1c149afbf4c8996fb92427ae41e4
 printf '\nSecret sanitization\n'
 check_eq "sanitize default categories" 'apiKey=[REDACTED_API_KEY]; password=[REDACTED_PASSWORD]' "$STRAPD_BIN" sanitize secrets 'apiKey=example; password=example'
 check_eq "sanitize explicit all" 'apiKey=[REDACTED_API_KEY]; password=[REDACTED_PASSWORD]' "$STRAPD_BIN" sanitize secrets --all 'apiKey=example; password=example'
+check_eq "PII mask defaults" 'email=[REDACTED_EMAIL]; PAN=[REDACTED_PAN]' "$STRAPD_BIN" sanitize pii 'email=alice@example.com; PAN=ABCPD1234E'
+check_pipe_eq "PII Indian pseudonyms" 'aadhaar=234567890124; PAN=ABCPD1234E\n' 'aadhaar=[AADHAAR_1]; PAN=[PAN_1]' "$STRAPD_BIN" sanitize pii --aadhaar --pan -p
+check_eq "PII repeated emails" '[EMAIL_1] [EMAIL_1]' "$STRAPD_BIN" sanitize pii --emails -p 'alice@example.com alice@EXAMPLE.com'
+expect_failure "PII rejects all with subset" '--all' "$STRAPD_BIN" sanitize pii --all --pan 'ABCPD1234E'
 check_pipe_eq "sanitize headers from stdin" 'Authorization: Bearer example\nCookie: sid=example; theme=example\n' $'Authorization: Bearer [REDACTED_AUTH]\nCookie: sid=[REDACTED_COOKIE]; theme=[REDACTED_COOKIE]' "$STRAPD_BIN" sanitize secrets
 check_eq "sanitize API keys only" 'accessKey=[REDACTED_API_KEY]; password=example' "$STRAPD_BIN" sanitize secrets --api-keys 'accessKey=example; password=example'
 check_eq "sanitize selected category union" $'apiKey=example\nAuthorization: Bearer [REDACTED_AUTH]\nCookie: sid=[REDACTED_COOKIE]' "$STRAPD_BIN" sanitize secrets --auth --cookies $'apiKey=example\nAuthorization: Bearer example\nCookie: sid=example'

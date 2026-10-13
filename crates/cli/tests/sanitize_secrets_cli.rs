@@ -4,6 +4,28 @@ use common::{assert_failure_contains, assert_success, strapd, strapd_with_open_s
 use std::time::Duration;
 
 #[test]
+fn help_keeps_usage_concise_and_links_to_details() {
+    let result = strapd(&["sanitize", "secrets", "--help"], None);
+    assert!(result.output.status.success());
+    let help = String::from_utf8_lossy(&result.output.stdout);
+    for text in [
+        "default: all",
+        "Pass TEXT or pipe stdin",
+        "docs/sanitize-secrets.md",
+        "--api-keys",
+        "--passwords",
+        "--tokens",
+    ] {
+        assert!(help.contains(text), "missing {text} in {help}");
+    }
+    let description = help.split("Usage:").next().unwrap();
+    assert!(
+        description.split_whitespace().count() <= 30,
+        "{description}"
+    );
+}
+
+#[test]
 fn default_and_explicit_all_select_the_same_categories() {
     let input = "apiKey=xy; password=short\nAuthorization: Bearer opaque\nCookie: sid=secret";
     let default = strapd(&["sanitize", "secrets", input], None);

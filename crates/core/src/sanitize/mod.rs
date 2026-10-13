@@ -7,7 +7,9 @@
 mod connections;
 mod fields;
 mod keys;
+pub mod pii;
 mod providers;
+mod spans;
 mod syntax;
 
 use std::borrow::Cow;
@@ -70,10 +72,7 @@ impl Categories {
     }
 }
 
-struct Replacement {
-    range: Range<usize>,
-    text: &'static str,
-}
+type Replacement = spans::Span<&'static str>;
 
 struct Matches<'a> {
     input: &'a str,
@@ -94,44 +93,12 @@ impl<'a> Matches<'a> {
         {
             return;
         }
-        self.replacements.push(Replacement { range, text });
+        self.replacements.push(Replacement { range, value: text });
     }
 
-    fn render(mut self) -> Cow<'a, str> {
-        if self.replacements.is_empty() {
-            return Cow::Borrowed(self.input);
-        }
-        // Outer containers win. Intersecting spans are merged before rendering so
-        // no detection can expose a suffix or scan replacement text.
-        self.replacements.sort_unstable_by(|left, right| {
-            left.range
-                .start
-                .cmp(&right.range.start)
-                .then_with(|| right.range.end.cmp(&left.range.end))
-                .then_with(|| left.text.cmp(right.text))
-        });
-        let mut result = String::with_capacity(self.input.len());
-        let mut cursor = 0;
-        let mut pending: Option<Replacement> = None;
-        for replacement in self.replacements {
-            if let Some(previous) = pending.as_mut() {
-                if replacement.range.start < previous.range.end {
-                    previous.range.end = previous.range.end.max(replacement.range.end);
-                    continue;
-                }
-                result.push_str(&self.input[cursor..previous.range.start]);
-                result.push_str(previous.text);
-                cursor = previous.range.end;
-            }
-            pending = Some(replacement);
-        }
-        if let Some(previous) = pending {
-            result.push_str(&self.input[cursor..previous.range.start]);
-            result.push_str(previous.text);
-            cursor = previous.range.end;
-        }
-        result.push_str(&self.input[cursor..]);
-        Cow::Owned(result)
+    fn render(self) -> Cow<'a, str> {
+        let resolved = spans::resolve(self.replacements, |a, b| a.cmp(b));
+        spans::render(self.input, &resolved, |text, output| output.push_str(text))
     }
 }
 

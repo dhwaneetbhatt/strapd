@@ -140,6 +140,17 @@ flags selects their union. The same sanitizer is available under **Security →
 Sanitize Secrets** in the WebApp and as a Pipes transform. Everything runs
 locally. See [categories, examples, and coverage limits](docs/sanitize-secrets.md).
 
+Mask personal identifiers locally, or use invocation-local pseudonyms to keep
+repeated values linked for AI-agent workflows:
+
+```bash
+cat application.log | strapd sanitize pii
+cat application.log | strapd sanitize pii --aadhaar --pan -p
+```
+
+Supports IPs, emails, phones, payment cards, Aadhaar and PAN through the CLI,
+**Security → Sanitize PII**, and Pipes. See [coverage and performance](docs/sanitize-pii.md).
+
 ## Development and Contributing
 
 1. Fork and clone the repository

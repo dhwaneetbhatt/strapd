@@ -48,6 +48,12 @@ const wasmMocks = vi.hoisted(() => ({
     success: true,
     result: input,
   })),
+  sanitizePii: vi.fn(
+    (input: string, _categories: number, _pseudonymize: boolean) => ({
+      success: true,
+      result: input,
+    }),
+  ),
 }));
 
 vi.mock("../lib/wasm", () => ({
@@ -70,6 +76,7 @@ vi.mock("../lib/wasm", () => ({
       jwt_payload: wasmMocks.jwtPayload,
       jwt_sign: wasmMocks.jwtSign,
       sanitize_secrets: wasmMocks.sanitizeSecrets,
+      sanitize_pii: wasmMocks.sanitizePii,
     },
     {
       get: (target, property) =>
@@ -106,6 +113,66 @@ const sampleRuntimeInputs: Record<string, string> = {
 };
 
 describe("pipe tool contracts", () => {
+  it("discovers PII and persists Aadhaar/PAN pseudonym configuration without runtime text", async () => {
+    const tool = getPipeToolById("security-sanitize-pii");
+    if (!tool) throw new Error("PII sanitizer missing from registry");
+    expect(
+      searchItems("aadhaar", Object.values(TOOL_REGISTRY)).map(({ id }) => id),
+    ).toContain(tool.id);
+    expect(getPipeTransformTools().map(({ id }) => id)).toContain(tool.id);
+    expect(tool.sensitiveInputs).toEqual(["text"]);
+    expect(tool.pipe?.version).toBe(1);
+    const config = {
+      mode: "Pseudonymize",
+      ipAddresses: false,
+      emails: false,
+      phoneNumbers: false,
+      paymentCards: false,
+      aadhaar: true,
+      pan: true,
+    };
+    await tool.operation({ ...config, text: "synthetic-runtime-value" });
+    expect(wasmMocks.sanitizePii).toHaveBeenLastCalledWith(
+      "synthetic-runtime-value",
+      48,
+      true,
+    );
+    await tool.operation({
+      ...config,
+      aadhaar: false,
+      pan: false,
+      text: "ordinary",
+    });
+    expect(wasmMocks.sanitizePii).toHaveBeenLastCalledWith("ordinary", 0, true);
+    const pipe = {
+      id: "11111111-1111-4111-8111-111111111111",
+      name: "Indian PII",
+      createdAt: "2026-10-12T00:00:00.000Z",
+      updatedAt: "2026-10-12T00:00:00.000Z",
+      steps: [
+        {
+          id: "22222222-2222-4222-8222-222222222222",
+          toolId: tool.id,
+          toolVersion: 1,
+          config,
+        },
+      ],
+    };
+    const exported = serializePipeDocument(pipe);
+    expect(exported).not.toContain("synthetic-runtime-value");
+    expect(parsePipeImport(exported).pipe.steps[0].config).toEqual(config);
+    const storage = {
+      value: null as string | null,
+      getItem: () => storage.value,
+      setItem: (_key: string, value: string) => {
+        storage.value = value;
+      },
+    };
+    createPipeRepository({ storage }).create(pipe);
+    expect(
+      createPipeRepository({ storage }).get(pipe.id)?.steps[0].config,
+    ).toEqual(config);
+  });
   it("discovers JWT signing through encode terminology", () => {
     const matches = searchItems("encode", Object.values(TOOL_REGISTRY));
 
