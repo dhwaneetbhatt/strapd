@@ -1,6 +1,24 @@
 import * as wasm from 'strapd_wasm';
 import type { ToolResult } from '../../types';
 
+export interface JsonPruneStats {
+  pruned: {
+    nulls: number;
+    emptyStrings: number;
+    emptyObjects: number;
+    emptyArrays: number;
+    droppedKeys: number;
+  };
+  sampling: {
+    omittedTotal: number;
+    arrays: { path: string; omitted: number }[];
+  };
+}
+
+interface JsonPruneWireResult extends JsonPruneStats {
+  output: string;
+}
+
 export interface WasmModule {
   string_to_uppercase: (input: string) => string;
   string_to_lowercase: (input: string) => string;
@@ -56,6 +74,7 @@ export interface WasmModule {
   // Data Formats
   json_beautify: (input: string, sort: boolean, spaces: number) => string;
   json_minify: (input: string, sort: boolean) => string;
+  json_prune: (input: string, dropKeys: string, sampleSize?: number) => string;
   xml_beautify: (input: string, spaces: number) => string;
   xml_minify: (input: string) => string;
   json_to_yaml: (input: string) => string;
@@ -398,6 +417,16 @@ export class WasmWrapper {
       () => this.wasmModule.json_minify(input, sort),
       'json_minify'
     );
+  }
+
+  public json_prune(input: string, dropKeys: string, sampleSize?: number): ToolResult<JsonPruneStats> {
+    const response = this.safeWasmCall(
+      () => this.wasmModule.json_prune(input, dropKeys, sampleSize),
+      'json_prune',
+    );
+    if (!response.success || response.result === undefined) return response as ToolResult<JsonPruneStats>;
+    const { output, pruned, sampling } = JSON.parse(response.result) as JsonPruneWireResult;
+    return { success: true, result: output, pruned, sampling };
   }
 
   public xml_beautify(input: string, spaces: number): ToolResult {

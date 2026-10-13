@@ -1,12 +1,35 @@
 use crate::{
-    args::data_formats::{JsonOperation, SqlOperation, XmlOperation, YamlOperation},
+    args::data_formats::{JsonOperation, JsonOutput, SqlOperation, XmlOperation, YamlOperation},
     handlers::{CommandResult, error_result, text_result},
     input::{required_text, text_with_piped_trim},
 };
-use strapd_core::data_formats::{json, sql, xml, yaml};
+use strapd_core::data_formats::{json, json_prune, sql, xml, yaml};
 
 pub fn handle_json(operation: &JsonOperation) -> CommandResult {
     match operation {
+        JsonOperation::Prune {
+            input,
+            drop_keys,
+            sample,
+            sample_size,
+            output,
+        } => {
+            let input = required_text(input.as_deref(), "JSON input")?;
+            let sample_size = if *sample || sample_size.is_some() {
+                Some(sample_size.unwrap_or(3))
+            } else {
+                None
+            };
+            let outcome = json_prune::prune(
+                text_with_piped_trim(&input),
+                drop_keys.as_deref().unwrap_or(""),
+                sample_size,
+            )?;
+            match output {
+                JsonOutput::Raw => text_result(outcome.output),
+                JsonOutput::Json => text_result(json_prune_response(&outcome)),
+            }
+        }
         JsonOperation::Beautify {
             input,
             spaces,
@@ -48,6 +71,30 @@ pub fn handle_json(operation: &JsonOperation) -> CommandResult {
             }
         }
     }
+}
+
+fn json_prune_response(outcome: &json_prune::PruneOutcome) -> String {
+    let arrays: Vec<_> = outcome
+        .sampling
+        .arrays
+        .iter()
+        .map(|array| serde_json::json!({ "path": array.path, "omitted": array.omitted }))
+        .collect();
+    let metadata = serde_json::json!({
+        "pruned": {
+            "nulls": outcome.pruned.nulls,
+            "emptyStrings": outcome.pruned.empty_strings,
+            "emptyObjects": outcome.pruned.empty_objects,
+            "emptyArrays": outcome.pruned.empty_arrays,
+            "droppedKeys": outcome.pruned.dropped_keys,
+        },
+        "sampling": {
+            "omittedTotal": outcome.sampling.omitted_total,
+            "arrays": arrays,
+        },
+    });
+    let metadata = serde_json::to_string(&metadata).expect("CLI metadata is JSON serializable");
+    format!("{{\"data\":{},\"metadata\":{metadata}}}", outcome.output)
 }
 
 pub fn handle_yaml(operation: &YamlOperation) -> CommandResult {

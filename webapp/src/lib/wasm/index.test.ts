@@ -10,6 +10,7 @@ const wasmMocks = vi.hoisted(() => ({
   jwtSign: vi.fn(),
   sanitizeSecrets: vi.fn(),
   sanitizePii: vi.fn(),
+  jsonPrune: vi.fn(),
 }));
 
 vi.mock("strapd_wasm", () => ({
@@ -22,6 +23,7 @@ vi.mock("strapd_wasm", () => ({
   jwt_sign: wasmMocks.jwtSign,
   sanitize_secrets: wasmMocks.sanitizeSecrets,
   sanitize_pii: wasmMocks.sanitizePii,
+  json_prune: wasmMocks.jsonPrune,
 }));
 vi.unmock("./index");
 
@@ -38,6 +40,7 @@ describe("WasmWrapper", () => {
     wasmMocks.jwtSign.mockReset();
     wasmMocks.sanitizeSecrets.mockReset();
     wasmMocks.sanitizePii.mockReset();
+    wasmMocks.jsonPrune.mockReset();
   });
 
   it("turns a thrown WASM error value into a failed ToolResult", () => {
@@ -132,5 +135,21 @@ describe("WasmWrapper", () => {
     wasmMocks.sanitizePii.mockReturnValue("Error: ordinary text");
     expect(wasmWrapper.sanitize_pii("Error: ordinary text", 48, true)).toEqual({success: true, result: "Error: ordinary text"});
     expect(wasmMocks.sanitizePii).toHaveBeenCalledWith("Error: ordinary text", 48, true);
+  });
+
+  it("returns raw pruned JSON and separate typed statistics", () => {
+    wasmMocks.jsonPrune.mockReturnValue(JSON.stringify({
+      output: '[1,2,3,7]',
+      pruned: { nulls: 1, emptyStrings: 0, emptyObjects: 0, emptyArrays: 0, droppedKeys: 0 },
+      sampling: { omittedTotal: 3, arrays: [{ path: '', omitted: 3 }] },
+    }));
+
+    expect(wasmWrapper.json_prune('[1,null,2,3,4,5,6,7]', '', 3)).toEqual({
+      success: true,
+      result: '[1,2,3,7]',
+      pruned: { nulls: 1, emptyStrings: 0, emptyObjects: 0, emptyArrays: 0, droppedKeys: 0 },
+      sampling: { omittedTotal: 3, arrays: [{ path: '', omitted: 3 }] },
+    });
+    expect(wasmMocks.jsonPrune).toHaveBeenCalledWith('[1,null,2,3,4,5,6,7]', '', 3);
   });
 });

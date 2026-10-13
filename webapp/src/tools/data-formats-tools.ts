@@ -1,5 +1,6 @@
 import {
   ConverterToolComponent,
+  JsonPruneToolComponent,
   JsonToolComponent,
   XmlToolComponent,
 } from "../components/tools";
@@ -74,6 +75,72 @@ export const jsonTool: Tool = {
   category: jsonToolDefinition.category,
   aliases: jsonToolDefinition.aliases,
   operation: (inputs) => jsonToolDefinition.operation(inputs),
+};
+
+const jsonPruneToolDefinition: ToolDefinition = {
+  id: "data-formats-json-prune",
+  name: "JSON Prune",
+  description:
+    "Remove empty values and keys, then optionally sample long arrays",
+  category: "dataFormats",
+  aliases: ["json cleanup", "prune", "sample arrays"],
+  pipe: createPipeToolContract({
+    input: { kind: "transform", key: "text" },
+    config: [
+      {
+        id: "dropKeys",
+        name: "Drop keys",
+        type: "string",
+        defaultValue: "",
+        description: "Comma-separated object keys to remove at every depth",
+      },
+      {
+        id: "sample",
+        name: "Sample arrays",
+        type: "boolean",
+        defaultValue: false,
+        description:
+          "Keep the first N and final entry when more than 2N remain",
+      },
+      {
+        id: "sampleSize",
+        name: "Sample size",
+        type: "number",
+        defaultValue: 3,
+        description: "Number of leading entries to keep when sampling",
+        min: 1,
+        step: 1,
+        validations: [{ rule: "integer", safe: true }],
+      },
+    ],
+  }),
+  component: JsonPruneToolComponent,
+  operation: (inputs) => {
+    const sampleSize = Number(inputs.sampleSize ?? 3);
+    if (
+      inputs.sample === true &&
+      (!Number.isSafeInteger(sampleSize) || sampleSize < 1)
+    ) {
+      return {
+        success: false,
+        error: "Sample size must be a positive integer",
+      };
+    }
+    return dataFormatsOperations.jsonPrune(
+      String(inputs.text ?? ""),
+      String(inputs.dropKeys ?? ""),
+      inputs.sample === true ? sampleSize : undefined,
+    );
+  },
+};
+
+export const jsonPruneTool: Tool = {
+  id: jsonPruneToolDefinition.id,
+  name: jsonPruneToolDefinition.name,
+  description: jsonPruneToolDefinition.description,
+  category: jsonPruneToolDefinition.category,
+  aliases: jsonPruneToolDefinition.aliases,
+  operation: (inputs) => jsonPruneToolDefinition.operation(inputs),
 };
 
 // XML Tool
@@ -219,12 +286,13 @@ export const dataFormatsToolsGroup: ToolGroup = {
   name: "Data Formats",
   description: "Format and transform data structures",
   icon: CATEGORY_ICONS.dataFormats,
-  tools: [converterTool, jsonTool, xmlTool],
+  tools: [converterTool, jsonTool, jsonPruneTool, xmlTool],
 };
 
 // Tool registry for component lookup
 export const TOOL_REGISTRY: Record<string, ToolDefinition> = {
   [converterToolDefinition.id]: converterToolDefinition,
   [jsonToolDefinition.id]: jsonToolDefinition,
+  [jsonPruneToolDefinition.id]: jsonPruneToolDefinition,
   [xmlToolDefinition.id]: xmlToolDefinition,
 };

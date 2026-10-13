@@ -26,7 +26,7 @@ It's primarily CLI-focused, but also includes a webapp interface for those who p
 - **String Tools**: case, trim, slugify, reverse, replace, analysis
 - **Identifiers**: UUIDs (v4, v7), ULIDs
 - **Encoding**: Base64, URL, Hex
-- **Data Formatting**: JSON, YAML, XML, SQL (beautify, minify, sort)
+- **Data Formatting**: JSON, YAML, XML, SQL (beautify, minify, sort), plus recursive JSON pruning and optional array sampling
 - **Format Conversion**: YAML ⇄ JSON, XML ⇄ JSON
 - **Security**: Hash (MD5, SHA-1, SHA-256, SHA-512), HMAC (SHA-256, SHA-512), JWT, secret sanitization
 - **Random**: numbers, strings
@@ -150,6 +150,17 @@ cat application.log | strapd sanitize pii --aadhaar --pan -p
 
 Supports IPs, emails, phones, payment cards, Aadhaar and PAN through the CLI,
 **Security → Sanitize PII**, and Pipes. See [coverage and performance](docs/sanitize-pii.md).
+
+### Prune JSON
+
+Remove empty values and selected keys, with optional sampling of long arrays:
+
+```bash
+cat payload.json | strapd json prune --drop-keys debug,trace
+strapd json prune --sample --output json '{"items":[1,2,3,4,5,6,7]}'
+```
+
+Raw JSON is the default. `--output json` adds separate loss statistics for CLI consumers. The WebApp and Pipes use raw JSON output. See [behavior, examples, and metadata](docs/json-prune.md).
 
 ## Development and Contributing
 

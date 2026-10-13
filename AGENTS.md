@@ -95,6 +95,7 @@ User Input → React Component → Tool Definition → WASM Wrapper → strapd_w
 
 ### Data Formatting
 - **JSON**: beautify, minify, sort keys
+- **JSON Prune**: recursive empty-value and key removal with optional array sampling; CLI `--output json` adds metadata only at the CLI edge; see `docs/json-prune.md`
 - **YAML**: beautify, minify
 - **XML**: beautify, minify
 - **SQL**: beautify
