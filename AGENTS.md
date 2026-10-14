@@ -95,7 +95,7 @@ User Input → React Component → Tool Definition → WASM Wrapper → strapd_w
 
 ### Data Formatting
 - **JSON**: beautify, minify, sort keys
-- **JSON Prune**: recursive empty-value and key removal with optional array sampling; CLI `--output json` adds metadata only at the CLI edge; see `docs/json-prune.md`
+- **JSON Sample**: seeded recursive array sampling after removing null and empty-array entries from arrays; CLI `--output json` adds metadata only at the CLI edge; see `docs/usage.md`
 - **YAML**: beautify, minify
 - **XML**: beautify, minify
 - **SQL**: beautify
@@ -172,41 +172,42 @@ pub fn hex_decode(input: &str) -> String {
 
 #### 5. Build & Test
 ```bash
-make wasm-build      # Rebuild WASM
-make webapp-dev      # Test in browser
-make cli-build       # Build CLI
+    just wasm-build      # Rebuild WASM
+    just webapp-dev      # Test in browser
+    just cli-build       # Build CLI
 ./target/debug/strapd <command>  # Test CLI
 ```
 
 ### Build Commands
 
+Use `just` recipes for common lifecycle commands: setup, build, test, lint, format, and the dev server. Keep `justfile` limited to reusable project commands; run one-off diagnostics or feature scripts directly instead of adding a recipe for each. Do not invoke `cargo`, `pnpm`, `wasm-pack`, or `make` directly in agent workflows. Prefix shell commands with `rtk`, including `rtk just <recipe>`.
+
+Pass focused test arguments through the existing recipes, for example `rtk just rust-test -p strapd-core --test json_sample` or `rtk just webapp-test --run src/tools/json-sample.test.ts`.
+
 ```bash
 # Rust
-make rust-build      # Build all Rust crates (debug)
-make rust-lint       # Run clippy linter
-make rust-fmt        # Format Rust code
-make rust-test       # Run Rust tests
+just rust-lint       # Run clippy linter
+just rust-fmt        # Format Rust code
+just rust-test       # Run Rust tests
 
 # CLI
-make cli-build       # Build CLI (debug)
-make cli-release     # Build CLI (release)
+just cli-build       # Build CLI (debug)
+just cli-release     # Build CLI (release)
 
 # WASM
-make wasm-build      # Build WASM module for webapp
+just wasm-build      # Build WASM module for webapp
 
 # Webapp
-make webapp-install  # Install pnpm dependencies
-make webapp-dev      # Start dev server (Vite)
-make webapp-build    # Build production webapp
-make webapp-lint     # Lint webapp (Biome)
-make webapp-fmt      # Format webapp (Biome)
-make webapp-test     # Run webapp tests
+just webapp-dev      # Start dev server (Vite)
+just webapp-build    # Build production webapp
+just webapp-check    # Lint and type-check webapp
+just webapp-test     # Run webapp tests
 
 # Combined
-make lint            # Run all linters
-make fmt             # Format all code
-make test            # Run all tests
-make install-hooks   # Install git pre-commit hooks
+just rust-lint       # Lint Rust
+just rust-fmt        # Format Rust
+just rust-test       # Test Rust
+just webapp-test     # Test webapp
 ```
 
 ## Key Technologies
@@ -268,11 +269,11 @@ const toolDefinition: ToolDefinition = {
 - Keep production code and tests in separate files; do not place `#[cfg(test)]` test bodies in implementation files.
 - Put module-level Rust tests in a sibling `tests.rs` file or a dedicated `tests/` tree, and integration tests under each crate's `tests/` directory.
 - Integration tests in `crates/core/tests/`
-- Run with `make rust-test`
+- Run with `just rust-test`
 
 ### Webapp Tests
 - Component tests (planned)
-- Run with `make webapp-test`
+- Run with `just webapp-test`
 
 ### Manual Testing
 - CLI: Test commands manually
@@ -298,28 +299,29 @@ const toolDefinition: ToolDefinition = {
 - Project concurrency settings and focused Luna researcher/tester roles live in `.codex/config.toml` and `.codex/agents/`. Unspecified subagent models inherit the primary model.
 
 ### OpenSpec Workflow
-- Every feature, fix, or other implementation change must go through the OpenSpec workflow before code changes begin.
+- Every feature, fix, or other implementation change must go through the OpenSpec workflow before code changes begin. Documentation-only edits do not need an OpenSpec change.
 - Name each OpenSpec change with its GitHub issue prefix: `gh-<issue-number>-<short-kebab-case-description>` (for example, `gh-123-example-change`).
 - Explore and clarify requirements first, create the OpenSpec proposal and required artifacts, apply the change, validate it, then archive it when complete.
+- Keep command examples and common CLI/WebApp/Pipes patterns in `docs/usage.md`; keep README as an overview linking there. Add separate docs only for substantial reference material such as coverage, limits, or performance, rather than one page per command.
 
 ### Adding a New Tool
 1. Implement in `crates/core/src/<category>/`
 2. Add WASM bindings in `crates/wasm/src/<category>_ops.rs`
-3. Rebuild WASM: `make wasm-build`
+3. Rebuild WASM: `just wasm-build`
 4. Add to webapp WASM wrapper
 5. Create tool definition and component
 6. Test in browser and CLI
 
 ### Debugging WASM Issues
 - Check browser console for errors
-- Verify WASM module is rebuilt: `make wasm-build`
+- Verify WASM module is rebuilt: `just wasm-build`
 - Check `webapp/wasm/` directory for generated files
 - Ensure `WasmModule` interface matches Rust exports
 
 ### Code Style
 - **Rust**: Follow `rustfmt` defaults (`.rustfmt.toml`)
 - **Webapp**: Follow Biome configuration
-- Run `make fmt` before committing
+- Run `just rust-fmt` and `just webapp-check` before committing
 
 ## Repository Information
 
@@ -332,7 +334,7 @@ const toolDefinition: ToolDefinition = {
 ## Notes for AI Agents
 
 1. **Consistency is key**: Both CLI and webapp should behave identically
-2. **WASM rebuild required**: After changing Rust code, always run `make wasm-build`
+2. **WASM rebuild required**: After changing Rust code, always run `just wasm-build`
 3. **Follow patterns**: Look at existing tools (e.g., Base64, UUID) as templates
 4. **Test both interfaces**: Verify changes work in both CLI and webapp
 5. **Update documentation**: Keep README.md and this file in sync with new features

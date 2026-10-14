@@ -26,7 +26,7 @@ It's primarily CLI-focused, but also includes a webapp interface for those who p
 - **String Tools**: case, trim, slugify, reverse, replace, analysis
 - **Identifiers**: UUIDs (v4, v7), ULIDs
 - **Encoding**: Base64, URL, Hex
-- **Data Formatting**: JSON, YAML, XML, SQL (beautify, minify, sort), plus recursive JSON pruning and optional array sampling
+- **Data Formatting**: JSON, YAML, XML, SQL (beautify, minify, sort), plus recursive seeded JSON array sampling
 - **Format Conversion**: YAML ⇄ JSON, XML ⇄ JSON
 - **Security**: Hash (MD5, SHA-1, SHA-256, SHA-512), HMAC (SHA-256, SHA-512), JWT, secret sanitization
 - **Random**: numbers, strings
@@ -35,14 +35,6 @@ It's primarily CLI-focused, but also includes a webapp interface for those who p
 - **Clipboard**: copy and paste (CLI only)
 
 Head over to the [webapp](https://dhwaneetbhatt.com/strapd/) for an interactive experience!
-
-## Webapp Pipes
-
-The webapp can combine compatible tools into a reusable linear pipe: the output of each step becomes the input of the next. Open `/pipes` in the webapp to create a pipe, choose and freeze each step's configuration, reorder steps, and run the saved sequence. Generator tools can start a pipe without user input; all other pipes accept an initial string.
-
-Pipes are saved in browser `localStorage`, so creating, editing, and running them remains offline and does not require an account or server. They are local to the current browser profile and origin; export important pipes before clearing site data or moving to another browser.
-
-Export downloads one pipe as a versioned JSON document. The document contains the pipe's stable UUID, ordered step UUIDs, tool IDs and contract versions, and frozen JSON-safe configuration. Import validates and migrates supported documents before saving them. A UUID conflict can replace the existing local pipe or import a copy with fresh pipe and step UUIDs.
 
 ## CLI Installation
 
@@ -79,125 +71,45 @@ Download pre-built binaries from [Releases](https://github.com/dhwaneetbhatt/str
 ```bash
 git clone https://github.com/dhwaneetbhatt/strapd.git
 cd strapd
-make cli-release
+just cli-release
 sudo ln -s $(pwd)/target/release/strapd /usr/local/bin/strapd
 ```
 
-## Quick Start
+## Usage
 
-```bash
-# Convert text to uppercase
-strapd str upper "hello world"
-
-# Generate a UUID
-strapd uuid v4
-
-# Create a URL slug
-echo "Hello, World!" | strapd str slugify
-```
-
-### Discovering Commands
-
-```bash
-strapd --help              # See all available commands
-strapd string --help       # See string operations
-strapd string case --help  # See string case operations
-```
-
-### Flexible Input
-
-Input-taking operations accept either a positional argument or piped stdin. If
-neither is available, commands fail immediately with input guidance instead of
-waiting on an interactive terminal. Text commands retain their existing
-surrounding-whitespace normalization for piped input. Base64 and Hex encoding
-preserve piped bytes exactly; hash and HMAC accept arbitrary piped bytes while
-retaining their existing surrounding-whitespace normalization. Secret sanitization
-preserves text whitespace exactly.
-
-```bash
-echo "hello world" | strapd str upper
-cat file.txt | strapd string slugify
-```
-
-### Clipboard Integration
-
-Use `strapd copy` and `strapd paste` to work with clipboard to build easy workflows:
-
-```bash
-strapd copy | strapd str upper | strapd paste
-```
-
-### Sanitize Secrets
-
-```bash
-cat application.log | strapd sanitize secrets              # All categories
-cat application.log | strapd sanitize secrets --api-keys   # API keys only
-cat application.log | strapd sanitize secrets --auth --cookies
-```
-
-`--all` explicitly selects the default. Each category has its own flag; combining
-flags selects their union. The same sanitizer is available under **Security →
-Sanitize Secrets** in the WebApp and as a Pipes transform. Everything runs
-locally. See [categories, examples, and coverage limits](docs/sanitize-secrets.md).
-
-Mask personal identifiers locally, or use invocation-local pseudonyms to keep
-repeated values linked for AI-agent workflows:
-
-```bash
-cat application.log | strapd sanitize pii
-cat application.log | strapd sanitize pii --aadhaar --pan -p
-```
-
-Supports IPs, emails, phones, payment cards, Aadhaar and PAN through the CLI,
-**Security → Sanitize PII**, and Pipes. See [coverage and performance](docs/sanitize-pii.md).
-
-### Prune JSON
-
-Remove empty values and selected keys, with optional sampling of long arrays:
-
-```bash
-cat payload.json | strapd json prune --drop-keys debug,trace
-strapd json prune --sample --output json '{"items":[1,2,3,4,5,6,7]}'
-```
-
-Raw JSON is the default. `--output json` adds separate loss statistics for CLI consumers. The WebApp and Pipes use raw JSON output. See [behavior, examples, and metadata](docs/json-prune.md).
+Run `strapd --help` to discover commands. The [usage guide](docs/usage.md) covers CLI input and output patterns, examples across every command group, and WebApp Pipes. Detailed sanitization coverage and limits live in the [secrets](docs/sanitize-secrets.md) and [PII](docs/sanitize-pii.md) references.
 
 ## Development and Contributing
 
 1. Fork and clone the repository
-2. Run `make setup` to install the development toolchain and dependencies. It uses asdf for Node.js and pnpm, and rustup for Rust.
-3. Install hooks: `make install-hooks`
+2. Run `just setup` to install the development toolchain and dependencies. It uses asdf for Node.js and pnpm, and rustup for Rust.
+3. Install hooks: `just install-hooks`
 4. Make changes and commit (hooks run automatically)
 5. Submit a pull request
 
 ### Available Commands
 
 ```bash
-make setup         # Install development tools and dependencies
-make cli-build     # Build CLI (debug)
-make cli-release   # Build CLI (release)
-make wasm-build    # Build WASM module
-make webapp-build  # Build webapp
-make webapp-test   # Run webapp tests
-make webapp-lint   # Lint webapp code
-make webapp-fmt-check # Check webapp formatting
-make test          # Run tests
-make lint          # Run clippy linter
-make fmt           # Format code
-make install-hooks # Install git pre-commit hooks
-make help          # Show all available commands
+just setup         # Install development tools and dependencies
+just cli-build     # Build CLI (debug)
+just cli-release   # Build CLI (release)
+just wasm-build    # Build WASM module
+just webapp-build  # Build webapp
+just webapp-test   # Run webapp tests
+just webapp-check  # Lint and type-check webapp
+just rust-test     # Run Rust tests
+just rust-lint     # Run clippy linter
+just rust-fmt      # Format Rust code
+just install-hooks # Install git pre-commit hooks
+just --list        # Show available commands
 ```
 
-For pipe-specific development, run the focused tests before the full webapp checks:
+For WebApp changes, run:
 
 ```bash
-cd webapp
-pnpm test --run src/tools/pipe-contracts.test.ts src/lib/pipes src/components/pipes/pipes.test.tsx
-cd ..
-make webapp-test
-make webapp-fmt-check
-make webapp-lint
-make webapp-build
+just webapp-test
+just webapp-check
+just webapp-build
 ```
 
 ## License

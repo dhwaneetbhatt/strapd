@@ -1,6 +1,6 @@
 import {
   ConverterToolComponent,
-  JsonPruneToolComponent,
+  JsonSampleToolComponent,
   JsonToolComponent,
   XmlToolComponent,
 } from "../components/tools";
@@ -77,70 +77,66 @@ export const jsonTool: Tool = {
   operation: (inputs) => jsonToolDefinition.operation(inputs),
 };
 
-const jsonPruneToolDefinition: ToolDefinition = {
-  id: "data-formats-json-prune",
-  name: "JSON Prune",
-  description:
-    "Remove empty values and keys, then optionally sample long arrays",
+const jsonSampleToolDefinition: ToolDefinition = {
+  id: "data-formats-json-sample",
+  name: "JSON Sample",
+  description: "Shorten arrays for a representative view of JSON structure",
   category: "dataFormats",
-  aliases: ["json cleanup", "prune", "sample arrays"],
+  aliases: ["sample arrays", "json preview"],
   pipe: createPipeToolContract({
     input: { kind: "transform", key: "text" },
     config: [
       {
-        id: "dropKeys",
-        name: "Drop keys",
-        type: "string",
-        defaultValue: "",
-        description: "Comma-separated object keys to remove at every depth",
-      },
-      {
-        id: "sample",
-        name: "Sample arrays",
-        type: "boolean",
-        defaultValue: false,
-        description:
-          "Keep the first N and final entry when more than 2N remain",
-      },
-      {
-        id: "sampleSize",
+        id: "size",
         name: "Sample size",
         type: "number",
         defaultValue: 3,
-        description: "Number of leading entries to keep when sampling",
+        description: "Maximum entries to retain in each array",
         min: 1,
+        max: 4294967295,
         step: 1,
         validations: [{ rule: "integer", safe: true }],
       },
+      {
+        id: "seed",
+        name: "Seed",
+        type: "string",
+        defaultValue: "0",
+        description: "Unsigned integer seed for repeatable selection",
+      },
     ],
   }),
-  component: JsonPruneToolComponent,
+  component: JsonSampleToolComponent,
   operation: (inputs) => {
-    const sampleSize = Number(inputs.sampleSize ?? 3);
-    if (
-      inputs.sample === true &&
-      (!Number.isSafeInteger(sampleSize) || sampleSize < 1)
-    ) {
+    const size = Number(inputs.size ?? 3);
+    if (!Number.isSafeInteger(size) || size < 1 || size > 4294967295) {
       return {
         success: false,
         error: "Sample size must be a positive integer",
       };
     }
-    return dataFormatsOperations.jsonPrune(
+    const seedText = String(inputs.seed ?? "0");
+    if (!/^\d+$/.test(seedText) || BigInt(seedText) > 18446744073709551615n) {
+      return {
+        success: false,
+        error: "Seed must be an unsigned 64-bit integer",
+      };
+    }
+    return dataFormatsOperations.jsonSample(
       String(inputs.text ?? ""),
-      String(inputs.dropKeys ?? ""),
-      inputs.sample === true ? sampleSize : undefined,
+      size,
+      BigInt(seedText),
     );
   },
 };
 
-export const jsonPruneTool: Tool = {
-  id: jsonPruneToolDefinition.id,
-  name: jsonPruneToolDefinition.name,
-  description: jsonPruneToolDefinition.description,
-  category: jsonPruneToolDefinition.category,
-  aliases: jsonPruneToolDefinition.aliases,
-  operation: (inputs) => jsonPruneToolDefinition.operation(inputs),
+export const jsonSampleTool: Tool = {
+  id: jsonSampleToolDefinition.id,
+  name: jsonSampleToolDefinition.name,
+  description: jsonSampleToolDefinition.description,
+  category: jsonSampleToolDefinition.category,
+  aliases: jsonSampleToolDefinition.aliases,
+  operation: (inputs) => jsonSampleToolDefinition.operation(inputs),
 };
 
 // XML Tool
@@ -286,13 +282,13 @@ export const dataFormatsToolsGroup: ToolGroup = {
   name: "Data Formats",
   description: "Format and transform data structures",
   icon: CATEGORY_ICONS.dataFormats,
-  tools: [converterTool, jsonTool, jsonPruneTool, xmlTool],
+  tools: [converterTool, jsonTool, jsonSampleTool, xmlTool],
 };
 
 // Tool registry for component lookup
 export const TOOL_REGISTRY: Record<string, ToolDefinition> = {
   [converterToolDefinition.id]: converterToolDefinition,
   [jsonToolDefinition.id]: jsonToolDefinition,
-  [jsonPruneToolDefinition.id]: jsonPruneToolDefinition,
+  [jsonSampleToolDefinition.id]: jsonSampleToolDefinition,
   [xmlToolDefinition.id]: xmlToolDefinition,
 };

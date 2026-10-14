@@ -1,5 +1,5 @@
 import type { ToolResult } from "../../../types";
-import { type JsonPruneStats, wasmWrapper } from "../../wasm";
+import { type JsonSampleStats, wasmWrapper } from "../../wasm";
 
 export type DataFormat = "json" | "yaml" | "xml" | "unknown";
 
@@ -37,12 +37,12 @@ export const dataFormatsOperations = {
     return wasmWrapper.json_minify(input, sort);
   },
 
-  jsonPrune: (
+  jsonSample: (
     input: string,
-    dropKeys: string,
-    sampleSize?: number,
-  ): ToolResult<JsonPruneStats> => {
-    return wasmWrapper.json_prune(input, dropKeys, sampleSize);
+    size: number,
+    seed: bigint,
+  ): ToolResult<JsonSampleStats> => {
+    return wasmWrapper.json_sample(input, size, seed);
   },
 
   xmlBeautify: (input: string, spaces: number): ToolResult => {

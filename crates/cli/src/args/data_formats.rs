@@ -9,22 +9,18 @@ pub enum JsonOutput {
 
 #[derive(Subcommand, Debug)]
 pub enum JsonOperation {
-    /// Remove empty values and optional keys from JSON; optionally sample long arrays
-    Prune {
+    /// Sample arrays recursively, removing null and empty-array entries first
+    Sample {
         /// JSON input (reads from stdin if omitted)
         input: Option<String>,
 
-        /// Comma-separated object keys to remove at every depth
-        #[arg(long)]
-        drop_keys: Option<String>,
+        /// Number of entries to sample from each array (default: 3)
+        #[arg(long, value_name = "N", default_value_t = 3)]
+        size: usize,
 
-        /// Sample arrays using the first 3 entries and the final entry
-        #[arg(long)]
-        sample: bool,
-
-        /// Override the number of leading entries; also enables sampling
-        #[arg(long, value_name = "N")]
-        sample_size: Option<usize>,
+        /// Seed for repeatable random selection (default: 0)
+        #[arg(long, value_name = "SEED", default_value_t = 0)]
+        seed: u64,
 
         /// Raw JSON value or a JSON response with data and metadata
         #[arg(long, value_enum, default_value_t = JsonOutput::Raw)]

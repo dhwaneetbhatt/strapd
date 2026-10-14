@@ -11,7 +11,6 @@ import {
   NumberInputStepper,
   SimpleGrid,
   Spacer,
-  Switch,
   Text,
   Textarea,
   VStack,
@@ -19,14 +18,14 @@ import {
 import type React from "react";
 import { useAutoFocus } from "../../../hooks/use-auto-focus";
 import { useAutoProcess } from "../../../hooks/use-tool-processing";
-import type { JsonPruneStats } from "../../../lib/wasm";
+import type { JsonSampleStats } from "../../../lib/wasm";
 import { CopyButton } from "../../common/copy-button";
 import { DownloadButton } from "../../common/download-button";
 import { FileUploadButton } from "../../common/file-upload-button";
 import { SyntaxHighlighterComponent } from "../../common/syntax-highlighter";
 import { BaseToolLayout, type BaseToolProps, useBaseTool } from "../base-tool";
 
-export const JsonPruneToolComponent: React.FC<BaseToolProps> = ({
+export const JsonSampleToolComponent: React.FC<BaseToolProps> = ({
   tool,
   initialInputs,
   onInputChange,
@@ -41,20 +40,20 @@ export const JsonPruneToolComponent: React.FC<BaseToolProps> = ({
     clearAll,
   } = useBaseTool(
     tool,
-    { dropKeys: "", sample: false, sampleSize: 3, ...initialInputs },
+    { size: 3, seed: "0", ...initialInputs },
     onInputChange,
   );
   useAutoProcess(processInputs, inputs);
   const inputRef = useAutoFocus<HTMLTextAreaElement>();
   const hasInput = String(inputs.text ?? "").trim().length > 0;
   const output = hasInput ? String(outputs.result ?? "") : "";
-  const pruned = hasInput
-    ? (outputs.pruned as JsonPruneStats["pruned"] | undefined)
+  const filtered = hasInput
+    ? (outputs.filtered as JsonSampleStats["filtered"] | undefined)
     : undefined;
   const sampling = hasInput
-    ? (outputs.sampling as JsonPruneStats["sampling"] | undefined)
+    ? (outputs.sampling as JsonSampleStats["sampling"] | undefined)
     : undefined;
-  const sampleSize = Number(inputs.sampleSize ?? 3);
+  const sampleSize = Number(inputs.size ?? 3);
 
   return (
     <BaseToolLayout
@@ -64,49 +63,37 @@ export const JsonPruneToolComponent: React.FC<BaseToolProps> = ({
       error={hasInput ? error : undefined}
     >
       <VStack align="stretch" spacing={5} minW={0}>
-        <SimpleGrid columns={{ base: 1, md: 3 }} spacing={4} alignItems="end">
+        <SimpleGrid columns={{ base: 1, md: 2 }} spacing={4} alignItems="end">
           <FormControl>
-            <FormLabel htmlFor="json-prune-drop-keys">Drop keys</FormLabel>
-            <Input
-              id="json-prune-drop-keys"
-              value={String(inputs.dropKeys ?? "")}
-              onChange={(event) => updateInput("dropKeys", event.target.value)}
-              placeholder="debug, trace"
-            />
-          </FormControl>
-          <FormControl display="flex" alignItems="center" pb={2}>
-            <FormLabel htmlFor="json-prune-sample" mb={0}>
-              Sample long arrays
-            </FormLabel>
-            <Switch
-              id="json-prune-sample"
-              isChecked={inputs.sample === true}
-              onChange={(event) => updateInput("sample", event.target.checked)}
-            />
-          </FormControl>
-          <FormControl>
-            <FormLabel htmlFor="json-prune-sample-size">
-              Leading entries
-            </FormLabel>
+            <FormLabel htmlFor="json-sample-size">Entries per array</FormLabel>
             <NumberInput
               min={1}
               step={1}
               value={Number.isFinite(sampleSize) ? sampleSize : ""}
-              isDisabled={inputs.sample !== true}
-              onChange={(_, value) => updateInput("sampleSize", value)}
+              onChange={(_, value) => updateInput("size", value)}
             >
-              <NumberInputField id="json-prune-sample-size" />
+              <NumberInputField id="json-sample-size" />
               <NumberInputStepper>
                 <NumberIncrementStepper />
                 <NumberDecrementStepper />
               </NumberInputStepper>
             </NumberInput>
           </FormControl>
+          <FormControl>
+            <FormLabel htmlFor="json-sample-seed">Seed</FormLabel>
+            <Input
+              id="json-sample-seed"
+              inputMode="numeric"
+              value={String(inputs.seed ?? "0")}
+              onChange={(event) => updateInput("seed", event.target.value)}
+            />
+          </FormControl>
         </SimpleGrid>
         <Text fontSize="sm" color="text.secondary">
-          Empty values are removed recursively. With sampling on, arrays longer
-          than twice the leading entry count keep those entries and the final
-          one. Processing stays in this browser.
+          Each array keeps a repeatable random sample. Null and empty-array
+          entries are removed from arrays first; object fields stay intact.
+          Change the seed for a different sample. Processing stays in this
+          browser.
         </Text>
         <SimpleGrid columns={{ base: 1, lg: 2 }} spacing={4} minW={0}>
           <VStack align="stretch" spacing={2} minW={0}>
@@ -126,7 +113,7 @@ export const JsonPruneToolComponent: React.FC<BaseToolProps> = ({
               ref={inputRef}
               value={String(inputs.text ?? "")}
               onChange={(event) => updateInput("text", event.target.value)}
-              placeholder='Paste JSON, for example {"items":[1,null,2]}'
+              placeholder='Paste JSON, for example {"items":[1,null,2,3,4]}'
               minH="280px"
               h="280px"
               variant="toolInput"
@@ -136,13 +123,13 @@ export const JsonPruneToolComponent: React.FC<BaseToolProps> = ({
           <VStack align="stretch" spacing={2} minW={0}>
             <HStack minH={8}>
               <Text fontSize="sm" fontWeight="medium" color="text.secondary">
-                Pruned JSON
+                Sampled JSON
               </Text>
               <Spacer />
               <CopyButton value={output} />
               <DownloadButton
                 content={output}
-                filename="pruned.json"
+                filename="sampled.json"
                 size="xs"
               />
             </HStack>
@@ -154,15 +141,13 @@ export const JsonPruneToolComponent: React.FC<BaseToolProps> = ({
             />
           </VStack>
         </SimpleGrid>
-        {pruned && sampling && (
-          <VStack align="stretch" spacing={2} aria-label="Pruning summary">
+        {filtered && sampling && (
+          <VStack align="stretch" spacing={2} aria-label="Sampling summary">
             <Text fontSize="sm" fontWeight="medium">
               Removed from data
             </Text>
             <Text fontSize="sm" color="text.secondary">
-              {pruned.nulls} nulls · {pruned.emptyStrings} empty strings ·{" "}
-              {pruned.emptyObjects} empty objects · {pruned.emptyArrays} empty
-              arrays · {pruned.droppedKeys} keys
+              {filtered.nulls} nulls · {filtered.emptyArrays} empty arrays
             </Text>
             <Text fontSize="sm" color="text.secondary">
               {sampling.omittedTotal} array entries omitted by sampling

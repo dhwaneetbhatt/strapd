@@ -4,15 +4,6 @@ Redact recognizable credentials before sharing logs, configuration, headers, or
 developer text. The CLI, WebApp, and Pipes use the same Rust implementation.
 Processing is local and offline; credentials are never verified with a provider.
 
-```sh
-strapd sanitize secrets 'apiKey=example; password=example'
-# apiKey=[REDACTED_API_KEY]; password=[REDACTED_PASSWORD]
-
-cat application.log | strapd sanitize secrets
-cat application.log | strapd sanitize secrets --api-keys
-cat application.log | strapd sanitize secrets --auth --cookies
-```
-
 All categories are enabled by default. `--all` makes that choice explicit.
 Supplying category flags enables **only their union**. Combining `--all` with a
 category flag is an error. `strapd redact secrets` and `strapd sanitize redact`

@@ -1,13 +1,10 @@
 import * as wasm from 'strapd_wasm';
 import type { ToolResult } from '../../types';
 
-export interface JsonPruneStats {
-  pruned: {
+export interface JsonSampleStats {
+  filtered: {
     nulls: number;
-    emptyStrings: number;
-    emptyObjects: number;
     emptyArrays: number;
-    droppedKeys: number;
   };
   sampling: {
     omittedTotal: number;
@@ -15,7 +12,7 @@ export interface JsonPruneStats {
   };
 }
 
-interface JsonPruneWireResult extends JsonPruneStats {
+interface JsonSampleWireResult extends JsonSampleStats {
   output: string;
 }
 
@@ -74,7 +71,7 @@ export interface WasmModule {
   // Data Formats
   json_beautify: (input: string, sort: boolean, spaces: number) => string;
   json_minify: (input: string, sort: boolean) => string;
-  json_prune: (input: string, dropKeys: string, sampleSize?: number) => string;
+  json_sample: (input: string, size: number, seed: bigint) => string;
   xml_beautify: (input: string, spaces: number) => string;
   xml_minify: (input: string) => string;
   json_to_yaml: (input: string) => string;
@@ -419,14 +416,14 @@ export class WasmWrapper {
     );
   }
 
-  public json_prune(input: string, dropKeys: string, sampleSize?: number): ToolResult<JsonPruneStats> {
+  public json_sample(input: string, size: number, seed: bigint): ToolResult<JsonSampleStats> {
     const response = this.safeWasmCall(
-      () => this.wasmModule.json_prune(input, dropKeys, sampleSize),
-      'json_prune',
+      () => this.wasmModule.json_sample(input, size, seed),
+      'json_sample',
     );
-    if (!response.success || response.result === undefined) return response as ToolResult<JsonPruneStats>;
-    const { output, pruned, sampling } = JSON.parse(response.result) as JsonPruneWireResult;
-    return { success: true, result: output, pruned, sampling };
+    if (!response.success || response.result === undefined) return response as ToolResult<JsonSampleStats>;
+    const { output, filtered, sampling } = JSON.parse(response.result) as JsonSampleWireResult;
+    return { success: true, result: output, filtered, sampling };
   }
 
   public xml_beautify(input: string, spaces: number): ToolResult {

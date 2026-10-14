@@ -1,5 +1,5 @@
 pub mod json;
-pub mod json_prune;
+pub mod json_sample;
 pub mod sql;
 mod util;
 pub mod xml;

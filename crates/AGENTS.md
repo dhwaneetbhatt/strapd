@@ -213,17 +213,17 @@ Before adding a dependency:
 For Rust changes, run:
 
 ```bash
-rtk make rust-fmt-check
-rtk make rust-lint
-rtk make rust-test
+rtk just rust-fmt-check
+rtk just rust-lint
+rtk just rust-test
 ```
 
 When core behavior is exposed through WASM, also run:
 
 ```bash
-rtk make wasm-build
-rtk make webapp-test
-rtk make webapp-build
+rtk just wasm-build
+rtk just webapp-test
+rtk just webapp-build
 ```
 
 Treat warnings as errors. Do not suppress a lint without documenting why the lint

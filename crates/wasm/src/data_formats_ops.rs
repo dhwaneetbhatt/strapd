@@ -12,21 +12,14 @@ pub fn json_minify(input: &str, sort: bool) -> Result<String, JsValue> {
 }
 
 #[wasm_bindgen]
-pub fn json_prune(
-    input: &str,
-    drop_keys: &str,
-    sample_size: Option<usize>,
-) -> Result<String, JsValue> {
-    let outcome = data_formats::json_prune::prune(input, drop_keys, sample_size)
-        .map_err(crate::wasm_error)?;
+pub fn json_sample(input: &str, size: usize, seed: u64) -> Result<String, JsValue> {
+    let outcome =
+        data_formats::json_sample::sample(input, size, seed).map_err(crate::wasm_error)?;
     serde_json::to_string(&serde_json::json!({
         "output": outcome.output,
-        "pruned": {
-            "nulls": outcome.pruned.nulls,
-            "emptyStrings": outcome.pruned.empty_strings,
-            "emptyObjects": outcome.pruned.empty_objects,
-            "emptyArrays": outcome.pruned.empty_arrays,
-            "droppedKeys": outcome.pruned.dropped_keys,
+        "filtered": {
+            "nulls": outcome.filtered.nulls,
+            "emptyArrays": outcome.filtered.empty_arrays,
         },
         "sampling": {
             "omittedTotal": outcome.sampling.omitted_total,

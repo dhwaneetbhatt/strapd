@@ -5,16 +5,6 @@ the Rust core, CLI, **Security → Sanitize PII**, and Pipes. All interfaces use
 same Rust implementation. Input is never sent to an identifier verification
 service, and the standalone WebApp excludes input text from shareable URLs.
 
-```bash
-strapd sanitize pii 'email=alice@example.com; PAN=ABCPD1234E'
-# email=[REDACTED_EMAIL]; PAN=[REDACTED_PAN]
-
-cat application.log | strapd sanitize pii
-cat application.log | strapd sanitize pii --aadhaar --pan -p
-strapd sanitize pii --emails -p 'a@example.com a@EXAMPLE.com b@example.com'
-# [EMAIL_1] [EMAIL_1] [EMAIL_2]
-```
-
 Omitting category flags enables all categories. `--all` explicitly selects all;
 combining it with individual flags is an error. Individual flags select their
 union. Positional input takes precedence over stdin, including an empty string.
