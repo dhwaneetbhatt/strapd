@@ -12,6 +12,27 @@ pub fn json_minify(input: &str, sort: bool) -> Result<String, JsValue> {
 }
 
 #[wasm_bindgen]
+pub fn json_sample(input: &str, size: usize, seed: u64) -> Result<String, JsValue> {
+    let outcome =
+        data_formats::json_sample::sample(input, size, seed).map_err(crate::wasm_error)?;
+    serde_json::to_string(&serde_json::json!({
+        "output": outcome.output,
+        "filtered": {
+            "nulls": outcome.filtered.nulls,
+            "emptyArrays": outcome.filtered.empty_arrays,
+        },
+        "sampling": {
+            "omittedTotal": outcome.sampling.omitted_total,
+            "arrays": outcome.sampling.arrays.iter().map(|array| serde_json::json!({
+                "path": array.path,
+                "omitted": array.omitted,
+            })).collect::<Vec<_>>(),
+        },
+    }))
+    .map_err(crate::wasm_error)
+}
+
+#[wasm_bindgen]
 pub fn xml_beautify(input: &str, spaces: u8) -> Result<String, JsValue> {
     data_formats::xml::beautify(input, spaces).map_err(crate::wasm_error)
 }

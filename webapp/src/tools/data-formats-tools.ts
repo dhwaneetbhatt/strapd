@@ -1,5 +1,6 @@
 import {
   ConverterToolComponent,
+  JsonSampleToolComponent,
   JsonToolComponent,
   XmlToolComponent,
 } from "../components/tools";
@@ -74,6 +75,68 @@ export const jsonTool: Tool = {
   category: jsonToolDefinition.category,
   aliases: jsonToolDefinition.aliases,
   operation: (inputs) => jsonToolDefinition.operation(inputs),
+};
+
+const jsonSampleToolDefinition: ToolDefinition = {
+  id: "data-formats-json-sample",
+  name: "JSON Sample",
+  description: "Shorten arrays for a representative view of JSON structure",
+  category: "dataFormats",
+  aliases: ["sample arrays", "json preview"],
+  pipe: createPipeToolContract({
+    input: { kind: "transform", key: "text" },
+    config: [
+      {
+        id: "size",
+        name: "Sample size",
+        type: "number",
+        defaultValue: 3,
+        description: "Maximum entries to retain in each array",
+        min: 1,
+        max: 4294967295,
+        step: 1,
+        validations: [{ rule: "integer", safe: true }],
+      },
+      {
+        id: "seed",
+        name: "Seed",
+        type: "string",
+        defaultValue: "0",
+        description: "Unsigned integer seed for repeatable selection",
+      },
+    ],
+  }),
+  component: JsonSampleToolComponent,
+  operation: (inputs) => {
+    const size = Number(inputs.size ?? 3);
+    if (!Number.isSafeInteger(size) || size < 1 || size > 4294967295) {
+      return {
+        success: false,
+        error: "Sample size must be a positive integer",
+      };
+    }
+    const seedText = String(inputs.seed ?? "0");
+    if (!/^\d+$/.test(seedText) || BigInt(seedText) > 18446744073709551615n) {
+      return {
+        success: false,
+        error: "Seed must be an unsigned 64-bit integer",
+      };
+    }
+    return dataFormatsOperations.jsonSample(
+      String(inputs.text ?? ""),
+      size,
+      BigInt(seedText),
+    );
+  },
+};
+
+export const jsonSampleTool: Tool = {
+  id: jsonSampleToolDefinition.id,
+  name: jsonSampleToolDefinition.name,
+  description: jsonSampleToolDefinition.description,
+  category: jsonSampleToolDefinition.category,
+  aliases: jsonSampleToolDefinition.aliases,
+  operation: (inputs) => jsonSampleToolDefinition.operation(inputs),
 };
 
 // XML Tool
@@ -219,12 +282,13 @@ export const dataFormatsToolsGroup: ToolGroup = {
   name: "Data Formats",
   description: "Format and transform data structures",
   icon: CATEGORY_ICONS.dataFormats,
-  tools: [converterTool, jsonTool, xmlTool],
+  tools: [converterTool, jsonTool, jsonSampleTool, xmlTool],
 };
 
 // Tool registry for component lookup
 export const TOOL_REGISTRY: Record<string, ToolDefinition> = {
   [converterToolDefinition.id]: converterToolDefinition,
   [jsonToolDefinition.id]: jsonToolDefinition,
+  [jsonSampleToolDefinition.id]: jsonSampleToolDefinition,
   [xmlToolDefinition.id]: xmlToolDefinition,
 };

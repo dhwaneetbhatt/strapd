@@ -1,7 +1,31 @@
-use clap::Subcommand;
+use clap::{Subcommand, ValueEnum};
+
+#[derive(Clone, Copy, Debug, Default, ValueEnum)]
+pub enum JsonOutput {
+    #[default]
+    Raw,
+    Json,
+}
 
 #[derive(Subcommand, Debug)]
 pub enum JsonOperation {
+    /// Sample arrays recursively, removing null and empty-array entries first
+    Sample {
+        /// JSON input (reads from stdin if omitted)
+        input: Option<String>,
+
+        /// Number of entries to sample from each array (default: 3)
+        #[arg(long, value_name = "N", default_value_t = 3)]
+        size: usize,
+
+        /// Seed for repeatable random selection (default: 0)
+        #[arg(long, value_name = "SEED", default_value_t = 0)]
+        seed: u64,
+
+        /// Raw JSON value or a JSON response with data and metadata
+        #[arg(long, value_enum, default_value_t = JsonOutput::Raw)]
+        output: JsonOutput,
+    },
     /// Formats and prints the json
     #[command(aliases = ["format", "pretty", "indent", "prettify", "fmt", "readable"])]
     Beautify {

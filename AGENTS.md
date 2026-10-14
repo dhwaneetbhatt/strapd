@@ -95,6 +95,7 @@ User Input → React Component → Tool Definition → WASM Wrapper → strapd_w
 
 ### Data Formatting
 - **JSON**: beautify, minify, sort keys
+- **JSON Sample**: seeded recursive array sampling after removing null and empty-array entries from arrays; CLI `--output json` adds metadata only at the CLI edge; see `docs/usage.md`
 - **YAML**: beautify, minify
 - **XML**: beautify, minify
 - **SQL**: beautify
@@ -103,8 +104,8 @@ User Input → React Component → Tool Definition → WASM Wrapper → strapd_w
 - **YAML ⇄ JSON**: bidirectional conversion
 
 ### Security
-- **Sanitize secrets**: Configurable deterministic redaction shared by CLI, WASM, WebApp, and Pipes; see `docs/sanitize-secrets.md`
-- **Sanitize PII**: Local masking and invocation-local pseudonymization of IPs, emails, phones, cards, Aadhaar and PAN; see `docs/sanitize-pii.md`
+- **Sanitize secrets**: Configurable deterministic redaction shared by CLI, WASM, WebApp, and Pipes
+- **Sanitize PII**: Local masking and invocation-local pseudonymization of IPs, emails, phones, cards, Aadhaar and PAN
 - **Hash**: MD5, SHA-1, SHA-256, SHA-512
 - **HMAC**: SHA-256, SHA-512
 - **JWT**: decode/extract, expiration analysis, HS256/HS384/HS512 verification and signing
@@ -179,9 +180,12 @@ make cli-build       # Build CLI
 
 ### Build Commands
 
+Use `make` targets for common lifecycle commands: setup, build, test, lint, format, and the dev server. Run one-off diagnostics directly instead of adding a target for each. Do not invoke `cargo`, `pnpm`, or `wasm-pack` directly in agent workflows. Prefix shell commands with `rtk`, including `rtk make <target>`.
+
+Pass focused test arguments with `TEST_ARGS`, for example `rtk make rust-test TEST_ARGS='-p strapd-core --test json_sample'` or `rtk make webapp-test TEST_ARGS='--run src/tools/json-sample.test.ts'`.
+
 ```bash
 # Rust
-make rust-build      # Build all Rust crates (debug)
 make rust-lint       # Run clippy linter
 make rust-fmt        # Format Rust code
 make rust-test       # Run Rust tests
@@ -194,18 +198,15 @@ make cli-release     # Build CLI (release)
 make wasm-build      # Build WASM module for webapp
 
 # Webapp
-make webapp-install  # Install pnpm dependencies
 make webapp-dev      # Start dev server (Vite)
 make webapp-build    # Build production webapp
-make webapp-lint     # Lint webapp (Biome)
-make webapp-fmt      # Format webapp (Biome)
+make webapp-lint     # Lint webapp
 make webapp-test     # Run webapp tests
 
 # Combined
-make lint            # Run all linters
-make fmt             # Format all code
-make test            # Run all tests
-make install-hooks   # Install git pre-commit hooks
+make lint            # Lint Rust and webapp
+make fmt             # Format Rust and webapp
+make test            # Test Rust and webapp
 ```
 
 ## Key Technologies
@@ -297,9 +298,10 @@ const toolDefinition: ToolDefinition = {
 - Project concurrency settings and focused Luna researcher/tester roles live in `.codex/config.toml` and `.codex/agents/`. Unspecified subagent models inherit the primary model.
 
 ### OpenSpec Workflow
-- Every feature, fix, or other implementation change must go through the OpenSpec workflow before code changes begin.
+- Every feature, fix, or other implementation change must go through the OpenSpec workflow before code changes begin. Documentation-only edits do not need an OpenSpec change.
 - Name each OpenSpec change with its GitHub issue prefix: `gh-<issue-number>-<short-kebab-case-description>` (for example, `gh-123-example-change`).
 - Explore and clarify requirements first, create the OpenSpec proposal and required artifacts, apply the change, validate it, then archive it when complete.
+- Keep command examples and common CLI/WebApp/Pipes patterns in `docs/usage.md`; keep README as an overview linking there. Add separate docs only for substantial reference material such as coverage, limits, or performance, rather than one page per command.
 
 ### Adding a New Tool
 1. Implement in `crates/core/src/<category>/`
@@ -318,7 +320,7 @@ const toolDefinition: ToolDefinition = {
 ### Code Style
 - **Rust**: Follow `rustfmt` defaults (`.rustfmt.toml`)
 - **Webapp**: Follow Biome configuration
-- Run `make fmt` before committing
+- Run `make rust-fmt-check` and `make webapp-lint` before committing
 
 ## Repository Information
 

@@ -1,6 +1,21 @@
 import * as wasm from 'strapd_wasm';
 import type { ToolResult } from '../../types';
 
+export interface JsonSampleStats {
+  filtered: {
+    nulls: number;
+    emptyArrays: number;
+  };
+  sampling: {
+    omittedTotal: number;
+    arrays: { path: string; omitted: number }[];
+  };
+}
+
+interface JsonSampleWireResult extends JsonSampleStats {
+  output: string;
+}
+
 export interface WasmModule {
   string_to_uppercase: (input: string) => string;
   string_to_lowercase: (input: string) => string;
@@ -56,6 +71,7 @@ export interface WasmModule {
   // Data Formats
   json_beautify: (input: string, sort: boolean, spaces: number) => string;
   json_minify: (input: string, sort: boolean) => string;
+  json_sample: (input: string, size: number, seed: bigint) => string;
   xml_beautify: (input: string, spaces: number) => string;
   xml_minify: (input: string) => string;
   json_to_yaml: (input: string) => string;
@@ -398,6 +414,16 @@ export class WasmWrapper {
       () => this.wasmModule.json_minify(input, sort),
       'json_minify'
     );
+  }
+
+  public json_sample(input: string, size: number, seed: bigint): ToolResult<JsonSampleStats> {
+    const response = this.safeWasmCall(
+      () => this.wasmModule.json_sample(input, size, seed),
+      'json_sample',
+    );
+    if (!response.success || response.result === undefined) return response as ToolResult<JsonSampleStats>;
+    const { output, filtered, sampling } = JSON.parse(response.result) as JsonSampleWireResult;
+    return { success: true, result: output, filtered, sampling };
   }
 
   public xml_beautify(input: string, spaces: number): ToolResult {
