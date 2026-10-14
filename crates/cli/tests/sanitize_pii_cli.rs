@@ -94,7 +94,7 @@ fn help_keeps_usage_concise_and_links_to_details() {
     for text in [
         "default: all",
         "Pass TEXT or pipe stdin",
-        "docs/sanitize-pii.md",
+        "docs/usage.md",
         "consistent within this run",
         "--pseudonymize",
         "--aadhaar",

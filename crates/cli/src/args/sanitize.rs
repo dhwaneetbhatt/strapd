@@ -1,8 +1,8 @@
 use clap::Subcommand;
 use strapd_core::sanitize::{Categories, Category};
 
-const PII_HELP: &str = "Mask personal identifiers locally. Select categories with flags (default: all). Pass TEXT or pipe stdin. See docs/sanitize-pii.md for details.";
-const SECRETS_HELP: &str = "Redact secrets locally. Select categories with flags (default: all). Pass TEXT or pipe stdin. See docs/sanitize-secrets.md for details.";
+const PII_HELP: &str = "Mask personal identifiers locally. Select categories with flags (default: all). Pass TEXT or pipe stdin. See docs/usage.md for examples.";
+const SECRETS_HELP: &str = "Redact secrets locally. Select categories with flags (default: all). Pass TEXT or pipe stdin. See docs/usage.md for examples.";
 
 #[derive(Subcommand, Debug)]
 pub enum SanitizeOperation {

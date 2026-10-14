@@ -87,7 +87,7 @@ cli-release:
 
 # Run tests
 rust-test:
-	cargo test
+	cargo test $(TEST_ARGS)
 
 # Run tests with coverage (HTML report) - excludes wasm wrapper crate
 rust-coverage:
@@ -136,7 +136,7 @@ webapp-build:
 
 # Test webapp
 webapp-test:
-	cd webapp && pnpm test
+	cd webapp && pnpm test $(TEST_ARGS)
 
 # Test responsive flows in a real browser
 webapp-e2e:

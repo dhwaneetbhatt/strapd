@@ -104,8 +104,8 @@ User Input → React Component → Tool Definition → WASM Wrapper → strapd_w
 - **YAML ⇄ JSON**: bidirectional conversion
 
 ### Security
-- **Sanitize secrets**: Configurable deterministic redaction shared by CLI, WASM, WebApp, and Pipes; see `docs/sanitize-secrets.md`
-- **Sanitize PII**: Local masking and invocation-local pseudonymization of IPs, emails, phones, cards, Aadhaar and PAN; see `docs/sanitize-pii.md`
+- **Sanitize secrets**: Configurable deterministic redaction shared by CLI, WASM, WebApp, and Pipes
+- **Sanitize PII**: Local masking and invocation-local pseudonymization of IPs, emails, phones, cards, Aadhaar and PAN
 - **Hash**: MD5, SHA-1, SHA-256, SHA-512
 - **HMAC**: SHA-256, SHA-512
 - **JWT**: decode/extract, expiration analysis, HS256/HS384/HS512 verification and signing
@@ -172,42 +172,41 @@ pub fn hex_decode(input: &str) -> String {
 
 #### 5. Build & Test
 ```bash
-    just wasm-build      # Rebuild WASM
-    just webapp-dev      # Test in browser
-    just cli-build       # Build CLI
+make wasm-build      # Rebuild WASM
+make webapp-dev      # Test in browser
+make cli-build       # Build CLI
 ./target/debug/strapd <command>  # Test CLI
 ```
 
 ### Build Commands
 
-Use `just` recipes for common lifecycle commands: setup, build, test, lint, format, and the dev server. Keep `justfile` limited to reusable project commands; run one-off diagnostics or feature scripts directly instead of adding a recipe for each. Do not invoke `cargo`, `pnpm`, `wasm-pack`, or `make` directly in agent workflows. Prefix shell commands with `rtk`, including `rtk just <recipe>`.
+Use `make` targets for common lifecycle commands: setup, build, test, lint, format, and the dev server. Run one-off diagnostics directly instead of adding a target for each. Do not invoke `cargo`, `pnpm`, or `wasm-pack` directly in agent workflows. Prefix shell commands with `rtk`, including `rtk make <target>`.
 
-Pass focused test arguments through the existing recipes, for example `rtk just rust-test -p strapd-core --test json_sample` or `rtk just webapp-test --run src/tools/json-sample.test.ts`.
+Pass focused test arguments with `TEST_ARGS`, for example `rtk make rust-test TEST_ARGS='-p strapd-core --test json_sample'` or `rtk make webapp-test TEST_ARGS='--run src/tools/json-sample.test.ts'`.
 
 ```bash
 # Rust
-just rust-lint       # Run clippy linter
-just rust-fmt        # Format Rust code
-just rust-test       # Run Rust tests
+make rust-lint       # Run clippy linter
+make rust-fmt        # Format Rust code
+make rust-test       # Run Rust tests
 
 # CLI
-just cli-build       # Build CLI (debug)
-just cli-release     # Build CLI (release)
+make cli-build       # Build CLI (debug)
+make cli-release     # Build CLI (release)
 
 # WASM
-just wasm-build      # Build WASM module for webapp
+make wasm-build      # Build WASM module for webapp
 
 # Webapp
-just webapp-dev      # Start dev server (Vite)
-just webapp-build    # Build production webapp
-just webapp-check    # Lint and type-check webapp
-just webapp-test     # Run webapp tests
+make webapp-dev      # Start dev server (Vite)
+make webapp-build    # Build production webapp
+make webapp-lint     # Lint webapp
+make webapp-test     # Run webapp tests
 
 # Combined
-just rust-lint       # Lint Rust
-just rust-fmt        # Format Rust
-just rust-test       # Test Rust
-just webapp-test     # Test webapp
+make lint            # Lint Rust and webapp
+make fmt             # Format Rust and webapp
+make test            # Test Rust and webapp
 ```
 
 ## Key Technologies
@@ -269,11 +268,11 @@ const toolDefinition: ToolDefinition = {
 - Keep production code and tests in separate files; do not place `#[cfg(test)]` test bodies in implementation files.
 - Put module-level Rust tests in a sibling `tests.rs` file or a dedicated `tests/` tree, and integration tests under each crate's `tests/` directory.
 - Integration tests in `crates/core/tests/`
-- Run with `just rust-test`
+- Run with `make rust-test`
 
 ### Webapp Tests
 - Component tests (planned)
-- Run with `just webapp-test`
+- Run with `make webapp-test`
 
 ### Manual Testing
 - CLI: Test commands manually
@@ -307,21 +306,21 @@ const toolDefinition: ToolDefinition = {
 ### Adding a New Tool
 1. Implement in `crates/core/src/<category>/`
 2. Add WASM bindings in `crates/wasm/src/<category>_ops.rs`
-3. Rebuild WASM: `just wasm-build`
+3. Rebuild WASM: `make wasm-build`
 4. Add to webapp WASM wrapper
 5. Create tool definition and component
 6. Test in browser and CLI
 
 ### Debugging WASM Issues
 - Check browser console for errors
-- Verify WASM module is rebuilt: `just wasm-build`
+- Verify WASM module is rebuilt: `make wasm-build`
 - Check `webapp/wasm/` directory for generated files
 - Ensure `WasmModule` interface matches Rust exports
 
 ### Code Style
 - **Rust**: Follow `rustfmt` defaults (`.rustfmt.toml`)
 - **Webapp**: Follow Biome configuration
-- Run `just rust-fmt` and `just webapp-check` before committing
+- Run `make rust-fmt-check` and `make webapp-lint` before committing
 
 ## Repository Information
 
@@ -334,7 +333,7 @@ const toolDefinition: ToolDefinition = {
 ## Notes for AI Agents
 
 1. **Consistency is key**: Both CLI and webapp should behave identically
-2. **WASM rebuild required**: After changing Rust code, always run `just wasm-build`
+2. **WASM rebuild required**: After changing Rust code, always run `make wasm-build`
 3. **Follow patterns**: Look at existing tools (e.g., Base64, UUID) as templates
 4. **Test both interfaces**: Verify changes work in both CLI and webapp
 5. **Update documentation**: Keep README.md and this file in sync with new features

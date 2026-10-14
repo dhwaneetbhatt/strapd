@@ -86,8 +86,6 @@ cat application.log | strapd sanitize pii
 cat application.log | strapd sanitize pii --emails --pan -p
 ```
 
-For supported patterns, limits, and performance, see the [secrets reference](sanitize-secrets.md) and [PII reference](sanitize-pii.md).
-
 ## Time, calculation, units, and clipboard
 
 `time` reads or converts Unix timestamps. `calc` evaluates a mathematical expression. `convert` accepts a unit conversion expression. `copy` and `paste` connect commands to the system clipboard.

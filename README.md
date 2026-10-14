@@ -71,45 +71,44 @@ Download pre-built binaries from [Releases](https://github.com/dhwaneetbhatt/str
 ```bash
 git clone https://github.com/dhwaneetbhatt/strapd.git
 cd strapd
-just cli-release
+make cli-release
 sudo ln -s $(pwd)/target/release/strapd /usr/local/bin/strapd
 ```
 
 ## Usage
 
-Run `strapd --help` to discover commands. The [usage guide](docs/usage.md) covers CLI input and output patterns, examples across every command group, and WebApp Pipes. Detailed sanitization coverage and limits live in the [secrets](docs/sanitize-secrets.md) and [PII](docs/sanitize-pii.md) references.
+Run `strapd --help` to discover commands. The [usage guide](docs/usage.md) covers CLI input and output patterns, examples across every command group, and WebApp Pipes.
 
 ## Development and Contributing
 
 1. Fork and clone the repository
-2. Run `just setup` to install the development toolchain and dependencies. It uses asdf for Node.js and pnpm, and rustup for Rust.
-3. Install hooks: `just install-hooks`
+2. Run `make setup` to install the development toolchain and dependencies. It uses asdf for Node.js and pnpm, and rustup for Rust.
+3. Install hooks: `make install-hooks`
 4. Make changes and commit (hooks run automatically)
 5. Submit a pull request
 
 ### Available Commands
 
 ```bash
-just setup         # Install development tools and dependencies
-just cli-build     # Build CLI (debug)
-just cli-release   # Build CLI (release)
-just wasm-build    # Build WASM module
-just webapp-build  # Build webapp
-just webapp-test   # Run webapp tests
-just webapp-check  # Lint and type-check webapp
-just rust-test     # Run Rust tests
-just rust-lint     # Run clippy linter
-just rust-fmt      # Format Rust code
-just install-hooks # Install git pre-commit hooks
-just --list        # Show available commands
+make setup         # Install development tools and dependencies
+make cli-build     # Build CLI (debug)
+make cli-release   # Build CLI (release)
+make wasm-build    # Build WASM module
+make webapp-build  # Build webapp
+make webapp-test   # Run webapp tests
+make lint          # Run linters
+make rust-test     # Run Rust tests
+make rust-fmt      # Format Rust code
+make install-hooks # Install git pre-commit hooks
+make help          # Show available commands
 ```
 
 For WebApp changes, run:
 
 ```bash
-just webapp-test
-just webapp-check
-just webapp-build
+make webapp-test
+make webapp-lint
+make webapp-build
 ```
 
 ## License
