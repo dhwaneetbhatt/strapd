@@ -5,7 +5,7 @@ set -euo pipefail
 # Usage: ./scripts/setup.sh
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-NODE_VERSION="24.13.1"
+NODE_VERSION="24.22.3"
 PNPM_VERSION="10.15.1"
 
 command_exists() {
