@@ -1,0 +1,16 @@
+{
+  "buffer": {
+    "checks": 69,
+    "compile_ms": 41.577166999999996,
+    "instantiate_ms": 0.037625,
+    "memory_bytes": 1703936,
+    "module_bytes": 183035
+  },
+  "wit-core": {
+    "checks": 69,
+    "compile_ms": 32.593666999999996,
+    "instantiate_ms": 0.12341699999999999,
+    "memory_bytes": 1507328,
+    "module_bytes": 177867
+  }
+}

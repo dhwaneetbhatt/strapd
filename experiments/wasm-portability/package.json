@@ -1,0 +1,9 @@
+{
+	"name": "strapd-wasm-portability-poc",
+	"private": true,
+	"type": "module",
+	"devDependencies": {
+		"@bytecodealliance/jco": "1.41.0",
+		"@bytecodealliance/preview2-shim": "0.31.1"
+	}
+}

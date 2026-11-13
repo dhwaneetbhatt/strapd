@@ -1,0 +1,20 @@
+[workspace]
+members = ["buffer", "component"]
+resolver = "2"
+
+[package]
+name = "strapd-portability-poc"
+version = "0.0.0"
+edition = "2024"
+publish = false
+
+[dependencies]
+strapd-core = { path = "../../crates/core", default-features = false }
+serde = { version = "1.0.229", features = ["derive"] }
+serde_json = "1.0.152"
+
+[profile.release]
+lto = true
+codegen-units = 1
+panic = "abort"
+strip = "debuginfo"

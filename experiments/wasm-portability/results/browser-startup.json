@@ -1,0 +1,13 @@
+{
+  "buffer": {
+    "compile_ms": 4.9000000059604645,
+    "instantiate_ms": 0.7000000029802322,
+    "memory_bytes": 1703936
+  },
+  "component": {
+    "load_compile_instantiate_ms": 20.099999994039536
+  },
+  "wasm-bindgen": {
+    "load_compile_instantiate_ms": 5.200000002980232
+  }
+}

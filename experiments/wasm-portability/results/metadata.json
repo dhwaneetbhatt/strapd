@@ -1,0 +1,70 @@
+{
+  "date": "2026-11-13",
+  "platform": "macOS-27.2.1-arm64-arm-64bit-Mach-O",
+  "rustc": "rustc 1.97.1 (8bab26f4f 2026-07-14)",
+  "node": "v24.22.3",
+  "go": "go version go1.26.2 darwin/arm64",
+  "python": "3.14.7",
+  "wit_bindgen": "0.63.0",
+  "wasm_tools": "1.263.0",
+  "reactor_adapter": "wasmtime v50.0.1",
+  "wasmtime_python": "50.0.1",
+  "wazero": "1.12.0",
+  "jco": "1.41.0",
+  "preview2_shim": "0.31.1",
+  "wasm_pack": "0.15.0",
+  "artifacts": {
+    "buffer.wasm": {
+      "bytes": 183035,
+      "gzip_bytes": 63146,
+      "sha256": "9cc2623a26cc17e0b4957b5fd406e58454c2d3b3dbdcd9a5e963573e5db16595"
+    },
+    "wit-core.wasm": {
+      "bytes": 177867,
+      "gzip_bytes": 62385,
+      "sha256": "f016d7613c360253b8f258a4489931dc120d74af753cfa4d99bb7e7403bc0d62"
+    },
+    "component.wasm": {
+      "bytes": 201233,
+      "gzip_bytes": 70016,
+      "sha256": "b28ed8eb4b3dfd1ced19f9fbb2caec896e8ee6869c1e99535889b8e565b45cf7"
+    },
+    "js/component.js": {
+      "bytes": 309066,
+      "gzip_bytes": 49772,
+      "sha256": "e2400fc5f68c8092f76c1825fce6db8ebe45ed74636aa285c06150c8f6d59cd3"
+    },
+    "js/component.core.wasm": {
+      "bytes": 177313,
+      "gzip_bytes": 62094,
+      "sha256": "9cdc8d71708a8d1d5bc1827d0467d3613fbc5e075e02cc83b1848fd83a4100c5"
+    },
+    "js/component.core2.wasm": {
+      "bytes": 11887,
+      "gzip_bytes": 4627,
+      "sha256": "4045a35e5b56c416b11f6fefe532597d9af5f1ff168223863aa4a5fea89cff5e"
+    },
+    "baseline/strapd_wasm.js": {
+      "bytes": 42484,
+      "gzip_bytes": 4583,
+      "sha256": "6a06a6a9a560d0bda0a2b1b0bdb7dae52c5df29e16647749e122269026440d8f"
+    },
+    "baseline/strapd_wasm_bg.wasm": {
+      "bytes": 698356,
+      "gzip_bytes": 273460,
+      "sha256": "1e90f45d70ed27479154eb5a06f5d80a9ce7dd04663cfa748351d89b9d6ca207"
+    }
+  },
+  "handwritten_source_lines": {
+    "browser.mjs": 405,
+    "wasmtime_host.py": 146,
+    "host/main.go": 288,
+    "src/lib.rs": 90,
+    "src/bin/native.rs": 123,
+    "buffer/src/lib.rs": 63,
+    "component/wit/world.wit": 26,
+    "component/src/lib.rs": 53
+  },
+  "chromium": "156.0.8078.4 (Playwright revision 1248)",
+  "reactor_adapter_sha256": "6d52112df28f0caee9018f911f279f94f848230b2f0ed02138290363e925671f"
+}
