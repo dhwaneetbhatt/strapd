@@ -26,7 +26,7 @@ const categories = [
     bit: 8,
     flag: "--payment-cards",
     input:
-      "4111111111111111; 4111-1111-1111-1111; card_number=4111111111111112",
+      '4111111111111111; 4111-1111-1111-1111; card_number=4111111111111112; 3782 822463 10005; 3056-930902-5904; {"card":4111111111111111}; {"card":9999999999999999}',
   },
   {
     bit: 16,
@@ -39,6 +39,42 @@ const categories = [
     input: "ABCPD1234E abcpd1234e pan=ABCZD0000E pan_status=ABCZD0000E",
   },
 ];
+
+test("packed detections use UTF-8 offsets and match real WASM sanitization", async ({
+  page,
+}) => {
+  await page.goto("/#/");
+  const result = await page.evaluate(async () => {
+    const wasm = await import("/wasm/strapd_wasm.js");
+    const input = '🙂 dev@example.com; {"phone":9876543210}';
+    return {
+      spans: Array.from(wasm.detect_pii(input, 63)),
+      masked: wasm.sanitize_pii(input, 63, false),
+      clean: Array.from(wasm.detect_pii("ordinary text", 63)),
+      none: Array.from(wasm.detect_pii(input, 0)),
+      empty: Array.from(wasm.detect_pii("", 63)),
+      largeClean: Array.from(
+        wasm.detect_pii("status=ready ".repeat(10000), 63),
+      ),
+      card: Array.from(wasm.detect_pii('{"card":4111111111111111}', 63)),
+      amex: Array.from(wasm.detect_pii("3782 822463 10005", 63)),
+      aadhaar: Array.from(wasm.detect_pii('{"aadhaar":234567890123}', 63)),
+      cardDisabled: Array.from(wasm.detect_pii("4111111111111111", 2)),
+    };
+  });
+  expect(result).toEqual({
+    spans: [2, 5, 20, 4, 31, 41],
+    masked: '🙂 [REDACTED_EMAIL]; {"phone":[REDACTED_PHONE_NUMBER]}',
+    clean: [],
+    none: [],
+    empty: [],
+    largeClean: [],
+    card: [8, 8, 24],
+    amex: [8, 0, 17],
+    aadhaar: [16, 11, 23],
+    cardDisabled: [],
+  });
+});
 
 test("real WASM equals release CLI for every category, mode, unions, and Unicode", async ({
   page,

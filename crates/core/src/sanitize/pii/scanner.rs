@@ -38,8 +38,14 @@ pub(super) fn scan(
             if bytes[end] == b'@' {
                 email_domain = true;
             }
-            if bytes[end] == b':' && end > start && !ip_prefix {
-                break;
+            if bytes[end] == b':' {
+                if end == start && bytes.get(end + 1) != Some(&b':') {
+                    end += 1;
+                    break;
+                }
+                if end > start && !ip_prefix {
+                    break;
+                }
             }
             ip_prefix &= bytes[end].is_ascii_hexdigit() || matches!(bytes[end], b':' | b'.');
             end += 1;
@@ -245,7 +251,7 @@ fn label(bytes: &[u8], start: usize) -> Option<Category> {
     let classify = |key: &[u8]| match key {
         b"aadhaar" | b"aadhaarnumber" | b"uid" | b"uidnumber" => Some(Category::Aadhaar),
         b"pan" | b"pannumber" => Some(Category::Pan),
-        b"cardnumber" | b"paymentcard" | b"paymentcardnumber" | b"creditcard"
+        b"card" | b"cardnumber" | b"paymentcard" | b"paymentcardnumber" | b"creditcard"
         | b"creditcardnumber" | b"debitcard" | b"debitcardnumber" | b"ccnumber" => {
             Some(Category::PaymentCards)
         }

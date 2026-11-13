@@ -28,7 +28,7 @@ It's primarily CLI-focused, but also includes a webapp interface for those who p
 - **Encoding**: Base64, URL, Hex
 - **Data Formatting**: JSON, YAML, XML, SQL (beautify, minify, sort), plus recursive seeded JSON array sampling
 - **Format Conversion**: YAML ⇄ JSON, XML ⇄ JSON
-- **Security**: Hash (MD5, SHA-1, SHA-256, SHA-512), HMAC (SHA-256, SHA-512), JWT, secret sanitization
+- **Security**: Hash (MD5, SHA-1, SHA-256, SHA-512), HMAC (SHA-256, SHA-512), JWT, secret sanitization, PII detection and sanitization ([usage and WASM integration](docs/usage.md#rust-and-browser-wasm-detection))
 - **Random**: numbers, strings
 - **Date/Time**: timestamps
 - **Webapp Pipes**: reusable, sequential workflows composed from compatible tools

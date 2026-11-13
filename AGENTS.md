@@ -105,7 +105,7 @@ User Input → React Component → Tool Definition → WASM Wrapper → strapd_w
 
 ### Security
 - **Sanitize secrets**: Configurable deterministic redaction shared by CLI, WASM, WebApp, and Pipes
-- **Sanitize PII**: Local masking and invocation-local pseudonymization of IPs, emails, phones, cards, Aadhaar and PAN
+- **Sanitize PII**: Local detection with resolved byte spans, masking and invocation-local pseudonymization of IPs, emails, phones, issuer-filtered cards, Aadhaar and PAN; see `docs/usage.md` for Rust and browser WASM APIs
 - **Hash**: MD5, SHA-1, SHA-256, SHA-512
 - **HMAC**: SHA-256, SHA-512
 - **JWT**: decode/extract, expiration analysis, HS256/HS384/HS512 verification and signing

@@ -28,7 +28,7 @@ if [[ -n "$RUST_FILES" && -n "$WEBAPP_FILES" ]]; then
     make lint
 elif [[ -n "$RUST_FILES" ]]; then
     echo "  → Running Rust linter only (Rust files changed)"
-    make lint-rust
+    make rust-lint
 elif [[ -n "$WEBAPP_FILES" ]]; then
     echo "  → Running webapp linter only (webapp files changed)"
     make webapp-lint

@@ -63,6 +63,7 @@ export interface WasmModule {
   jwt_sign: (payload: string, secret: string, algorithm: string, expiresInSeconds?: bigint) => string;
   sanitize_secrets: (input: string, categories: number) => string;
   sanitize_pii: (input: string, categories: number, pseudonymize: boolean) => string;
+  detect_pii: (input: string, categories: number) => Uint32Array;
 
   // Random
   random_string: (count: number, length: number, lowercase: boolean, uppercase: boolean, digits: boolean, symbols: boolean, customCharset: string) => string;

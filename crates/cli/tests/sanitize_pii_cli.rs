@@ -121,3 +121,10 @@ fn email_possessives_and_local_apostrophes_work_in_both_input_forms() {
         "[EMAIL_1]'s record; [EMAIL_1]’s; [EMAIL_2]\n".as_bytes(),
     );
 }
+
+#[test]
+fn compact_json_and_grouped_cards() {
+    let input = "{\"card\":4111111111111111,\"phone\":9876543210,\"aadhaar\":234567890123}; 3782 822463 10005; 3056-930902-5904; dev@example.com";
+    assert_success(&strapd(&["sanitize", "pii"], Some(input.as_bytes())), "{\"card\":[REDACTED_PAYMENT_CARD],\"phone\":[REDACTED_PHONE_NUMBER],\"aadhaar\":[REDACTED_AADHAAR]}; [REDACTED_PAYMENT_CARD]; [REDACTED_PAYMENT_CARD]; [REDACTED_EMAIL]\n".as_bytes());
+    assert_success(&strapd(&["sanitize", "pii", "-p", input], None), "{\"card\":[PAYMENT_CARD_1],\"phone\":[PHONE_NUMBER_1],\"aadhaar\":[AADHAAR_1]}; [PAYMENT_CARD_2]; [PAYMENT_CARD_3]; [EMAIL_1]\n".as_bytes());
+}

@@ -59,9 +59,13 @@ pub(super) fn parse(bytes: &[u8], start: usize) -> Option<Number> {
                 && bytes[next..]
                     .iter()
                     .take_while(|b| b.is_ascii_digit())
-                    .take(6)
+                    .take(7)
                     .count()
-                    > 5
+                    > if n.group_count == 1 && n.groups[0] == 4 {
+                        6
+                    } else {
+                        5
+                    }
             {
                 break;
             }
@@ -106,12 +110,13 @@ pub(super) fn classify(
         && (plain
             || (n.consistent
                 && matches!(n.separator, Some(b' ' | b'-'))
-                && groups[..groups.len() - 1].iter().all(|&size| size == 4)
-                && (1..=4).contains(groups.last().unwrap())
-                || (n.consistent && groups == [4, 6, 5])));
+                && ((groups[..groups.len() - 1].iter().all(|&size| size == 4)
+                    && (1..=4).contains(groups.last().unwrap()))
+                    || matches!(groups, [4, 6, 5] | [4, 6, 4]))));
     if enabled.contains(Category::PaymentCards)
         && card_shape
-        && (luhn(&n.digits[..n.count]) || label() == Some(Category::PaymentCards))
+        && ((card_issuer(&n.digits[..n.count]) && luhn(&n.digits[..n.count]))
+            || label() == Some(Category::PaymentCards))
     {
         return Some(Category::PaymentCards);
     }
@@ -125,6 +130,25 @@ pub(super) fn classify(
                 && (n.separator != Some(b' ') || n.group_count >= 3))
             || label() == Some(Category::PhoneNumbers));
     (enabled.contains(Category::PhoneNumbers) && phone_shape).then_some(Category::PhoneNumbers)
+}
+
+fn card_issuer(digits: &[u8]) -> bool {
+    let prefix2 = u16::from(digits[0]) * 10 + u16::from(digits[1]);
+    let prefix3 = prefix2 * 10 + u16::from(digits[2]);
+    let prefix4 = prefix3 * 10 + u16::from(digits[3]);
+    match digits.len() {
+        13 => digits[0] == 4,
+        14 => matches!(prefix3, 300..=305) || matches!(prefix2, 36 | 38 | 39),
+        15 => matches!(prefix2, 34 | 37),
+        16 => {
+            digits[0] == 4
+                || matches!(prefix2, 51..=55 | 60 | 65 | 81 | 82)
+                || matches!(prefix3, 508 | 644..=649)
+                || matches!(prefix4, 2221..=2720 | 3528..=3589 | 6011)
+        }
+        19 => digits[0] == 4 || prefix2 == 65 || matches!(prefix3, 644..=649) || prefix4 == 6011,
+        _ => false,
+    }
 }
 
 fn luhn(digits: &[u8]) -> bool {

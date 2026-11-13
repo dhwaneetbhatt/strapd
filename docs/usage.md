@@ -84,7 +84,32 @@ cat application.log | strapd sanitize secrets
 cat application.log | strapd sanitize secrets --api-keys --auth
 cat application.log | strapd sanitize pii
 cat application.log | strapd sanitize pii --emails --pan -p
+strapd sanitize pii '{"card":4111111111111111,"phone":9876543210}'
 ```
+
+PII categories are IP addresses, emails, phones, payment cards, Aadhaar and PAN. Email coverage remains ASCII-only; Unicode email recognition is deferred from this latency-focused patch. Local unformatted phones require a semantic label such as `phone` or `mobile`; international prefixes and common strong grouping also match. IP ports and CIDR suffixes remain visible. Aadhaar uses Verhoeff; PAN uses structural rules. Explicit Aadhaar, PAN and card labels protect plausible mistyped values even when validation fails. Metadata such as `card_status` does not enable this fallback.
+
+Unlabelled cards require Luhn **and** one of these prefix/length combinations. This is a local plausibility check, not issuer verification. Labelled cards (including `card`, `card_number` and `payment_card`) retain plausible 13–19 digit fallback without issuer or checksum restrictions. Compact numbers, consistent space/hyphen groups of four, Amex `4-6-5` and Diners `4-6-4` grouping are supported.
+
+| Card | Prefix | Digits |
+| --- | --- | --- |
+| Visa | 4 | 13, 16, 19 |
+| Mastercard | 51–55, 2221–2720 | 16 |
+| Amex | 34, 37 | 15 |
+| Discover | 6011, 65, 644–649 | 16, 19 |
+| RuPay | 60, 65, 81, 82, 508 | 16 |
+| Diners | 300–305, 36, 38, 39 | 14 |
+| JCB | 3528–3589 | 16 |
+
+Coverage is deterministic and finite: false positives and missed identifiers remain possible. There is no NER/name detection, DNS, carrier, issuer, UIDAI or Income Tax lookup, and matching does not prove that an identifier exists. Existing sanitizer placeholders and partially masked Aadhaar displays remain unchanged. Pseudonyms reset each invocation; email domains compare case-insensitively while local parts remain exact.
+
+### Rust and browser WASM detection
+
+`strapd_core::sanitize::pii::detect(text, categories)` returns `Vec<Match>` with public `category` and half-open `range: Range<usize>` fields. Ranges count **UTF-8 bytes** in the original input, are ordered and non-overlapping, and use the same resolution as both sanitizer modes. Clean input returns an empty vector without allocating. Category bits are IP=1, email=2, phone=4, card=8, Aadhaar=16 and PAN=32; all=63, none=0.
+
+The browser WASM package exports `detect_pii(text, bits)` as `Uint32Array` triples `[category, start, end, ...]`. JavaScript string indexes count UTF-16 and must not be substituted for byte offsets. This package requires its generated `wasm-bindgen` JavaScript glue; publishing its `.wasm` file alone would not remove those host imports.
+
+The [GH-43 verification](../openspec/changes/gh-43-pii-detection-and-card-fixes/verification.md) records the measurement methodology, results and limits. Benchmark harnesses remain disposable rather than part of the permanent tooling.
 
 ## Time, calculation, units, and clipboard
 
