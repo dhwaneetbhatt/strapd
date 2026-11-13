@@ -19,7 +19,7 @@ The alternatives aren't much better:
 
 `strapd` consolidates common developer tasks into one unified tool with simple commands and intuitive aliases. It runs locally, offline, and blazingly fast.
 
-It's primarily CLI-focused, but also includes a webapp interface for those who prefer GUIs. Both use the same core Rust library via WASM, ensuring consistent behavior everywhere.
+It's primarily CLI-focused, with a WebApp and reusable Rust and [portable WASM library](docs/usage.md#portable-wasm-library). All interfaces use the same core Rust library.
 
 ## Current Features
 
@@ -94,6 +94,7 @@ make setup         # Install development tools and dependencies
 make cli-build     # Build CLI (debug)
 make cli-release   # Build CLI (release)
 make wasm-build    # Build WASM module
+make portable-wasm-test # Build and test the portable WASM library
 make webapp-build  # Build webapp
 make webapp-test   # Run webapp tests
 make lint          # Run linters

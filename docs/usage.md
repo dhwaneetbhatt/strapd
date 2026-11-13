@@ -111,6 +111,84 @@ The browser WASM package exports `detect_pii(text, bits)` as `Uint32Array` tripl
 
 The [GH-43 verification](../openspec/changes/archive/2026-11-13-gh-43-pii-detection-and-card-fixes/verification.md) records the measurement methodology, results and limits. Benchmark harnesses remain disposable rather than part of the permanent tooling.
 
+## Portable WASM library
+
+`crates/wasm-portable` exposes the same 52 operations as the browser bindings
+through the [WIT contract](../crates/wasm-portable/wit/tools.wit), package
+`strapd:tools@0.1.0`, world `tools`. It calls `strapd-core` directly and does not
+depend on wasm-bindgen or JavaScript. The WebApp continues using `crates/wasm`.
+
+```bash
+make portable-wasm-setup   # Rust target, pinned wasm-tools and WASI adapter
+make portable-wasm-build
+make portable-wasm-test    # Also installs the pinned Python test runtime
+make portable-wasm-package
+```
+
+Builds are in `target/portable-wasm/`; `target/strapd-wasm.tar.gz` contains:
+
+| File | Use |
+| --- | --- |
+| `strapd.wasm` | WASI Preview 1 core module, with embedded WIT metadata; for core runtimes such as wazero using compatible generated bindings |
+| `strapd.component.wasm` | Component Model artifact with the standard WASI adapter; for component-aware hosts |
+| `tools.wit` | Public typed contract for generating host bindings |
+| `SHA256SUMS` | SHA256 checksums of the three files |
+
+The release workflow packages this archive into future draft releases. Build
+commands do not publish it. Current published releases may predate this package.
+
+Generate bindings for world `tools` using tooling compatible with your runtime.
+Core runtimes load `strapd.wasm`; they do not automatically understand the
+component file or infer calling code from WIT metadata. Component runtimes load
+`strapd.component.wasm` and supply its WASI interfaces. Host-language SDKs and
+per-client integration modules are not included. A binding generator's support
+for WIT types, WASI configuration, UTF-8 checks and trap handling must be verified
+by its consumer; generated code alone is not a production SDK.
+
+Contract details:
+
+- Base64 and hex encode byte lists and decode to byte lists, preserving arbitrary
+  binary data. URL encoding operates on UTF-8 strings.
+- `detect-pii` returns records `{category, start, end}` with half-open UTF-8 byte
+  offsets and the [category bits described above](#rust-and-browser-wasm-detection).
+  Sanitization keeps core semantics, including invocation-local pseudonyms.
+- `json-sample` returns output and typed filtering/sampling statistics; seeds
+  are unsigned 64-bit integers. Pass 64-bit values without floating-point loss.
+- Fallible functions return `result<T, string>`; errors contain core messages
+  without the browser's `Error:` presentation prefix. Runtime/host failures are
+  traps, separate from returned errors. Discard a trapped instance.
+- UUIDs and ULIDs are newline-delimited. Generation counts are 1–1024; invalid
+  counts and inverted random-number ranges return errors. Random strings return
+  a list; a list of `character-type` enum values selects lowercase/uppercase/digits/symbols and
+  an optional custom character set supplements them.
+- Timestamps are signed 64-bit seconds/milliseconds. `timestamp-format` selects
+  `iso` or `human`. WASI uses **UTC**, including when the embedding process uses
+  another timezone. Browser local-time formatting remains unchanged.
+- JWT algorithm and unit category are enums. JWT and conversion operations that
+  produce JSON/text in core retain those text formats; unit discovery returns
+  typed records instead of serialized JSON.
+
+Hosts must provide secure randomness and real wall/monotonic clocks. For example,
+wazero requires `wasi_snapshot_preview1` registration and module configuration
+with `WithRandSource(crypto/rand.Reader)`, `WithSysWalltime()` and
+`WithSysNanotime()`. Defaults may provide deterministic randomness/clock values;
+they are unsuitable for UUIDs, JWT expiry or security use. No filesystem preopens,
+network access or inherited environment are needed by these tools. Grant only
+the capabilities required by your runtime's WASI implementation.
+
+Use generated Canonical ABI bindings: inputs transfer ownership to the guest;
+copy returned values and invoke the generated post-return cleanup exactly once.
+Strings must be valid UTF-8; arbitrary bytes belong in byte-list parameters.
+Serialize calls per instance; use separate instances for concurrency. Apply host
+memory/fuel/time limits appropriate to untrusted inputs. The generation cap does
+not limit input size or all possible output sizes.
+
+The WIT version is independent of the release/crate version. Breaking changes
+to parameters, results, record layouts or enums require an incompatible WIT
+version: a new minor version while below 1.0, or a new major version thereafter.
+Do not rely on numeric operation IDs, packed layouts or generated symbol details
+outside the standard ABI. Regenerate bindings when adopting a newer contract.
+
 ## Time, calculation, units, and clipboard
 
 `time` reads or converts Unix timestamps. `calc` evaluates a mathematical expression. `convert` accepts a unit conversion expression. `copy` and `paste` connect commands to the system clipboard.

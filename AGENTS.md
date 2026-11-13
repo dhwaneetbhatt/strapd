@@ -33,6 +33,7 @@ strapd/
 │   │   │   └── data_formats/ # JSON, YAML, XML, SQL
 │   │   ├── tests/
 │   │   └── Cargo.toml
+│   ├── wasm-portable/ # Versioned WIT library for non-browser WASM hosts
 │   └── wasm/         # WASM bindings for webapp
 │       ├── src/
 │       │   ├── encoding_ops.rs
@@ -196,6 +197,9 @@ make cli-release     # Build CLI (release)
 
 # WASM
 make wasm-build      # Build WASM module for webapp
+make portable-wasm-setup # Install portable WASM tooling
+make portable-wasm-test  # Build and test WIT core module and component
+make portable-wasm-package # Package portable WASM artifacts without publishing
 
 # Webapp
 make webapp-dev      # Start dev server (Vite)
@@ -239,6 +243,7 @@ make test            # Test Rust and webapp
 ### Error Handling
 - **Rust**: Use `Result<T, E>` for fallible operations
 - **WASM**: Return error strings (e.g., `"Error: Invalid input"`)
+- **Portable WASM**: `crates/wasm-portable/wit/tools.wit` is the versioned contract; return typed results/core errors and keep browser bindings unchanged. Add portable exports and artifact contract tests for new browser operations. See `docs/usage.md` for ownership and host requirements.
 - **Webapp**: Display errors in UI via `ToolResult` type
 
 ### Tool Definition Pattern (Webapp)
