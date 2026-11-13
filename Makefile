@@ -140,7 +140,7 @@ webapp-test:
 
 # Test responsive flows in a real browser
 webapp-e2e:
-	cd webapp && pnpm test:e2e
+	cd webapp && pnpm test:e2e $(TEST_ARGS)
 
 # Test webapp with coverage
 webapp-coverage:

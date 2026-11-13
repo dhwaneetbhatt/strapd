@@ -236,12 +236,11 @@ test("supports keyboard use, read-only output, accessible copy, reset, and both 
   await expect(output).toHaveAttribute("readonly");
 
   const apiKeys = page.getByRole("checkbox", { name: "API keys" });
-  await apiKeys.focus();
-  await page.keyboard.press("Space");
+  await apiKeys.press("Space");
   await expect(output).toHaveValue(
     "apiKey=synthetic_api_key; password=[REDACTED_PASSWORD]",
   );
-  await page.keyboard.press("Space");
+  await apiKeys.press("Space");
   await expect(output).toHaveValue(allCategoriesOutput);
 
   await page.getByRole("button", { name: "Copy" }).click();

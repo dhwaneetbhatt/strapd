@@ -6,6 +6,25 @@ mod scanner;
 use super::spans::{self, Span};
 use std::{borrow::Cow, collections::HashMap, net::IpAddr};
 
+/// One resolved match, with a half-open UTF-8 byte range in the original input.
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub struct Match {
+    pub category: Category,
+    pub range: std::ops::Range<usize>,
+}
+
+/// Detect selected identifiers in input order using the same spans as sanitization.
+/// Clean input returns an empty vector without allocating.
+pub fn detect(input: &str, categories: Categories) -> Vec<Match> {
+    resolved(input, categories, false)
+        .into_iter()
+        .map(|span| Match {
+            category: span.value.category,
+            range: span.range,
+        })
+        .collect()
+}
+
 #[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
 #[repr(u8)]
 pub enum Category {
@@ -86,13 +105,7 @@ struct Identity<'a> {
 /// Preserve surrounding bytes, returning clean input borrowed. Pseudonym mappings
 /// exist only for this invocation and are numbered after overlap resolution.
 pub fn sanitize(input: &str, categories: Categories, mode: Mode) -> Cow<'_, str> {
-    if input.is_empty() || categories == Categories::NONE {
-        return Cow::Borrowed(input);
-    }
-    let candidates = scanner::scan(input, categories, mode == Mode::Pseudonymize);
-    let matches = spans::resolve(candidates, |a, b| {
-        (a.category as u8).cmp(&(b.category as u8))
-    });
+    let matches = resolved(input, categories, mode == Mode::Pseudonymize);
     let mut identities = HashMap::new();
     let mut counts = [0; 6];
     spans::render(input, &matches, |identity, output| {
@@ -107,6 +120,15 @@ pub fn sanitize(input: &str, categories: Categories, mode: Mode) -> Cow<'_, str>
             });
             output.push_str(token);
         }
+    })
+}
+
+fn resolved(input: &str, categories: Categories, pseudonymize: bool) -> Vec<Span<Identity<'_>>> {
+    if input.is_empty() || categories == Categories::NONE {
+        return Vec::new();
+    }
+    spans::resolve(scanner::scan(input, categories, pseudonymize), |a, b| {
+        (a.category as u8).cmp(&(b.category as u8))
     })
 }
 
