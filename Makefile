@@ -67,7 +67,7 @@ rust-audit:
 # Install dependencies
 rust-install:
 	cargo fetch
-	cargo install wasm-pack --version 0.15.0
+	cargo install wasm-pack --version 0.15.0 --locked --force
 
 # Install coverage tools
 rust-install-coverage:

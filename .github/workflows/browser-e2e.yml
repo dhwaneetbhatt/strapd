@@ -33,7 +33,7 @@ jobs:
             ${{ runner.os }}-browser-e2e-cargo-
 
       - name: Install wasm-pack
-        run: cargo install wasm-pack --version 0.15.0 --locked
+        run: cargo install wasm-pack --version 0.15.0 --locked --force
 
       - name: Build WASM
         run: make wasm-build
