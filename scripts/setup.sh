@@ -56,4 +56,7 @@ rustup target add wasm32-unknown-unknown
 info "Installing project dependencies and building the local WASM package"
 make rust-install wasm-build webapp-install
 
+info "Installing portable WASM build tools"
+make portable-wasm-setup
+
 printf '\nSetup complete. Try: make test\n'

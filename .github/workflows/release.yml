@@ -65,10 +65,25 @@ jobs:
           name: ${{ matrix.platform.name }}
           path: target/${{ matrix.platform.target }}/release/${{ matrix.platform.name }}
 
+  build-wasm:
+    name: Build portable WASM
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions-rust-lang/setup-rust-toolchain@v1
+      - name: Install portable WASM tools
+        run: make portable-wasm-setup
+      - name: Test and package portable WASM
+        run: make portable-wasm-test portable-wasm-package
+      - uses: actions/upload-artifact@v7
+        with:
+          name: strapd-wasm.tar.gz
+          path: target/strapd-wasm.tar.gz
+
   release:
     name: Create Release
     runs-on: ubuntu-24.04
-    needs: build
+    needs: [build, build-wasm]
     steps:
       - name: Checkout code
         uses: actions/checkout@v6

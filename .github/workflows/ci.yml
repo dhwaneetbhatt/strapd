@@ -75,6 +75,18 @@ jobs:
       - name: Build wasm
         run: make wasm-build
 
+      - name: Install portable WASM tools
+        run: make portable-wasm-setup
+
+      - name: Test portable WASM artifacts
+        run: make portable-wasm-test portable-wasm-package
+
+      - name: Upload portable WASM artifacts
+        uses: actions/upload-artifact@v7
+        with:
+          name: portable-wasm
+          path: target/strapd-wasm.tar.gz
+
       - name: Upload WASM artifacts
         uses: actions/upload-artifact@v7
         with:
