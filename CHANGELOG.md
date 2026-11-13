@@ -6,6 +6,21 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+## [v1.5.0] - 2026-11-13
+
+### cli
+
+- feat: sample JSON arrays recursively with seeded results and optional metadata
+- feat: sanitize secrets and mask or pseudonymize PII locally
+- fix: unify fallible, non-blocking input handling
+- chore: update ctutils and rustix to address Rust security advisories
+
+### webapp
+
+- feat: add JSON sampling and secret and PII sanitization tools and Pipe operations
+- fix: improve mobile Pipes and navigation
+- chore: update development dependencies to address security advisories
+
 ## [v1.4.0] - 2026-10-03
 
 ### cli
