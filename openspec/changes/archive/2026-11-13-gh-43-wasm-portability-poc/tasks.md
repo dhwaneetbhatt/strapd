@@ -18,4 +18,4 @@
 
 - [x] 4.1 Run production regressions affected by dependency separation, experiment checks and an independent correctness review.
 - [x] 4.2 Record reproducible commands, raw results, sizes, handwritten code and trade-offs without selecting a production API.
-- [ ] 4.3 Push the experiment as a separate draft PR; publish nothing.
+- [x] 4.3 Push the experiment as draft PR #45; publish nothing.
