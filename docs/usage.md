@@ -109,7 +109,7 @@ Coverage is deterministic and finite: false positives and missed identifiers rem
 
 The browser WASM package exports `detect_pii(text, bits)` as `Uint32Array` triples `[category, start, end, ...]`. JavaScript string indexes count UTF-16 and must not be substituted for byte offsets. This package requires its generated `wasm-bindgen` JavaScript glue; publishing its `.wasm` file alone would not remove those host imports.
 
-The [GH-43 verification](../openspec/changes/gh-43-pii-detection-and-card-fixes/verification.md) records the measurement methodology, results and limits. Benchmark harnesses remain disposable rather than part of the permanent tooling.
+The [GH-43 verification](../openspec/changes/archive/2026-11-13-gh-43-pii-detection-and-card-fixes/verification.md) records the measurement methodology, results and limits. Benchmark harnesses remain disposable rather than part of the permanent tooling.
 
 ## Time, calculation, units, and clipboard
 

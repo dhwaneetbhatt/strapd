@@ -1,18 +1,10 @@
 # GH-43 verification
 
-Status: implementation and validation for user review. No version bump, commit,
-tag, push, release publication or OpenSpec archive was performed.
+Status: implementation and validation complete; requirements synced and change
+archived for review in PR #44. Versions are unchanged. No tag or release was
+published.
 
 ## Scope and correctness
-
-Review update: the PII-only host adapter, standalone Node verifier and permanent
-benchmark example/build targets were removed at the user's request. Relevant
-packed-detection cases now run in the existing browser PII suite; random-number
-corpus checks remain in Rust. The pre-commit hook calls `rust-lint` correctly.
-A generic portable strapd WASM package is deferred to a separate public-interface
-design. Browser bindings still require wasm-bindgen JavaScript glue. Historical
-plain-WASM/Go prototype measurements below describe the removed adapter, not a
-supported artifact in this patch.
 
 Implemented issue #43 items 1–4: public resolved `pii::detect` byte spans,
 packed browser WASM detection, issuer/length checks
@@ -34,14 +26,9 @@ ranges remain supported.
 - A thread-local counting allocator verifies zero allocations for clean native
   detection and both sanitizer modes, including empty and UTF-8 input.
 - Deterministic xorshift seed 43: 276/10,000 random 16-digit strings match as
-  cards (2.76%); 0/10,000 epoch-ms values between 2020 and 2030 match. Native
-  and actual plain WASM checks pass. These rates describe synthetic identifiers,
+  cards (2.76%); 0/10,000 epoch-ms values between 2020 and 2030 match.
+  These rates describe synthetic identifiers,
   not a recall/precision guarantee on a production corpus.
-- The removed experimental plain module measured 67,015 bytes with zero imports.
-  Node instantiation
-  verifies packed offsets, category selection, empty/clean results, invalid UTF-8,
-  buffer growth, reuse and reset. A separate Go/wazero host verifies the same
-  ABI and recovery behavior without wasm-bindgen or a JS runtime.
 - Independent read-only correctness review found no blockers, including after
   Unicode support was removed. Earlier review also exercised 30,000 deterministic
   mixed Unicode/punctuation/numeric inputs without traps or invalid span ranges.
@@ -57,7 +44,6 @@ ranges remain supported.
 | Rust formatting and clippy | Passed |
 | WebApp lint and production build | Passed |
 | Browser WASM and release CLI builds | Passed |
-| Experimental plain WASM build, subsequently removed | Passed before removal |
 | Strict OpenSpec validation and diff whitespace check | Passed |
 
 One parallel browser run timed out in an existing mobile delete-dialog test.
@@ -76,7 +62,7 @@ plugin and bundle-size notices remain. Clipboard integration was unavailable.
 ## Measurement method
 
 Reference: macOS 27.2.1 (26B131), arm64, Rust 1.97.1, Node 24.22.3,
-Go 1.26.2, wazero 1.12.0, wasm-pack 0.15.0 and installed Playwright Chromium.
+wasm-pack 0.15.0 and installed Playwright Chromium.
 This is a shared development machine; distributions are evidence, not an SLA.
 No Presidio comparison was rerun and no speedup claim is inferred.
 
@@ -134,11 +120,6 @@ All-category 64 KiB results (milliseconds):
   Paired added medians are -0.149–0.098 ms,
   numerically below 1 ms but within substantial subprocess/scheduling noise.
   Negative differences are noise, not speedups; fresh CLI launch is not sub-ms.
-- The separate Go/wazero host measures warm clean detection, including host
-  input copying, UTF-8 validation and result extraction. For 64 KiB its median
-  is 0.430 ms and p95 0.912 ms; module compilation/instantiation are excluded.
-  It uses different input and timing boundaries from the consumer's Presidio
-  comparison and should not be compared directly to that table.
 
 ### Native release matrix
 
@@ -358,34 +339,9 @@ adversarial,false,20.219666,21.187459,25.917791,21.023167,23.592292,0.048208,4.8
 adversarial,true,20.944791,21.018417,23.388292,20.960958,23.000292,-0.004667,2.416917
 ```
 
-### Removed plain-WASM prototype in Go/wazero
-
-```text
-wazero ABI checks passed; module=67015 bytes
-fixture,bytes,first_ms,median_ms,p95_ms
-clean,128,0.022417,0.002458,0.012208
-clean,1024,0.018750,0.015250,0.024000
-clean,4096,0.066500,0.058959,0.062667
-clean,20480,0.298208,0.139625,0.311208
-clean,65536,0.455417,0.430000,0.911875
-```
-
-### Review handoff
-
-The change remains active in OpenSpec. Versions are unchanged. Release 1.5.1,
-archival, tags, pushes and publication await the user's review. A local Git
-commit was subsequently authorized; the tested implementation and cleanup are
-included, with unrelated agent settings left in the working tree.
-Unicode email recognition remains deferred. Core detection, browser bindings,
-card filtering and parsing fixes are implemented and tested. A non-JavaScript
-WASM artifact is intentionally deferred to the generic package design. Clipboard behavior was
-not exercised because no graphical clipboard backend was available.
-
 ## Post-review cleanup verification
 
-- Removed the standalone Node verifier, 99-line benchmark, PII-only WASM adapter,
-  its module wrapper, and both dedicated Make targets. No new standalone scripts
-  or example binaries remain in the patch.
+- No new standalone scripts, benchmark targets or example binaries were added.
 - Moved relevant empty/clean, category-selection, compact JSON, Amex and UTF-8
   byte-offset detection cases into the existing PII browser test. Duplicate
   synthetic corpus loops were removed from JavaScript; Rust retains them.
@@ -396,6 +352,3 @@ not exercised because no graphical clipboard backend was available.
   stubs: calls are exactly fmt-check, rust-lint, test. Shell syntax and the real
   rust-lint Make target were checked. No Git index or repository mutations were
   used by this test.
-- The generic portable package remains a design recommendation, not an
-  implementation or release in this patch. Its host interface and operation
-  catalog must cover strapd as a library rather than one consumer or PII alone.

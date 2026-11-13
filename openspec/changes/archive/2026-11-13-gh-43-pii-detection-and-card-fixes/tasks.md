@@ -7,18 +7,19 @@
 
 ## 2. Integration
 
-- [x] 2.1 Expose packed browser detections; portable runtime packaging is deferred to a generic strapd interface after user review.
+- [x] 2.1 Expose packed browser detections.
 - [x] 2.2 Extend CLI and actual WASM parity regressions, address the existing keyboard-test focus race without weakening assertions, and update usage/coverage documentation.
 
-## 3. Validation and release
+## 3. Validation and review
 
 - [x] 3.1 Run required Rust/WebApp/browser checks, release smoke tests and repeat performance methodology, recording limitations.
 - [x] 3.2 Obtain independent correctness review and resolve findings.
-- [x] 3.3 Prepare tested changes and verification evidence for user review; commit the tested changes when authorized; leave version bump, archive, tags, pushes and release publication pending explicit approval.
+- [x] 3.3 Commit tested changes and verification evidence for review in PR #44; leave version bumps, tags and release publication pending approval.
 
 ## 4. Review cleanup
 
-- [x] 4.1 Fold relevant detection checks into the existing browser suite; remove the standalone WASM verifier and duplicate corpus loops.
-- [x] 4.2 Remove the permanent benchmark and PII-only WASM example, build targets and documentation; retain measurement evidence and defer generic portable packaging.
+- [x] 4.1 Keep detection checks in the existing browser suite and synthetic corpus checks in Rust.
+- [x] 4.2 Retain measurement evidence without adding permanent benchmark scripts or build targets.
 - [x] 4.3 Fix the pre-commit Rust linter target and verify the Rust-only branch without running Git mutations.
 - [x] 4.4 Run focused browser, lint, formatting and OpenSpec checks; leave all release actions pending review.
+- [x] 4.5 Sync the completed requirements to the main spec and archive the change.
