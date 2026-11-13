@@ -34,7 +34,7 @@ def main():
 
     # Update version
     # matching version "v1.2.3" or version "1.2.3"
-    content = re.sub(r'version \"v?[0-9]+\.[0-9]+\.[0-9]+\"', f'version \"{tag}\"', content)
+    content = re.sub(r'version \"v?[0-9]+\.[0-9]+\.[0-9]+\"', f'version \"{tag.removeprefix("v")}\"', content)
 
     # Function to update url and sha for a specific os and architecture
     def update_artifact(text, os_name, arch_marker, new_sha):
