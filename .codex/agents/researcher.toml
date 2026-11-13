@@ -1,6 +1,6 @@
 name = "researcher"
 description = "Research a bounded question across repository files or primary documentation and return concise evidence."
-model = "gpt-6-luna"
+model = "gpt-6.1-terra"
 model_reasoning_effort = "high"
 sandbox_mode = "read-only"
 developer_instructions = """

@@ -1,7 +1,9 @@
 # AI Agent Context - strapd Project
 
 ## Project Overview
+
 **strapd** is a developer toolkit providing common utilities through multiple interfaces:
+
 - **CLI**: Fast, offline command-line tool for developers
 - **Webapp**: Browser-based GUI using the same core logic via WASM
 - **Library**: Reusable Rust crate (`strapd-core`)
@@ -66,11 +68,13 @@ strapd/
 ## Architecture & Data Flow
 
 ### CLI Flow
+
 ```
 User Input → CLI Args Parser → Handler → strapd_core → Output
 ```
 
 ### Webapp Flow
+
 ```
 User Input → React Component → Tool Definition → WASM Wrapper → strapd_wasm → strapd_core → Result
 ```
@@ -80,21 +84,25 @@ User Input → React Component → Tool Definition → WASM Wrapper → strapd_w
 ## Current Features
 
 ### String Tools
+
 - **Case conversion**: uppercase, lowercase, capitalize
 - **Analysis**: count lines, words, chars, bytes
 - **Transform**: reverse, replace, slugify
 - **Whitespace**: trim (left, right, all)
 
 ### Identifiers
+
 - **UUID**: v4 (random), v7 (timestamp-based)
 - **ULID**: Universally Unique Lexicographically Sortable Identifier
 
 ### Encoding
+
 - **Base64**: encode/decode
 - **URL**: encode/decode
 - **Hex**: encode/decode
 
 ### Data Formatting
+
 - **JSON**: beautify, minify, sort keys
 - **JSON Sample**: seeded recursive array sampling after removing null and empty-array entries from arrays; CLI `--output json` adds metadata only at the CLI edge; see `docs/usage.md`
 - **YAML**: beautify, minify
@@ -102,9 +110,11 @@ User Input → React Component → Tool Definition → WASM Wrapper → strapd_w
 - **SQL**: beautify
 
 ### Format Conversion
+
 - **YAML ⇄ JSON**: bidirectional conversion
 
 ### Security
+
 - **Sanitize secrets**: Configurable deterministic redaction shared by CLI, WASM, WebApp, and Pipes
 - **Sanitize PII**: Local detection with resolved byte spans, masking and invocation-local pseudonymization of IPs, emails, phones, issuer-filtered cards, Aadhaar and PAN; see `docs/usage.md` for Rust and browser WASM APIs
 - **Hash**: MD5, SHA-1, SHA-256, SHA-512
@@ -112,13 +122,16 @@ User Input → React Component → Tool Definition → WASM Wrapper → strapd_w
 - **JWT**: decode/extract, expiration analysis, HS256/HS384/HS512 verification and signing
 
 ### Random
+
 - **Numbers**: generate random numbers
 - **Strings**: generate random strings
 
 ### Date/Time
+
 - **Timestamps**: Unix timestamps, ISO 8601
 
 ### Clipboard (CLI only)
+
 - **Copy/Paste**: `strapd copy` and `strapd paste` for workflow automation
 
 ## Development Workflow
@@ -126,7 +139,9 @@ User Input → React Component → Tool Definition → WASM Wrapper → strapd_w
 ### Adding a New Feature
 
 #### 1. Backend (Rust Core)
+
 Add the core logic to `crates/core/src/<category>/`:
+
 ```rust
 // Example: crates/core/src/encoding/hex.rs
 pub fn encode(input: &Vec<u8>) -> String {
@@ -139,12 +154,15 @@ pub fn decode(input: &str) -> Result<Vec<u8>, &'static str> {
 ```
 
 #### 2. CLI Integration
+
 - Add args in `crates/cli/src/args/<category>.rs`
 - Add handler in `crates/cli/src/handlers/<category>_handler.rs`
 - Wire up in `crates/cli/src/main.rs`
 
 #### 3. WASM Bindings
+
 Add WASM exports in `crates/wasm/src/<category>_ops.rs`:
+
 ```rust
 use wasm_bindgen::prelude::*;
 use strapd_core::encoding;
@@ -164,6 +182,7 @@ pub fn hex_decode(input: &str) -> String {
 ```
 
 #### 4. Webapp Integration
+
 - Add to `WasmModule` interface in `webapp/src/lib/wasm/index.ts`
 - Add wrapper methods in `WasmWrapper` class
 - Add operations to `webapp/src/lib/utils/<category>/index.ts`
@@ -172,6 +191,7 @@ pub fn hex_decode(input: &str) -> String {
 - Export component from `webapp/src/components/tools/index.ts`
 
 #### 5. Build & Test
+
 ```bash
 make wasm-build      # Rebuild WASM
 make webapp-dev      # Test in browser
@@ -181,9 +201,9 @@ make cli-build       # Build CLI
 
 ### Build Commands
 
-Use `make` targets for common lifecycle commands: setup, build, test, lint, format, and the dev server. Run one-off diagnostics directly instead of adding a target for each. Do not invoke `cargo`, `pnpm`, or `wasm-pack` directly in agent workflows. Prefix shell commands with `rtk`, including `rtk make <target>`.
+Use `make` targets for common lifecycle commands: setup, build, test, lint, format, and the dev server. Run one-off diagnostics directly instead of adding a target for each. Do not invoke `cargo`, `pnpm`, or `wasm-pack` directly in agent workflows.
 
-Pass focused test arguments with `TEST_ARGS`, for example `rtk make rust-test TEST_ARGS='-p strapd-core --test json_sample'` or `rtk make webapp-test TEST_ARGS='--run src/tools/json-sample.test.ts'`.
+Pass focused test arguments with `TEST_ARGS`, for example `make rust-test TEST_ARGS='-p strapd-core --test json_sample'` or `make webapp-test TEST_ARGS='--run src/tools/json-sample.test.ts'`.
 
 ```bash
 # Rust
@@ -216,6 +236,7 @@ make test            # Test Rust and webapp
 ## Key Technologies
 
 ### Backend
+
 - **Rust 1.70+**: Core language
 - **Cargo Workspaces**: Multi-crate management
 - **clap**: CLI argument parsing
@@ -223,6 +244,7 @@ make test            # Test Rust and webapp
 - **wasm-pack**: WASM build tool
 
 ### Frontend
+
 - **React 18**: UI framework
 - **TypeScript**: Type safety
 - **Vite**: Build tool & dev server
@@ -231,6 +253,7 @@ make test            # Test Rust and webapp
 - **Biome**: Linting & formatting
 
 ### Dependencies
+
 - `hex`: Hex encoding/decoding
 - `base64`: Base64 encoding/decoding
 - `uuid`: UUID generation
@@ -241,12 +264,14 @@ make test            # Test Rust and webapp
 ## Important Patterns
 
 ### Error Handling
+
 - **Rust**: Use `Result<T, E>` for fallible operations
 - **WASM**: Return error strings (e.g., `"Error: Invalid input"`)
 - **Portable WASM**: `crates/wasm-portable/wit/tools.wit` is the versioned contract; return typed results/core errors and keep browser bindings unchanged. Add portable exports and artifact contract tests for new browser operations. See `docs/usage.md` for ownership and host requirements.
 - **Webapp**: Display errors in UI via `ToolResult` type
 
 ### Tool Definition Pattern (Webapp)
+
 ```typescript
 const toolDefinition: ToolDefinition = {
   id: "category-toolname",
@@ -263,6 +288,7 @@ const toolDefinition: ToolDefinition = {
 ```
 
 ### Component Pattern (Webapp)
+
 - Use `useBaseTool` hook for state management
 - Use `useAutoProcess` for automatic processing on input change
 - Follow existing component structure (see `base64-tool.tsx`)
@@ -270,16 +296,19 @@ const toolDefinition: ToolDefinition = {
 ## Testing Strategy
 
 ### Rust Tests
+
 - Keep production code and tests in separate files; do not place `#[cfg(test)]` test bodies in implementation files.
 - Put module-level Rust tests in a sibling `tests.rs` file or a dedicated `tests/` tree, and integration tests under each crate's `tests/` directory.
 - Integration tests in `crates/core/tests/`
 - Run with `make rust-test`
 
 ### Webapp Tests
+
 - Component tests (planned)
 - Run with `make webapp-test`
 
 ### Manual Testing
+
 - CLI: Test commands manually
 - Webapp: Test in browser at `http://localhost:5173/`
 
@@ -292,7 +321,8 @@ const toolDefinition: ToolDefinition = {
 ## Common Tasks for AI Agents
 
 ### Delegation and Context Economy
-- Use `gpt-6-luna` only for substantial, bounded testing, benchmarks, research, or exploration. Never use Luna for production coding, fixes, refactoring, or implementation.
+
+- Use cheaper models and subagents only for substantial, bounded testing, benchmarks, research, or exploration. Never use them for production coding, fixes, refactoring, or implementation.
 - Keep requirements, production implementation, integration, and final review in the primary thread. If production coding is delegated, use the primary model.
 - Group related work into one assignment. Handle small lookups and edits directly when delegation overhead would exceed the savings.
 - Give each agent a clear deliverable, file ownership, required skill paths, allowed commands, and exclusions. Concurrent writers must own disjoint files.
@@ -300,15 +330,17 @@ const toolDefinition: ToolDefinition = {
 - Wait for completion notifications instead of repeatedly polling or importing full transcripts. Keep at most three subagents active.
 - Before completing a substantial security or core logic change, request an independent correctness review; the primary agent resolves findings and verifies the final result.
 - Keep Git mutations and destructive operations in the primary thread. Subagents must not stash, switch branches, reset, clean, commit, or push.
-- Project concurrency settings and focused Luna researcher/tester roles live in `.codex/config.toml` and `.codex/agents/`. Unspecified subagent models inherit the primary model.
+- Project concurrency settings and focused researcher/tester roles live in `.codex/config.toml` and `.codex/agents/`. Unspecified subagent models inherit the primary model.
 
 ### OpenSpec Workflow
+
 - Every feature, fix, or other implementation change must go through the OpenSpec workflow before code changes begin. Documentation-only edits and small routine chores, such as version bumps, changelog updates and release tagging, do not need an OpenSpec change. Handle these directly without creating OpenSpec proposals or task lists.
 - Name each OpenSpec change with its GitHub issue prefix: `gh-<issue-number>-<short-kebab-case-description>` (for example, `gh-123-example-change`).
 - Explore and clarify requirements first, create the OpenSpec proposal and required artifacts, apply the change, validate it, then archive it when complete.
 - Keep command examples and common CLI/WebApp/Pipes patterns in `docs/usage.md`; keep README as an overview linking there. Add separate docs only for substantial reference material such as coverage, limits, or performance, rather than one page per command.
 
 ### Adding a New Tool
+
 1. Implement in `crates/core/src/<category>/`
 2. Add WASM bindings in `crates/wasm/src/<category>_ops.rs`
 3. Rebuild WASM: `make wasm-build`
@@ -317,12 +349,14 @@ const toolDefinition: ToolDefinition = {
 6. Test in browser and CLI
 
 ### Debugging WASM Issues
+
 - Check browser console for errors
 - Verify WASM module is rebuilt: `make wasm-build`
 - Check `webapp/wasm/` directory for generated files
 - Ensure `WasmModule` interface matches Rust exports
 
 ### Code Style
+
 - **Rust**: Follow `rustfmt` defaults (`.rustfmt.toml`)
 - **Webapp**: Follow Biome configuration
 - Run `make rust-fmt-check` and `make webapp-lint` before committing
