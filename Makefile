@@ -18,6 +18,10 @@ help:
 	@echo "  cli-release           - Build CLI crate (release)"
 	@echo "  rust-test             - Run Rust tests"
 	@echo "  wasm-build            - Build WASM module for webapp"
+	@echo "  portable-wasm-setup   - Install pinned portable WASM tooling"
+	@echo "  portable-wasm-build   - Build portable core module and component"
+	@echo "  portable-wasm-test    - Test portable artifact contracts"
+	@echo "  portable-wasm-package - Package portable artifacts and checksums"
 	@echo "  webapp-install        - Install webapp dependencies"
 	@echo "  webapp-fmt            - Format webapp code"
 	@echo "  webapp-fmt-check      - Check webapp code formatting"
@@ -102,6 +106,46 @@ rust-coverage-report:
 # Build WASM module for webapp
 wasm-build:
 	RUSTFLAGS="--cfg getrandom_backend=\"wasm_js\"" wasm-pack build crates/wasm --out-dir $(CURDIR)/webapp/wasm
+
+# Portable library: one WIT contract, core WASI module and component.
+WASM_TOOLS ?= $(CURDIR)/target/portable-tools/bin/wasm-tools
+PORTABLE_DIR = $(CURDIR)/target/portable-wasm
+PORTABLE_PYTHON = $(CURDIR)/target/portable-test/bin/python
+WASI_ADAPTER = $(CURDIR)/target/portable-tools/reactor-50.0.1.wasm
+
+.PHONY: portable-wasm-setup portable-wasm-build portable-wasm-test portable-wasm-package
+
+portable-wasm-setup:
+	rustup target add wasm32-wasip1
+	cargo install wasm-tools --version 1.263.0 --locked --root $(CURDIR)/target/portable-tools
+	$(MAKE) $(WASI_ADAPTER)
+
+$(WASI_ADAPTER):
+	mkdir -p $(dir $@)
+	curl -fL https://github.com/bytecodealliance/wasmtime/releases/download/v50.0.1/wasi_snapshot_preview1.reactor.wasm -o $@.download
+	echo "6d52112df28f0caee9018f911f279f94f848230b2f0ed02138290363e925671f  $@.download" | shasum -a 256 -c -
+	mv $@.download $@
+
+portable-wasm-build: $(WASI_ADAPTER)
+	mkdir -p $(PORTABLE_DIR)
+	cargo build --locked --release --target wasm32-wasip1 -p strapd-wasm-portable
+	cp target/wasm32-wasip1/release/strapd_wasm_portable.wasm $(PORTABLE_DIR)/strapd.wasm
+	cp crates/wasm-portable/wit/tools.wit $(PORTABLE_DIR)/tools.wit
+	$(WASM_TOOLS) validate $(PORTABLE_DIR)/strapd.wasm
+	$(WASM_TOOLS) component new $(PORTABLE_DIR)/strapd.wasm --adapt wasi_snapshot_preview1=$(WASI_ADAPTER) -o $(PORTABLE_DIR)/strapd.component.wasm
+	$(WASM_TOOLS) validate $(PORTABLE_DIR)/strapd.component.wasm
+
+target/portable-test/.wasmtime-50.0.1:
+	python3 -m venv $(CURDIR)/target/portable-test
+	$(PORTABLE_PYTHON) -m pip install wasmtime==50.0.1
+	touch $@
+
+portable-wasm-test: portable-wasm-build target/portable-test/.wasmtime-50.0.1
+	$(PORTABLE_PYTHON) crates/wasm-portable/tests/contract.py $(PORTABLE_DIR)
+
+portable-wasm-package: portable-wasm-build
+	cd $(PORTABLE_DIR) && shasum -a 256 strapd.wasm strapd.component.wasm tools.wit > SHA256SUMS
+	tar -czf $(CURDIR)/target/strapd-wasm.tar.gz -C $(PORTABLE_DIR) strapd.wasm strapd.component.wasm tools.wit SHA256SUMS
 
 # -------------------
 # Webapp

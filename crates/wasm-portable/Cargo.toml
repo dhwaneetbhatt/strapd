@@ -1,0 +1,13 @@
+[package]
+name = "strapd-wasm-portable"
+version = "1.4.0"
+edition = "2024"
+publish = false
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+strapd-core = { path = "../core", default-features = false }
+wit-bindgen = "=0.63.0"
+serde_json = "1.0.152"

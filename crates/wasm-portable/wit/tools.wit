@@ -1,0 +1,85 @@
+package strapd:tools@0.1.0;
+
+/// Stateless developer tools. Calls on each instance must be serialized.
+world tools {
+    /// Category bit matching the PII category mask; offsets are UTF-8 bytes.
+    record detection { category: u8, start: u32, end: u32 }
+    record sampled-array { path: string, omitted: u32 }
+    record sample-result {
+        output: string,
+        filtered-nulls: u32,
+        filtered-empty-arrays: u32,
+        omitted-total: u32,
+        arrays: list<sampled-array>,
+    }
+    enum timestamp-format { human, iso }
+    enum jwt-algorithm { hs256, hs384, hs512 }
+    enum unit-category { bytes, time, length, temperature }
+    enum character-type { lowercase, uppercase, digits, symbols }
+    record unit { canonical-name: string, aliases: list<string>, category: unit-category }
+
+    export base64-encode: func(input: list<u8>) -> string;
+    export base64-decode: func(input: string) -> result<list<u8>, string>;
+    export hex-encode: func(input: list<u8>) -> string;
+    export hex-decode: func(input: string) -> result<list<u8>, string>;
+    export url-encode: func(input: string) -> string;
+    export url-decode: func(input: string) -> result<string, string>;
+
+    export string-to-uppercase: func(input: string) -> string;
+    export string-to-lowercase: func(input: string) -> string;
+    export string-to-capitalcase: func(input: string) -> string;
+    export string-count-lines: func(input: string) -> u32;
+    export string-count-words: func(input: string) -> u32;
+    export string-count-chars: func(input: string) -> u32;
+    export string-count-bytes: func(input: string) -> u32;
+    export string-reverse: func(input: string) -> string;
+    export string-replace: func(input: string, search: string, replacement: string) -> string;
+    export string-slugify: func(input: string, separator: char) -> string;
+    export string-trim: func(input: string, left: bool, right: bool, all: bool) -> string;
+
+    export json-beautify: func(input: string, sort: bool, spaces: u8) -> result<string, string>;
+    export json-minify: func(input: string, sort: bool) -> result<string, string>;
+    export json-sample: func(input: string, size: u32, seed: u64) -> result<sample-result, string>;
+    export xml-beautify: func(input: string, spaces: u8) -> result<string, string>;
+    export xml-minify: func(input: string) -> result<string, string>;
+    export json-to-yaml: func(input: string) -> result<string, string>;
+    export yaml-to-json: func(input: string) -> result<string, string>;
+    export json-to-xml: func(input: string, root: option<string>) -> result<string, string>;
+    export xml-to-json: func(input: string) -> result<string, string>;
+
+    /// Generation counts must be in 1..=1024. IDs are newline-delimited.
+    export uuid-generate-v4: func(count: u32) -> result<string, string>;
+    export uuid-generate-v7: func(count: u32) -> result<string, string>;
+    export ulid-generate: func(count: u32) -> result<string, string>;
+    export random-string: func(count: u32, length: u8, types: list<character-type>,
+        custom-charset: option<string>) -> result<list<string>, string>;
+    export random-number: func(min: s64, max: s64, count: u32) -> result<list<s64>, string>;
+
+    export datetime-now: func(millis: bool) -> s64;
+    /// WASI formats timestamps in UTC, independently of the host timezone.
+    export datetime-from-timestamp: func(timestamp: s64, format: timestamp-format) -> result<string, string>;
+    export datetime-from-timestamp-millis: func(timestamp: s64, format: timestamp-format) -> result<string, string>;
+
+    export hash-md5: func(input: string) -> string;
+    export hash-sha1: func(input: string) -> string;
+    export hash-sha256: func(input: string) -> string;
+    export hash-sha512: func(input: string) -> string;
+    export hmac-sha256: func(input: string, key: string) -> result<string, string>;
+    export hmac-sha512: func(input: string, key: string) -> result<string, string>;
+    export jwt-decode: func(input: string) -> result<string, string>;
+    export jwt-decode-with-analysis: func(input: string) -> result<string, string>;
+    export jwt-header: func(input: string) -> result<string, string>;
+    export jwt-payload: func(input: string) -> result<string, string>;
+    export jwt-verify: func(input: string, secret: string) -> result<string, string>;
+    export jwt-sign: func(payload: string, secret: string, algorithm: jwt-algorithm,
+        expires-in-seconds: option<s64>) -> result<string, string>;
+
+    export convert: func(value: f64, from-unit: string, to-unit: string) -> result<string, string>;
+    export convert-all: func(value: f64, from-unit: string) -> result<string, string>;
+    export get-units-in-category: func(category: unit-category) -> list<unit>;
+
+    /// Category bits are documented in docs/usage.md; zero selects no categories.
+    export detect-pii: func(input: string, categories: u8) -> list<detection>;
+    export sanitize-pii: func(input: string, categories: u8, pseudonymize: bool) -> string;
+    export sanitize-secrets: func(input: string, categories: u8) -> string;
+}

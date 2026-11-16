@@ -56,18 +56,21 @@ const openSavedPipes = async (page: Page) => {
 };
 
 const expectInsideViewport = async (page: Page, locator: Locator) => {
-  const box = await locator.boundingBox();
-  expect(box).not.toBeNull();
-  const viewport = page.viewportSize();
-  expect(viewport).not.toBeNull();
-  expect(box?.x).toBeGreaterThanOrEqual(0);
-  expect(box?.y).toBeGreaterThanOrEqual(0);
-  expect((box?.x ?? 0) + (box?.width ?? 0)).toBeLessThanOrEqual(
-    viewport?.width ?? 0,
-  );
-  expect((box?.y ?? 0) + (box?.height ?? 0)).toBeLessThanOrEqual(
-    viewport?.height ?? 0,
-  );
+  // The dialog can be visible before its entrance animation reaches the viewport.
+  await expect(async () => {
+    const box = await locator.boundingBox();
+    expect(box).not.toBeNull();
+    const viewport = page.viewportSize();
+    expect(viewport).not.toBeNull();
+    expect(box?.x).toBeGreaterThanOrEqual(0);
+    expect(box?.y).toBeGreaterThanOrEqual(0);
+    expect((box?.x ?? 0) + (box?.width ?? 0)).toBeLessThanOrEqual(
+      viewport?.width ?? 0,
+    );
+    expect((box?.y ?? 0) + (box?.height ?? 0)).toBeLessThanOrEqual(
+      viewport?.height ?? 0,
+    );
+  }).toPass();
 };
 
 test("runs and renames a pipe without overflow across mobile viewports", async ({

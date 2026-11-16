@@ -48,11 +48,16 @@ sed "${SED_INPLACE[@]}" "/^\[package\]/,/^\[/{s/version = \"[^\"]*\"/version = \
 echo "  Updating crates/wasm/Cargo.toml..."
 sed "${SED_INPLACE[@]}" "/^\[package\]/,/^\[/{s/version = \"[^\"]*\"/version = \"$VERSION\"/;}" "$PROJECT_ROOT/crates/wasm/Cargo.toml"
 
+# WIT contract versions are independent; this updates only the Rust package.
+echo "  Updating crates/wasm-portable/Cargo.toml..."
+sed "${SED_INPLACE[@]}" "/^\[package\]/,/^\[/{s/version = \"[^\"]*\"/version = \"$VERSION\"/;}" "$PROJECT_ROOT/crates/wasm-portable/Cargo.toml"
+
 echo "✓ Version updated to $VERSION in all files:"
 echo "  - webapp/package.json"
 echo "  - crates/cli/Cargo.toml"
 echo "  - crates/core/Cargo.toml"
 echo "  - crates/wasm/Cargo.toml"
+echo "  - crates/wasm-portable/Cargo.toml"
 echo ""
 echo "Next steps:"
 echo "  1. Review the changes: git diff"
