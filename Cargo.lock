@@ -1025,7 +1025,7 @@ dependencies = [
 
 [[package]]
 name = "strapd"
-version = "1.5.0"
+version = "1.5.1"
 dependencies = [
  "clap",
  "copypasta",
@@ -1035,7 +1035,7 @@ dependencies = [
 
 [[package]]
 name = "strapd-core"
-version = "1.4.0"
+version = "1.5.1"
 dependencies = [
  "base64",
  "chrono",
@@ -1059,7 +1059,7 @@ dependencies = [
 
 [[package]]
 name = "strapd-wasm"
-version = "1.4.0"
+version = "1.5.1"
 dependencies = [
  "getrandom",
  "serde",
@@ -1070,7 +1070,7 @@ dependencies = [
 
 [[package]]
 name = "strapd-wasm-portable"
-version = "1.4.0"
+version = "1.5.1"
 dependencies = [
  "serde_json",
  "strapd-core",

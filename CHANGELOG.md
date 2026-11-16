@@ -6,6 +6,22 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+## [v1.5.1] - 2026-11-16
+
+### core
+
+- feat: expose PII detections with category and UTF-8 byte ranges
+- fix: tighten payment-card recognition and labelled numeric PII matching
+
+### wasm
+
+- feat: add a generic WIT-based portable library with WASI core and component artifacts
+- chore: remove the unused browser `web-sys` dependency
+
+### documentation
+
+- docs: simplify the usage guide and add practical CLI, browser and Python WASM examples
+
 ## [v1.5.0] - 2026-11-13
 
 ### cli

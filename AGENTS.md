@@ -303,7 +303,7 @@ const toolDefinition: ToolDefinition = {
 - Project concurrency settings and focused Luna researcher/tester roles live in `.codex/config.toml` and `.codex/agents/`. Unspecified subagent models inherit the primary model.
 
 ### OpenSpec Workflow
-- Every feature, fix, or other implementation change must go through the OpenSpec workflow before code changes begin. Documentation-only edits do not need an OpenSpec change.
+- Every feature, fix, or other implementation change must go through the OpenSpec workflow before code changes begin. Documentation-only edits and small routine chores, such as version bumps, changelog updates and release tagging, do not need an OpenSpec change. Handle these directly without creating OpenSpec proposals or task lists.
 - Name each OpenSpec change with its GitHub issue prefix: `gh-<issue-number>-<short-kebab-case-description>` (for example, `gh-123-example-change`).
 - Explore and clarify requirements first, create the OpenSpec proposal and required artifacts, apply the change, validate it, then archive it when complete.
 - Keep command examples and common CLI/WebApp/Pipes patterns in `docs/usage.md`; keep README as an overview linking there. Add separate docs only for substantial reference material such as coverage, limits, or performance, rather than one page per command.
