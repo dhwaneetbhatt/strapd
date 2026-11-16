@@ -14,3 +14,8 @@
 - [x] 3.1 Test actual core module and component contracts, all exports, malformed data, binary/Unicode values, large inputs, 64-bit values, clocks/randomness and reuse.
 - [x] 3.2 Run Rust and WebApp regression checks, rebuild browser WASM, obtain independent correctness review and resolve findings.
 - [x] 3.3 Validate OpenSpec and final diff; update the same PR with only integration code and results documentation. Do not release.
+
+## 4. CI warning cleanup
+
+- [x] 4.1 Remove the unused browser WASM `web-sys` dependency and refresh the lockfile.
+- [x] 4.2 Verify Rust/browser builds and tests, then push the cleanup to the same PR without releasing.

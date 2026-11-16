@@ -1066,7 +1066,6 @@ dependencies = [
  "serde_json",
  "strapd-core",
  "wasm-bindgen",
- "web-sys",
 ]
 
 [[package]]
@@ -1387,16 +1386,6 @@ dependencies = [
  "log",
  "once_cell",
  "pkg-config",
-]
-
-[[package]]
-name = "web-sys"
-version = "0.3.106"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "88261b9deccee56594c11a3460c462c41f58d148598fe70ad77070126a68aba4"
-dependencies = [
- "js-sys",
- "wasm-bindgen",
 ]
 
 [[package]]

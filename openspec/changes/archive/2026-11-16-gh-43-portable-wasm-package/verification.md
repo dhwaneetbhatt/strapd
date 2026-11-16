@@ -62,3 +62,12 @@ validate the pushed PR independently.
 
 Not checked: additional engines/languages, concurrent production workloads,
 Safari/Firefox, exhaustive generated-Go method execution or a production SDK.
+
+## CI warning cleanup (2026-11-16)
+
+The two PR annotations both reported the same unused `web-sys` dependency in
+`crates/wasm/Cargo.toml`. Removed that dependency and its lockfile entry after
+confirming no browser adapter references it. Rust formatting, clippy with warnings
+denied, all 764 Rust tests, the browser WASM rebuild, all 339 WebApp tests and the
+production WebApp build passed. Browser E2E and portable-runtime tests were not
+repeated for this unused-dependency removal. No release was performed.
