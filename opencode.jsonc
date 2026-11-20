@@ -1,0 +1,59 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  // Shell permissions are not an OS sandbox. Unknown commands require approval.
+  "permissions": [
+    { "action": "external_directory", "resource": "*", "effect": "ask" },
+    { "action": "shell", "resource": "*", "effect": "ask" },
+    { "action": "shell", "resource": "make *", "effect": "allow" },
+    { "action": "shell", "resource": "rtk make *", "effect": "allow" },
+    { "action": "shell", "resource": "rtk proxy make *", "effect": "allow" },
+    { "action": "shell", "resource": "git status *", "effect": "allow" },
+    { "action": "shell", "resource": "git diff *", "effect": "allow" },
+    { "action": "shell", "resource": "git log *", "effect": "allow" },
+    { "action": "shell", "resource": "git add *", "effect": "allow" },
+    { "action": "shell", "resource": "git commit *", "effect": "allow" },
+    { "action": "shell", "resource": "git push *", "effect": "allow" },
+    { "action": "shell", "resource": "git switch -c *", "effect": "allow" },
+    { "action": "shell", "resource": "git switch --create *", "effect": "allow" },
+    { "action": "shell", "resource": "git checkout -b *", "effect": "allow" },
+    { "action": "shell", "resource": "openspec instructions *", "effect": "allow" },
+    { "action": "shell", "resource": "openspec list *", "effect": "allow" },
+    { "action": "shell", "resource": "openspec new *", "effect": "allow" },
+    { "action": "shell", "resource": "openspec status *", "effect": "allow" },
+    { "action": "shell", "resource": "openspec validate *", "effect": "allow" },
+    { "action": "shell", "resource": "openspec view *", "effect": "allow" },
+    { "action": "shell", "resource": "gh issue comment *", "effect": "allow" },
+    { "action": "shell", "resource": "gh issue create *", "effect": "allow" },
+    { "action": "shell", "resource": "gh issue edit *", "effect": "allow" },
+    { "action": "shell", "resource": "gh issue list *", "effect": "allow" },
+    { "action": "shell", "resource": "gh issue status *", "effect": "allow" },
+    { "action": "shell", "resource": "gh issue view *", "effect": "allow" },
+    { "action": "shell", "resource": "gh pr checks *", "effect": "allow" },
+    { "action": "shell", "resource": "gh pr comment *", "effect": "allow" },
+    { "action": "shell", "resource": "gh pr create *", "effect": "allow" },
+    { "action": "shell", "resource": "gh pr diff *", "effect": "allow" },
+    { "action": "shell", "resource": "gh pr edit *", "effect": "allow" },
+    { "action": "shell", "resource": "gh pr list *", "effect": "allow" },
+    { "action": "shell", "resource": "gh pr ready *", "effect": "allow" },
+    { "action": "shell", "resource": "gh pr status *", "effect": "allow" },
+    { "action": "shell", "resource": "gh pr update-branch *", "effect": "allow" },
+    { "action": "shell", "resource": "gh pr view *", "effect": "allow" }
+  ],
+  "agents": {
+    "plan": {
+      "permissions": [
+        { "action": "shell", "resource": "*", "effect": "ask" }
+      ]
+    },
+    "tester": {
+      "permissions": [
+        { "action": "shell", "resource": "git add *", "effect": "deny" },
+        { "action": "shell", "resource": "git commit *", "effect": "deny" },
+        { "action": "shell", "resource": "git push *", "effect": "deny" },
+        { "action": "shell", "resource": "git switch *", "effect": "deny" },
+        { "action": "shell", "resource": "git checkout *", "effect": "deny" }
+      ]
+    }
+  },
+  "experimental": { "subagent_depth": 2 }
+}
