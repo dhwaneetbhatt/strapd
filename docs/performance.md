@@ -33,14 +33,16 @@ Inputs are generated from a fixed seed, so every run measures the same data. CI 
 
 ### Results
 
-Reference machine: _to be recorded_.
+Reference machine: Apple M4, macOS 27.2.1, Rust 1.97.1, release build with thin LTO. Recorded 2026-11-22.
 
 | Scenario | Native 1 MB | Native 10 MB | Browser WASM 10 MB (in module / end to end) |
 |---|---|---|---|
-| Identical | | | |
-| Localized edit | | | |
-| Single-line edit | | | |
-| Scattered 1% | | | |
-| Completely different | | | |
+| Identical | 0.017 ms | 0.19 ms | |
+| Localized edit | 0.033 ms | 0.33 ms | |
+| Single-line edit | 0.054 ms | 0.58 ms | |
+| Scattered 1% | 1.08 ms | 11.3 ms | |
+| Completely different | 20.0 ms | 203 ms | |
+
+Unified rendering throughput: 2.5 GB/s (localized), 3.3 GB/s (scattered 1%), 6.3–7.2 GB/s (completely different). Time grows linearly with input size in the scaling benchmark.
 
 Browser `simd128`: _before/after to be recorded_.
