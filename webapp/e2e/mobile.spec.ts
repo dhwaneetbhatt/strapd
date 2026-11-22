@@ -186,7 +186,11 @@ test("keeps conflict and delete dialogs usable with increased text", async ({
   await conflict.getByRole("button", { name: "Cancel" }).click();
 
   await page.getByRole("button", { name: "More pipe actions" }).click();
-  await page.getByRole("menuitem", { name: "Delete" }).click();
+  const deleteAction = page.getByRole("menuitem", { name: "Delete" });
+  // Scrolling can flip the menu to the opposite side of its trigger.
+  await deleteAction.scrollIntoViewIfNeeded();
+  await expect(deleteAction).toBeInViewport({ ratio: 1 });
+  await deleteAction.click();
   const deletion = page.getByRole("alertdialog", { name: "Delete this pipe?" });
   await expectInsideViewport(page, deletion);
   await deletion.getByRole("button", { name: "Delete pipe" }).click();
