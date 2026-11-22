@@ -13,6 +13,11 @@ pub fn required_bytes<'a>(argument: Option<&'a str>, name: &str) -> Result<Cow<'
     required_bytes_from(argument, name, stdin.lock(), stdin.is_terminal())
 }
 
+pub fn read_stdin_bytes(name: &str) -> Result<Vec<u8>, String> {
+    let stdin = io::stdin();
+    read_stdin_bytes_from(name, stdin.lock(), stdin.is_terminal())
+}
+
 pub fn piped_text() -> Result<Option<String>, String> {
     let stdin = io::stdin();
     piped_text_from(stdin.lock(), stdin.is_terminal())
@@ -76,19 +81,27 @@ fn required_text_from<'a, R: Read>(
 fn required_bytes_from<'a, R: Read>(
     argument: Option<&'a str>,
     name: &str,
-    mut reader: R,
+    reader: R,
     is_terminal: bool,
 ) -> Result<Cow<'a, [u8]>, String> {
     if let Some(argument) = argument {
         return Ok(Cow::Borrowed(argument.as_bytes()));
     }
 
+    read_stdin_bytes_from(name, reader, is_terminal).map(Cow::Owned)
+}
+
+fn read_stdin_bytes_from<R: Read>(
+    name: &str,
+    mut reader: R,
+    is_terminal: bool,
+) -> Result<Vec<u8>, String> {
     ensure_piped_input(name, is_terminal)?;
     let mut input = Vec::new();
     reader
         .read_to_end(&mut input)
         .map_err(|error| format!("Failed to read {name} from stdin: {error}"))?;
-    Ok(Cow::Owned(input))
+    Ok(input)
 }
 
 fn piped_text_from<R: Read>(mut reader: R, is_terminal: bool) -> Result<Option<String>, String> {

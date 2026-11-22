@@ -5,7 +5,17 @@ use strapd_core::{
     security, string,
 };
 
-wit_bindgen::generate!({ world: "tools" });
+mod text_diff;
+
+// The Canonical ABI flattens each string argument into a pointer and length.
+#[allow(clippy::too_many_arguments)]
+mod bindings {
+    wit_bindgen::generate!({ world: "tools" });
+    use super::Tools;
+    export!(Tools);
+}
+
+pub use bindings::*;
 
 pub struct Tools;
 
@@ -88,6 +98,20 @@ impl Guest for Tools {
     }
     fn string_trim(input: String, left: bool, right: bool, all: bool) -> String {
         string::whitespace::trim(&input, left, right, all)
+    }
+
+    fn text_diff(from: String, to: String, context: u32) -> TextDiffResult {
+        string::diff::diff(&from, &to, context as usize).into()
+    }
+    fn text_diff_unified(
+        from: String,
+        to: String,
+        context: u32,
+        from_label: String,
+        to_label: String,
+    ) -> String {
+        let diff = string::diff::diff(&from, &to, context as usize);
+        string::diff::unified(&diff, &from_label, &to_label)
     }
 
     fn json_beautify(input: String, sort: bool, spaces: u8) -> Result<String, String> {
@@ -288,5 +312,3 @@ impl Guest for Tools {
         sanitize::secrets(&input, sanitize::Categories::from_bits(categories)).into_owned()
     }
 }
-
-export!(Tools);

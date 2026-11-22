@@ -1,0 +1,58 @@
+{
+  "from": "outside\n\nclé = 30;\r\nlast",
+  "to": "outside\n\nclé = 60;\r\nlast",
+  "context": 1,
+  "from-label": "a",
+  "to-label": "b",
+  "unified": "--- a\n+++ b\n@@ -2,3 +2,3 @@\n \n-clé = 30;\r\n+clé = 60;\r\n last\n\\ No newline at end of file\n",
+  "structured": {
+    "added": 1,
+    "removed": 1,
+    "hunks": [
+      {
+        "from-start": 2,
+        "from-count": 3,
+        "to-start": 2,
+        "to-count": 3,
+        "lines": [
+          {
+            "kind": "context",
+            "from-line": 2,
+            "to-line": 2,
+            "segments": [{"text": "", "emphasized": false}],
+            "missing-newline": false
+          },
+          {
+            "kind": "removed",
+            "from-line": 3,
+            "to-line": null,
+            "segments": [
+              {"text": "clé = ", "emphasized": false},
+              {"text": "30", "emphasized": true},
+              {"text": ";\r", "emphasized": false}
+            ],
+            "missing-newline": false
+          },
+          {
+            "kind": "added",
+            "from-line": null,
+            "to-line": 3,
+            "segments": [
+              {"text": "clé = ", "emphasized": false},
+              {"text": "60", "emphasized": true},
+              {"text": ";\r", "emphasized": false}
+            ],
+            "missing-newline": false
+          },
+          {
+            "kind": "context",
+            "from-line": 4,
+            "to-line": 4,
+            "segments": [{"text": "last", "emphasized": false}],
+            "missing-newline": true
+          }
+        ]
+      }
+    ]
+  }
+}

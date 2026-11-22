@@ -7,6 +7,7 @@ use strapd_core::string;
 
 pub fn handle(operation: &StringOperation) -> CommandResult {
     match operation {
+        StringOperation::Diff(_) => Err("Use the streaming diff handler".to_string()),
         StringOperation::Uppercase { input } => {
             let input = required_text(input.as_deref(), "input")?;
             text_result(string::case::to_uppercase(text_with_piped_trim(&input)))
