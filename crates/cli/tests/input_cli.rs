@@ -3,6 +3,7 @@ mod common;
 use std::time::Duration;
 
 use common::{assert_failure_contains, assert_success, strapd, strapd_with_open_stdin};
+use strapd_core::datetime::timestamp::{self, TimestampFormat};
 
 #[test]
 fn byte_encoding_preserves_exact_piped_bytes() {
@@ -95,9 +96,10 @@ fn conversion_calculator_and_datetime_trim_piped_input() {
         b"6.21 mi\n",
     );
     assert_success(&strapd(&["calc"], Some(b"  1 + 2  \n")), b"3\n");
+    let local_epoch = timestamp::from_timestamp(0, TimestampFormat::Human).unwrap();
     assert_success(
         &strapd(&["time", "from"], Some(b"  0  \n")),
-        b"1970-01-01 00:00:00 +00:00\n",
+        format!("{local_epoch}\n").as_bytes(),
     );
 }
 

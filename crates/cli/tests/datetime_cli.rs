@@ -1,6 +1,7 @@
 use clap::Parser;
 use strapd::args::{Cli, Commands};
 use strapd::handlers::datetime_handler;
+use strapd_core::datetime::timestamp::{self, TimestampFormat};
 
 // Helper to convert Result<Vec<u8>, String> to String
 fn result_to_string(result: Result<Vec<u8>, String>) -> Result<String, String> {
@@ -45,11 +46,9 @@ fn test_cli_time_now_formatted() {
             let result = datetime_handler::handle(operation);
             assert!(result.is_ok());
             let output = result_to_string(result).unwrap();
-            // Basic ISO format check: YYYY-MM-DD...
-            assert!(output.trim().contains("-"));
-            assert!(output.trim().contains("T"));
-            // timezone offset can be Z or +XX:XX
-            assert!(output.trim().contains("Z") || output.trim().contains("+"));
+            let (date, time) = output.trim().split_once('T').unwrap();
+            assert!(date.contains('-'));
+            assert!(time.ends_with('Z') || time.contains(['+', '-']));
         }
         _ => panic!("Expected Time command"),
     }
@@ -57,20 +56,14 @@ fn test_cli_time_now_formatted() {
 
 #[test]
 fn test_cli_time_from_timestamp() {
-    // 0 -> 1970-01-01 00:00:00 UTC, but looks like 05:30:00 locally
-    // We just verify it parses correctly as a date around 1970
     let cli = Cli::parse_from(["strapd", "time", "from", "0", "--format", "iso"]);
     match &cli.command {
         Commands::Time { operation } => {
             let result = datetime_handler::handle(operation);
             assert!(result.is_ok());
             let output = result_to_string(result).unwrap();
-            // Should be 1970-01-01 regardless of timezone (unless west of UTC, might be prev day.. )
-            // Actually 0 UTC is 1970-01-01T00:00:00Z.
-            // If TZ is -05:00 it would be 1969-12-31.
-            // But usually test envs are UTC or positive. The user env is +05:30.
-            // Let's just check the structure broadly.
-            assert!(output.contains("1970-01-01"));
+            let expected = timestamp::from_timestamp(0, TimestampFormat::Iso).unwrap();
+            assert_eq!(output, expected);
         }
         _ => panic!("Expected Time command"),
     }
@@ -78,7 +71,6 @@ fn test_cli_time_from_timestamp() {
 
 #[test]
 fn test_cli_time_from_timestamp_millis() {
-    // 1000ms -> 1s -> 1970-01-01 00:00:01 UTC
     let cli = Cli::parse_from([
         "strapd", "time", "from", "1000", "--millis", "--format", "iso",
     ]);
@@ -87,7 +79,8 @@ fn test_cli_time_from_timestamp_millis() {
             let result = datetime_handler::handle(operation);
             assert!(result.is_ok());
             let output = result_to_string(result).unwrap();
-            assert!(output.contains("1970-01-01"));
+            let expected = timestamp::from_timestamp(1, TimestampFormat::Iso).unwrap();
+            assert_eq!(output, expected);
         }
         _ => panic!("Expected Time command"),
     }

@@ -64,7 +64,7 @@ rust-fmt-check:
 
 # Run Rust linter (clippy)
 rust-lint:
-	cargo clippy -- -D warnings
+	cargo clippy --all-targets -- -D warnings
 
 .PHONY: rust-bench
 rust-bench:
