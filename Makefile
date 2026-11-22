@@ -17,6 +17,7 @@ help:
 	@echo "  cli-build             - Build CLI crate (debug)"
 	@echo "  cli-release           - Build CLI crate (release)"
 	@echo "  rust-test             - Run Rust tests"
+	@echo "  rust-bench            - Benchmark core text diff (BENCH_ARGS supported)"
 	@echo "  wasm-build            - Build WASM module for webapp"
 	@echo "  portable-wasm-setup   - Install pinned portable WASM tooling"
 	@echo "  portable-wasm-build   - Build portable core module and component"
@@ -64,6 +65,10 @@ rust-fmt-check:
 # Run Rust linter (clippy)
 rust-lint:
 	cargo clippy -- -D warnings
+
+.PHONY: rust-bench
+rust-bench:
+	cargo bench -p strapd-core --bench text_diff $(BENCH_ARGS)
 
 rust-audit:
 	cargo audit

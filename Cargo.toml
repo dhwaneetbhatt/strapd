@@ -1,3 +1,7 @@
 [workspace]
 members = ["crates/*"]
 resolver = "2"
+
+[profile.bench]
+lto = "thin"
+codegen-units = 1

@@ -1,14 +1,14 @@
 ## 1. Core (`crates/core`, workspace `Cargo.toml` profile, `Makefile` bench target) — owner: coder A
 
-- [ ] 1.1 Add `imara-diff`, `memchr`, `bytecount` dependencies and `criterion`, `proptest` dev-dependencies; add `[profile.bench]` (thin LTO, 1 codegen unit); verify `make wasm-build` and `make portable-wasm-build` still compile with the new dependencies (no `getrandom`/`Instant` reach)
-- [ ] 1.2 Write the benchmark suite `crates/core/benches/text_diff.rs` and its deterministic generators per design D8 against a stub `diff()`, and add `make rust-bench` (with `BENCH_ARGS`) — benchmarks exist before optimisation
-- [ ] 1.3 Implement the zero-copy model and `diff(from, to, context)` per design D1–D2: byte-level prefix/suffix fast path, SIMD prefix line counting, bounded context slicing, `imara-diff` on the middle, hunk grouping with `diff -u` ranges, CRLF and missing-newline handling, totals
-- [ ] 1.4 Implement intra-line emphasis per design D3 (token-boundary prefix/suffix trimming, 2,000-token cap, `imara-diff` token diff, 0.5 similarity threshold, merged ranges)
-- [ ] 1.5 Implement `unified` (pre-sized) and `unified_into` (streaming) per spec "Unified patch rendering"
-- [ ] 1.6 Tests in `crates/core/tests/text_diff.rs`: every core spec scenario; committed GNU `diff -u` fixtures under `crates/core/tests/fixtures/text_diff/`; CRLF, empty sides, zero/full context, Unicode, deep line numbers
-- [ ] 1.7 Property tests (`crates/core/tests/text_diff_props.rs`): fast path equals engine on untrimmed input exactly; reconstruction of "to" is byte-exact; emphasis ranges are in-bounds, sorted, on char boundaries
-- [ ] 1.8 Run `make rust-bench`; iterate until every native budget in spec "Performance budgets" is met or report the measured gap with a profile (`cargo flamegraph`/Instruments) to the parent — do not relax budgets
-- [ ] 1.9 `make rust-test` and `make rust-lint` pass (benches compile under lint)
+- [x] 1.1 Add `imara-diff`, `memchr`, `bytecount` dependencies and `criterion`, `proptest` dev-dependencies; add `[profile.bench]` (thin LTO, 1 codegen unit); verify `make wasm-build` and `make portable-wasm-build` still compile with the new dependencies (no `getrandom`/`Instant` reach)
+- [x] 1.2 Write the benchmark suite `crates/core/benches/text_diff.rs` and its deterministic generators per design D8 against a stub `diff()`, and add `make rust-bench` (with `BENCH_ARGS`) — benchmarks exist before optimisation
+- [x] 1.3 Implement the zero-copy model and `diff(from, to, context)` per design D1–D2: byte-level prefix/suffix fast path, SIMD prefix line counting, bounded context slicing, `imara-diff` on the middle, hunk grouping with `diff -u` ranges, CRLF and missing-newline handling, totals
+- [x] 1.4 Implement intra-line emphasis per design D3 (token-boundary prefix/suffix trimming, 2,000-token cap, `imara-diff` token diff, 0.5 similarity threshold, merged ranges)
+- [x] 1.5 Implement `unified` (pre-sized) and `unified_into` (streaming) per spec "Unified patch rendering"
+- [x] 1.6 Tests in `crates/core/tests/text_diff.rs`: every core spec scenario; committed GNU `diff -u` fixtures under `crates/core/tests/fixtures/text_diff/`; CRLF, empty sides, zero/full context, Unicode, deep line numbers
+- [x] 1.7 Property tests (`crates/core/tests/text_diff_props.rs`): fast path equals engine on untrimmed input exactly; reconstruction of "to" is byte-exact; emphasis ranges are in-bounds, sorted, on char boundaries
+- [x] 1.8 Run `make rust-bench`; iterate until every native budget in spec "Performance budgets" is met or report the measured gap with a profile (`cargo flamegraph`/Instruments) to the parent — do not relax budgets
+- [x] 1.9 `make rust-test` and `make rust-lint` pass (benches compile under lint)
 
 ## 2. CLI (`crates/cli`) — owner: coder B (after group 1)
 

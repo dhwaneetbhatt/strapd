@@ -88,6 +88,7 @@ User Input → React Component → Tool Definition → WASM Wrapper → strapd_w
 - **Case conversion**: uppercase, lowercase, capitalize
 - **Analysis**: count lines, words, chars, bytes
 - **Transform**: reverse, replace, slugify
+- **Diff**: line diff with intra-line emphasis; unified (`diff -u`) and side-by-side CLI output, red/green WebApp viewer; performance budgets and benchmarks in `docs/performance.md`
 - **Whitespace**: trim (left, right, all)
 
 ### Identifiers
