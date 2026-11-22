@@ -12,6 +12,18 @@ colors:
   dark-workbench: "#1e1e1e"
   dark-panel: "#2d2d30"
   dark-ink: "#e6e6e6"
+  diff-removed-bg: "#ffebe9"
+  diff-removed-bg-dark: "rgba(248, 81, 73, 0.15)"
+  diff-removed-emphasis: "#ffc1ba"
+  diff-removed-emphasis-dark: "rgba(248, 81, 73, 0.40)"
+  diff-removed-fg: "#cf222e"
+  diff-removed-fg-dark: "#ff7b72"
+  diff-added-bg: "#e6ffec"
+  diff-added-bg-dark: "rgba(46, 160, 67, 0.15)"
+  diff-added-emphasis: "#abf2bc"
+  diff-added-emphasis-dark: "rgba(46, 160, 67, 0.40)"
+  diff-added-fg: "#1a7f37"
+  diff-added-fg-dark: "#56d364"
 typography:
   display:
     fontFamily: "Inter, -apple-system, BlinkMacSystemFont, sans-serif"
@@ -92,6 +104,10 @@ The palette behaves like an editor workbench: neutral backgrounds carry the inte
 - **Dark Ink:** high-legibility dark-mode text.
 
 **The One Signal Rule.** Use blue to identify focus, selection, primary action, and product navigation—not as a decorative fill across every surface.
+
+**Diff colors.** Red and green are reserved for removed and added lines. Use the
+stronger tint behind changed tokens, with Ink or Dark Ink throughout the line.
+Colored signs and totals are paired with literal minus and plus markers.
 
 ## Typography
 

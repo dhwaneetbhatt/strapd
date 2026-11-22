@@ -3,6 +3,7 @@
 import {
   AnalysisToolComponent,
   CaseConverterToolComponent,
+  DiffToolComponent,
   ReplaceToolComponent,
   ReverseToolComponent,
   SlugifyToolComponent,
@@ -12,6 +13,8 @@ import type { ToolDefinition } from "../components/tools/base-tool";
 import { CATEGORY_ICONS } from "../constants/category-icons";
 import { createPipeToolContract } from "../lib/pipes/tool-contract";
 import { stringUtils } from "../lib/utils/string";
+import { DEFAULT_DIFF_CONTEXT } from "../lib/utils/string/diff";
+import type { TextDiff } from "../lib/wasm";
 import type { Tool, ToolGroup } from "../types";
 
 // Type definitions for tools with multiple outputs
@@ -26,6 +29,23 @@ type AnalysisResult = {
   words?: number;
   chars?: number;
   bytes?: number;
+};
+
+const diffToolDefinition: ToolDefinition<{ diff?: TextDiff }> = {
+  id: "string-diff",
+  name: "Text Diff",
+  description: "Compare two texts and copy a unified patch",
+  category: "string",
+  aliases: ["diff", "compare", "delta", "patch", "text diff"],
+  sensitiveInputs: ["original", "changed"],
+  scrollMode: "page",
+  component: DiffToolComponent,
+  operation: (inputs) =>
+    stringUtils.diff.compare(
+      String(inputs.original ?? ""),
+      String(inputs.changed ?? ""),
+      Number(inputs.context ?? DEFAULT_DIFF_CONTEXT),
+    ),
 };
 
 type OutputCase = "Uppercase" | "Lowercase" | "Capital case";
@@ -331,6 +351,7 @@ export const stringToolsGroup: ToolGroup = {
   description: "String manipulation and transformation utilities",
   icon: CATEGORY_ICONS.string,
   tools: [
+    diffToolDefinition,
     caseConverterTool,
     analysisTool,
     reverseTool,
@@ -342,6 +363,7 @@ export const stringToolsGroup: ToolGroup = {
 
 // Tool registry for component lookup
 export const TOOL_REGISTRY: Record<string, ToolDefinition> = {
+  [diffToolDefinition.id]: diffToolDefinition,
   [caseConverterToolDefinition.id]: caseConverterToolDefinition,
   [analysisToolDefinition.id]: analysisToolDefinition,
   [reverseToolDefinition.id]: reverseToolDefinition,

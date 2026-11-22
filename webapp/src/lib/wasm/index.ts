@@ -16,6 +16,33 @@ interface JsonSampleWireResult extends JsonSampleStats {
   output: string;
 }
 
+export interface DiffSegment {
+  text: string;
+  emphasized: boolean;
+}
+
+export interface DiffLine {
+  kind: "context" | "removed" | "added";
+  fromLine: number | null;
+  toLine: number | null;
+  segments: DiffSegment[];
+  missingNewline: boolean;
+}
+
+export interface DiffHunk {
+  fromStart: number;
+  fromCount: number;
+  toStart: number;
+  toCount: number;
+  lines: DiffLine[];
+}
+
+export interface TextDiff {
+  hunks: DiffHunk[];
+  added: number;
+  removed: number;
+}
+
 export interface WasmModule {
   string_to_uppercase: (input: string) => string;
   string_to_lowercase: (input: string) => string;
@@ -31,6 +58,15 @@ export interface WasmModule {
   string_reverse: (input: string) => string;
   string_replace: (input: string, search: string, replacement: string) => string;
   string_slugify: (input: string, separator: string) => string;
+
+  text_diff: (from: string, to: string, context: number) => string;
+  text_diff_unified: (
+    from: string,
+    to: string,
+    context: number,
+    fromLabel: string,
+    toLabel: string,
+  ) => string;
 
   // Whitespace
   string_trim: (input: string, left: boolean, right: boolean, all: boolean) => string;
@@ -126,6 +162,35 @@ export class WasmWrapper {
         error: message.replace(/^Error:\s*/, '')
       };
     }
+  }
+
+  public text_diff(
+    from: string,
+    to: string,
+    context: number,
+  ): ToolResult<{ diff?: TextDiff }> {
+    try {
+      const diff: TextDiff = JSON.parse(
+        this.wasmModule.text_diff(from, to, context),
+      );
+      return { success: true, diff };
+    } catch {
+      return { success: false, error: "Could not compare the two texts." };
+    }
+  }
+
+  public text_diff_unified(
+    from: string,
+    to: string,
+    context: number,
+    fromLabel: string,
+    toLabel: string,
+  ): ToolResult {
+    return this.safeWasmCall(
+      () =>
+        this.wasmModule.text_diff_unified(from, to, context, fromLabel, toLabel),
+      "text_diff_unified",
+    );
   }
 
   // String operations
@@ -517,3 +582,12 @@ export class WasmWrapper {
 
 // Export singleton instance
 export const wasmWrapper = WasmWrapper.getInstance();
+
+if (import.meta.env.MODE === "benchmark") {
+  Object.assign(window, {
+    textDiffBenchmark: {
+      wrapper: wasmWrapper,
+      compareInModule: wasm.text_diff_benchmark,
+    },
+  });
+}

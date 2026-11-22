@@ -139,7 +139,7 @@ Visual authority: `DESIGN.md` (refinement inside the incumbent world; no new fon
 | diff-removed-fg (sign, totals) | `#cf222e` | `#ff7b72` |
 | diff-added-bg | `#e6ffec` | `rgba(46, 160, 67, 0.15)` |
 | diff-added-emphasis | `#abf2bc` | `rgba(46, 160, 67, 0.40)` |
-| diff-added-fg | `#1a7f37` | `#3fb950` |
+| diff-added-fg | `#1a7f37` | `#56d364` |
 
 Body text on tinted rows keeps Ink / Dark Ink (contrast ≥ 4.5:1 on every tint, verify). Emphasis uses background only, with a 2px radius; no bold, no underline (avoids reflow).
 

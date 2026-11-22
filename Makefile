@@ -191,6 +191,13 @@ webapp-test:
 webapp-e2e:
 	cd webapp && pnpm test:e2e $(TEST_ARGS)
 
+.PHONY: webapp-bench
+webapp-bench:
+ifeq ($(WEBAPP_BENCH_CHECK),)
+	cd webapp && pnpm build --mode benchmark --outDir ../target/webapp-bench-dist --emptyOutDir
+endif
+	cd webapp && pnpm test:e2e --config playwright.bench.config.ts $(TEST_ARGS)
+
 # Test webapp with coverage
 webapp-coverage:
 	cd webapp && pnpm test --coverage

@@ -12,33 +12,33 @@
 
 ## 2. CLI (`crates/cli`) — owner: coder B (after group 1)
 
-- [ ] 2.1 Add `Diff` args to `crates/cli/src/args/string.rs` per design D4
-- [ ] 2.2 Add exact (untrimmed) stdin byte reader to `crates/cli/src/input.rs` reusing TTY detection
-- [ ] 2.3 Implement source resolution and validation with side-named errors; zero-copy file reads
-- [ ] 2.4 Implement streaming coloured unified and side-by-side rendering in `crates/cli/src/handlers/diff_render.rs` over `BufWriter` (add `unicode-width`)
-- [ ] 2.5 Wire the dedicated diff branch in `main.rs` with exit statuses 0/1/2 and no extra trailing newline
-- [ ] 2.6 CLI tests: literal/file/stdin sources, invalid sources, `-U`, `--label`, side-by-side alignment incl. wide chars and tabs, colour never/always/auto-when-piped, ANSI-strip invariant, `--exit-code` statuses, identical → empty stdout
-- [ ] 2.7 Renderer benchmark `crates/cli/benches/diff_render.rs` per design D8; record results
-- [ ] 2.8 `make rust-test` and `make rust-lint` pass; manual `./target/debug/strapd text diff` smoke run, including a 10 MB file pair
+- [x] 2.1 Add `Diff` args to `crates/cli/src/args/string.rs` per design D4
+- [x] 2.2 Add exact (untrimmed) stdin byte reader to `crates/cli/src/input.rs` reusing TTY detection
+- [x] 2.3 Implement source resolution and validation with side-named errors; zero-copy file reads
+- [x] 2.4 Implement streaming coloured unified and side-by-side rendering in `crates/cli/src/handlers/diff_render.rs` over `BufWriter` (add `unicode-width`)
+- [x] 2.5 Wire the dedicated diff branch in `main.rs` with exit statuses 0/1/2 and no extra trailing newline
+- [x] 2.6 CLI tests: literal/file/stdin sources, invalid sources, `-U`, `--label`, side-by-side alignment incl. wide chars and tabs, colour never/always/auto-when-piped, ANSI-strip invariant, `--exit-code` statuses, identical → empty stdout
+- [x] 2.7 Renderer benchmark `crates/cli/benches/diff_render.rs` per design D8; record results
+- [x] 2.8 `make rust-test` and `make rust-lint` pass; manual `./target/debug/strapd text diff` smoke run, including a 10 MB file pair
 
 ## 3. Browser WASM and WebApp — owner: coder C (after group 1; parallel with 2 and 4)
 
-- [ ] 3.1 Add `text_diff` and `text_diff_unified` to `crates/wasm/src/string_ops.rs` per design D5 (output proportional to hunk lines); `make wasm-build`
-- [ ] 3.2 Add `WasmModule` types and wrapper methods in `webapp/src/lib/wasm/index.ts` and `stringUtils.diff` in `webapp/src/lib/utils/string`
-- [ ] 3.3 Add diff colour tokens to the Chakra theme and to `DESIGN.md` per design D7; verify text contrast ≥ 4.5:1 on every tint
-- [ ] 3.4 Implement `diff-viewer.tsx` (unified + split, gutters, hunk rows, emphasis, filler, missing-newline marker, sr-only labels, 2,000-row cap, long-line elision, memoised rows)
-- [ ] 3.5 Implement `diff-tool.tsx` (inputs, swap, view toggle, context select, totals, copy patch, empty/identical states, narrow-screen behaviour) and export it from `components/tools/index.ts`
-- [ ] 3.6 Register `string-diff` in `webapp/src/tools/string-tools.ts` without a pipe contract
-- [ ] 3.7 Tests: `diff-viewer.test.tsx` and tool-definition test; `make webapp-test` and `make webapp-lint` pass
-- [ ] 3.8 Browser benchmark `webapp/e2e/text-diff.bench.ts` and `make webapp-bench` per design D8 (excluded from `make webapp-e2e`); measure the browser build with and without `+simd128`; if the gain is material, enable it in `make wasm-build` only (never the portable build) and report both numbers
-- [ ] 3.9 Browser check at `make webapp-dev` in light and dark mode, desktop and mobile widths, including a 1 MB paste (one batched pass)
+- [x] 3.1 Add `text_diff` and `text_diff_unified` to `crates/wasm/src/string_ops.rs` per design D5 (output proportional to hunk lines); `make wasm-build`
+- [x] 3.2 Add `WasmModule` types and wrapper methods in `webapp/src/lib/wasm/index.ts` and `stringUtils.diff` in `webapp/src/lib/utils/string`
+- [x] 3.3 Add diff colour tokens to the Chakra theme and to `DESIGN.md` per design D7; verify text contrast ≥ 4.5:1 on every tint
+- [x] 3.4 Implement `diff-viewer.tsx` (unified + split, gutters, hunk rows, emphasis, filler, missing-newline marker, sr-only labels, 2,000-row cap, long-line elision, memoised rows)
+- [x] 3.5 Implement `diff-tool.tsx` (inputs, swap, view toggle, context select, totals, copy patch, empty/identical states, narrow-screen behaviour) and export it from `components/tools/index.ts`
+- [x] 3.6 Register `string-diff` in `webapp/src/tools/string-tools.ts` without a pipe contract
+- [x] 3.7 Tests: `diff-viewer.test.tsx` and tool-definition test; `make webapp-test` and `make webapp-lint` pass
+- [x] 3.8 Browser benchmark `webapp/e2e/text-diff.bench.ts` and `make webapp-bench` per design D8 (excluded from `make webapp-e2e`); measure the browser build with and without `+simd128`; if the gain is material, enable it in `make wasm-build` only (never the portable build) and report both numbers
+- [x] 3.9 Browser check at `make webapp-dev` in light and dark mode, desktop and mobile widths, including a 1 MB paste (one batched pass)
 
 ## 4. Portable WASM — owner: coder D (after group 1; parallel with 2 and 3)
 
-- [ ] 4.1 Add WIT records/exports per design D6 and bump package to `strapd:tools@0.2.0`
-- [ ] 4.2 Implement exports in `crates/wasm-portable/src`
-- [ ] 4.3 Extend `tests/adapter.rs` and `tests/contract.py` with shared fixture parity (core module and component), including a large-input case asserting the result contains only the changed hunk
-- [ ] 4.4 `make portable-wasm-test` passes
+- [x] 4.1 Add WIT records/exports per design D6 and bump package to `strapd:tools@0.2.0`
+- [x] 4.2 Implement exports in `crates/wasm-portable/src`
+- [x] 4.3 Extend `tests/adapter.rs` and `tests/contract.py` with shared fixture parity (core module and component), including a large-input case asserting the result contains only the changed hunk
+- [x] 4.4 `make portable-wasm-test` passes
 
 ## 5. Docs and verification — primary agent
 

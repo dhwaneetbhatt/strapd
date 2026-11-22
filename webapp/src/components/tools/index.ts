@@ -25,6 +25,7 @@ export { SanitizeSecretsToolComponent } from "./security/sanitize-secrets-tool";
 export { SingleInputOutputTool } from "./single-input-output-tool";
 export { AnalysisToolComponent } from "./string/analysis-tool";
 export { CaseConverterToolComponent } from "./string/case-converter-tool";
+export { DiffToolComponent } from "./string/diff-tool";
 export {
   ReplaceToolComponent,
   ReverseToolComponent,
