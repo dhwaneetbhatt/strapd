@@ -25,24 +25,25 @@ impl From<diff::Hunk<'_>> for DiffHunk {
 
 impl From<diff::DiffLine<'_>> for DiffLine {
     fn from(line: diff::DiffLine<'_>) -> Self {
+        let content = line.content();
         let mut segments = Vec::new();
         let mut offset = 0;
         for range in line.emphasis {
             if offset < range.start {
                 segments.push(DiffSegment {
-                    text: line.text[offset..range.start].into(),
+                    text: content[offset..range.start].into(),
                     emphasized: false,
                 });
             }
             offset = range.end;
             segments.push(DiffSegment {
-                text: line.text[range].into(),
+                text: content[range].into(),
                 emphasized: true,
             });
         }
-        if offset < line.text.len() || segments.is_empty() {
+        if offset < content.len() || segments.is_empty() {
             segments.push(DiffSegment {
-                text: line.text[offset..].into(),
+                text: content[offset..].into(),
                 emphasized: false,
             });
         }

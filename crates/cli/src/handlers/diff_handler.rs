@@ -1,8 +1,14 @@
 use std::{
-    env, fs,
+    env,
+    ffi::OsStr,
+    fs,
     io::{self, BufWriter, IsTerminal, Write},
     path::PathBuf,
 };
+
+#[cfg(test)]
+#[path = "../../tests/common/diff_handler_tests.rs"]
+mod tests;
 
 use strapd_core::string::diff::diff;
 
@@ -89,6 +95,10 @@ fn resolve_sources(
     Ok((from, to))
 }
 
+fn auto_color(is_terminal: bool, no_color: Option<&OsStr>) -> bool {
+    is_terminal && no_color.is_none_or(OsStr::is_empty)
+}
+
 pub fn handle(args: DiffArgs) -> Result<bool, String> {
     let (from, to) = resolve_sources(args.inputs, args.from_file, args.to_file)?;
     if args.labels.len() > 2 {
@@ -106,9 +116,7 @@ pub fn handle(args: DiffArgs) -> Result<bool, String> {
     let color = match args.color {
         DiffColor::Always => true,
         DiffColor::Never => false,
-        DiffColor::Auto => {
-            stdout.is_terminal() && env::var_os("NO_COLOR").is_none_or(|value| value.is_empty())
-        }
+        DiffColor::Auto => auto_color(stdout.is_terminal(), env::var_os("NO_COLOR").as_deref()),
     };
     let mut out = BufWriter::with_capacity(64 * 1024, stdout.lock());
     let written = if args.side_by_side {
@@ -116,8 +124,13 @@ pub fn handle(args: DiffArgs) -> Result<bool, String> {
     } else {
         unified(&result, &from_label, &to_label, color, &mut out)
     };
-    written
-        .and_then(|()| out.flush())
-        .map_err(|error| format!("Failed to write diff to stdout: {error}"))?;
-    Ok(true)
+    match written.and_then(|()| out.flush()) {
+        Ok(()) => Ok(true),
+        Err(error) if error.kind() == io::ErrorKind::BrokenPipe => {
+            // Discard any buffered bytes instead of retrying the write on drop.
+            let _ = out.into_parts();
+            Ok(true)
+        }
+        Err(error) => Err(format!("Failed to write diff to stdout: {error}")),
+    }
 }

@@ -78,6 +78,7 @@ Text, files, and piped input are compared exactly as given; trailing newlines an
 Colour follows git: removed lines are red, added lines green, and the changed words inside a line are highlighted. Colour turns off automatically when the output is piped or `NO_COLOR` is set; force it with `--color always` or turn it off with `--color never`.
 
 The command exits 0 even when the texts differ, so it composes with other commands. In scripts, add `--exit-code` to get 0 for identical texts, 1 for differences, and 2 for errors. To compare the literal text `-`, put it in a file.
+For other literal text beginning with `-`, put `--` before the positional arguments, for example `strapd text diff -- -x y`.
 
 ## Encoding and data formats
 

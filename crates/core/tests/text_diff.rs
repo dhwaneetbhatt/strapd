@@ -175,6 +175,85 @@ fn emphasis_cap_and_long_line() {
 }
 
 #[test]
+fn emphasis_compares_2_000_middle_tokens_but_not_2_001() {
+    for count in [2_000, 2_001] {
+        let shared_edge = ".".repeat(2_001);
+        let shared_middle = ":".repeat(count - 2);
+        let from = format!("{shared_edge}!{shared_middle}!;\r\n");
+        let to = format!("{shared_edge}?{shared_middle}?;\r\n");
+        let result = diff(&from, &to, 3);
+        for line in &result.hunks[0].lines {
+            let start = shared_edge.len();
+            let end = start + count;
+            let expected = if count == 2_000 {
+                vec![start..start + 1, end - 1..end]
+            } else {
+                std::iter::once(start..end).collect()
+            };
+            assert_eq!(line.emphasis, expected);
+        }
+    }
+}
+
+#[test]
+fn emphasis_requires_at_least_half_shared_content() {
+    for (changed_len, paired) in [(9, true), (10, true), (11, false)] {
+        let from = format!("{}{}", ".".repeat(10), "!".repeat(changed_len));
+        let to = format!("{}{}", ".".repeat(10), "?".repeat(changed_len));
+        let result = diff(&from, &to, 3);
+        for line in &result.hunks[0].lines {
+            if paired {
+                assert_eq!(line.emphasis.len(), 1);
+                assert_eq!(line.emphasis[0], 10..10 + changed_len);
+            } else {
+                assert!(line.emphasis.is_empty());
+            }
+        }
+    }
+}
+
+#[test]
+fn emphasis_excludes_crlf_but_keeps_a_literal_final_cr() {
+    for (from, to) in [
+        ("a\r\n", "a\n"),
+        ("keep\na\r\n", "keep\na\n"),
+        ("a\r\n", "a"),
+    ] {
+        let result = diff(from, to, 3);
+        for line in &result.hunks[0].lines {
+            assert!(line.emphasis.is_empty());
+        }
+    }
+
+    for (from, to) in [
+        ("timeout = 30\r\n", "timeout = 60\n"),
+        ("timeout = 30\r\n", "timeout = 60\r\n"),
+        ("timeout = 30\r", "timeout = 60\r"),
+    ] {
+        let result = diff(from, to, 3);
+        for (line, (number, input)) in result.hunks[0].lines.iter().zip([("30", from), ("60", to)])
+        {
+            assert_eq!(line.emphasis.len(), 1);
+            assert_eq!(&line.content()[line.emphasis[0].clone()], number);
+            assert_eq!(line.text, input.trim_end_matches('\n'));
+            assert_eq!(line.content().ends_with('\r'), !input.ends_with('\n'));
+        }
+    }
+}
+
+#[test]
+fn differing_terminators_do_not_hide_a_long_common_content_suffix() {
+    let suffix = ";".repeat(3_000);
+    let from = format!("value = 30{suffix}\r\n");
+    let to = format!("value = 60{suffix}\n");
+    let result = diff(&from, &to, 3);
+    for (line, number) in result.hunks[0].lines.iter().zip(["30", "60"]) {
+        assert_eq!(line.emphasis.len(), 1);
+        assert_eq!(&line.content()[line.emphasis[0].clone()], number);
+    }
+}
+
+#[test]
 fn streaming_propagates_writer_failure() {
     struct Fail;
     impl std::io::Write for Fail {

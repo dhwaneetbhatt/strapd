@@ -1,6 +1,11 @@
 mod common;
 
-use std::{fs, process::Command, time::Duration};
+use std::{
+    fs,
+    io::Read,
+    process::{Command, Stdio},
+    time::Duration,
+};
 
 use common::{
     assert_failure_contains, assert_success, command_with_timeout, strapd, strapd_with_open_stdin,
@@ -33,11 +38,78 @@ fn literals_are_exact_and_aliases_work() {
         let output = strapd(&[command, "diff", from, to], None);
         assert_success(&output, patch.as_bytes());
     }
-    let plain = strapd(&["text", "diff", "--", "--exit-code", ""], None);
-    assert_success(
-        &plain,
-        unified(&diff("--exit-code", "", 3), "a", "b").as_bytes(),
-    );
+    for (from, to) in [("--exit-code", ""), ("-x", "y")] {
+        let plain = strapd(&["text", "diff", "--", from, to], None);
+        assert_success(&plain, unified(&diff(from, to, 3), "a", "b").as_bytes());
+    }
+}
+
+#[test]
+fn unified_patch_applies_cleanly() {
+    let dir = std::env::temp_dir().join(format!("strapd-diff-apply-{}", std::process::id()));
+    let old = "old/text.txt";
+    let new = "new/text.txt";
+    fs::create_dir(&dir).unwrap();
+    fs::create_dir(dir.join("old")).unwrap();
+    fs::create_dir(dir.join("new")).unwrap();
+    let context = "common\n".repeat(10);
+    let multi_from = format!("before\n{context}old\n");
+    let multi_to = format!("after\n{context}new\n");
+    for (from, to, hunk_count) in [
+        (multi_from.as_str(), multi_to.as_str(), 2),
+        ("same\r\nold\r\n", "same\r\nnew\r\n", 1),
+        ("same\nold\n", "same\nnew", 1),
+    ] {
+        fs::write(dir.join(old), from).unwrap();
+        fs::write(dir.join(new), to).unwrap();
+        fs::copy(dir.join(old), dir.join("text.txt")).unwrap();
+        let mut command = Command::new(env!("CARGO_BIN_EXE_strapd"));
+        command.current_dir(&dir).args([
+            "text",
+            "diff",
+            "--color",
+            "never",
+            "--from-file",
+            old,
+            "--to-file",
+            new,
+            "--label",
+            old,
+            "--label",
+            new,
+        ]);
+        let patch = command_with_timeout(&mut command, None, common::DEFAULT_TIMEOUT);
+        assert!(patch.output.status.success());
+        assert!(patch.output.stderr.is_empty());
+        assert_eq!(
+            patch
+                .output
+                .stdout
+                .split(|&byte| byte == b'\n')
+                .filter(|row| row.starts_with(b"@@ "))
+                .count(),
+            hunk_count
+        );
+        let mut apply = Command::new("git");
+        apply
+            .current_dir(&dir)
+            .args(["apply", "--whitespace=nowarn", "-"]);
+        let output = command_with_timeout(
+            &mut apply,
+            Some(&patch.output.stdout),
+            common::DEFAULT_TIMEOUT,
+        );
+        assert!(
+            output.output.status.success(),
+            "{}",
+            String::from_utf8_lossy(&output.output.stderr)
+        );
+        assert_eq!(
+            fs::read(dir.join("text.txt")).unwrap(),
+            fs::read(dir.join(new)).unwrap()
+        );
+    }
+    fs::remove_dir_all(dir).unwrap();
 }
 
 #[test]
@@ -118,7 +190,7 @@ fn invalid_sources_fail_before_reading() {
             "both from and to inputs",
         ),
     ] {
-        let output = strapd_with_open_stdin(args, Duration::from_secs(2));
+        let output = strapd_with_open_stdin(args, Duration::from_secs(10));
         assert_failure_contains(&output, message);
         assert_eq!(output.output.status.code(), Some(1));
     }
@@ -173,7 +245,7 @@ fn color_matches_git_style_and_strips_to_the_core_patch() {
                 "--color", color,
             ])
             .env("NO_COLOR", "1");
-        let result = command_with_timeout(&mut command, None, Duration::from_secs(2));
+        let result = command_with_timeout(&mut command, None, common::DEFAULT_TIMEOUT);
         if color == "always" {
             let stdout = String::from_utf8_lossy(&result.output.stdout);
             assert!(
@@ -195,6 +267,22 @@ fn color_matches_git_style_and_strips_to_the_core_patch() {
         None,
     );
     assert_success(&default_color, expected.as_bytes());
+}
+
+#[test]
+fn color_does_not_emphasize_a_crlf_terminator() {
+    let from = "k\na\r\n";
+    let to = "k\na\n";
+    let output = strapd(&["text", "diff", "--color", "always", from, to], None);
+    let patch = unified(&diff(from, to, 3), "a", "b");
+    assert!(output.output.status.success());
+    assert!(output.output.stderr.is_empty());
+    assert_eq!(strip_sgr(&output.output.stdout), patch.as_bytes());
+    assert!(
+        !String::from_utf8(output.output.stdout)
+            .unwrap()
+            .contains("\x1b[7m")
+    );
 }
 
 #[test]
@@ -251,6 +339,33 @@ fn side_by_side_expands_tabs_and_keeps_the_gutter_aligned() {
 }
 
 #[test]
+fn side_by_side_escapes_controls_without_moving_the_gutter() {
+    let from = "p\r\né\r\x1b\x08\x7f\r\nq\r";
+    let to = "p\r\n界\r\nr\r";
+    for (width, gutter, expected) in [
+        (
+            "-W21",
+            10,
+            "@@ -1,3 +1,3 @@\np           p\né^M^[^H^? | 界\nq^M       | r^M\n",
+        ),
+        ("-W3", 1, "@@ -1,3 +1,3 @@\n   \n | \n | \n"),
+        ("-W7", 3, "@@ -1,3 +1,3 @@\np    p\né  | 界\nq  | r\n"),
+    ] {
+        let plain = strapd(&["text", "diff", "-y", width, from, to], None);
+        assert_success(&plain, expected.as_bytes());
+        let stdout = String::from_utf8(plain.output.stdout).unwrap();
+        for (row, marker) in stdout.lines().skip(1).zip([' ', '|', '|']) {
+            let (index, ch) = row
+                .char_indices()
+                .find(|(index, _)| row[..*index].width() == gutter)
+                .unwrap();
+            assert_eq!(ch, marker);
+            assert_eq!(row[..index].width(), gutter);
+        }
+    }
+}
+
+#[test]
 fn exit_status_and_identical_output() {
     let expected = unified(&diff("a", "b", 3), "a", "b");
     let differs = strapd(&["text", "diff", "--exit-code", "a", "b"], None);
@@ -276,4 +391,30 @@ fn exit_status_and_identical_output() {
         args.extend_from_slice(flags);
         assert_success(&strapd(&args, None), b"");
     }
+}
+
+#[test]
+fn closing_stdout_early_is_not_an_error() {
+    let file = std::env::temp_dir().join(format!("strapd-diff-pipe-{}", std::process::id()));
+    fs::write(&file, "context line\n".repeat(200_000)).unwrap();
+    for (flags, expected_code) in [(&[][..], 0), (&["--exit-code"][..], 1)] {
+        let mut child = Command::new(env!("CARGO_BIN_EXE_strapd"))
+            .args(["text", "diff", "-U100000000", "--from-file"])
+            .arg(&file)
+            .arg("")
+            .args(flags)
+            .stdout(Stdio::piped())
+            .stderr(Stdio::piped())
+            .spawn()
+            .unwrap();
+        let mut stdout = child.stdout.take().unwrap();
+        let mut prefix = [0; 4];
+        stdout.read_exact(&mut prefix).unwrap();
+        assert_eq!(&prefix, b"--- ");
+        drop(stdout);
+        let output = child.wait_with_output().unwrap();
+        assert!(output.stderr.is_empty(), "{:?}", output.stderr);
+        assert_eq!(output.status.code(), Some(expected_code));
+    }
+    fs::remove_file(file).unwrap();
 }

@@ -42,9 +42,9 @@
 
 ## 5. Docs and verification — primary agent
 
-- [ ] 5.1 Document `strapd text diff` and the WebApp tool in `docs/usage.md`; update the portable package version reference
-- [ ] 5.2 Write `docs/performance.md` (reference machine, commands, native/WASM/CLI-renderer medians vs budgets, browser `simd128` before/after)
-- [ ] 5.3 Update feature lists in `README.md` and `AGENTS.md`; add CHANGELOG entry
-- [ ] 5.4 Independent correctness review of core and CLI; resolve findings
-- [ ] 5.5 `make lint` and `make test` pass; cross-interface parity check (CLI uncoloured output == WASM unified == portable unified on shared fixtures)
-- [ ] 5.6 `openspec validate gh-46-text-diff --strict`
+- [x] 5.1 Document `strapd text diff` and the WebApp tool in `docs/usage.md`; update the portable package version reference
+- [x] 5.2 Write `docs/performance.md` (reference machine, commands, native/WASM/CLI-renderer medians vs budgets, browser `simd128` before/after)
+- [x] 5.3 Update feature lists in `README.md` and `AGENTS.md`; add CHANGELOG entry
+- [x] 5.4 Independent correctness review of core and CLI; resolve findings
+- [x] 5.5 `make lint` and `make test` pass; cross-interface parity check (CLI uncoloured output == WASM unified == portable unified on shared fixtures)
+- [x] 5.6 `openspec validate gh-46-text-diff --strict`

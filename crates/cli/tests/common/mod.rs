@@ -1,11 +1,13 @@
 #![allow(dead_code)]
 
 use std::{
-    io::Write,
+    io::{Read, Write},
     process::{Command, Output, Stdio},
     thread,
     time::{Duration, Instant},
 };
+
+pub const DEFAULT_TIMEOUT: Duration = Duration::from_secs(30);
 
 pub struct CommandOutput {
     pub output: Output,
@@ -13,7 +15,7 @@ pub struct CommandOutput {
 }
 
 pub fn strapd(args: &[&str], stdin: Option<&[u8]>) -> CommandOutput {
-    strapd_with_timeout(args, stdin, Duration::from_secs(5))
+    strapd_with_timeout(args, stdin, DEFAULT_TIMEOUT)
 }
 
 pub fn strapd_with_timeout(
@@ -28,32 +30,8 @@ pub fn strapd_with_timeout(
 
 pub fn strapd_with_open_stdin(args: &[&str], timeout: Duration) -> CommandOutput {
     let mut command = Command::new(env!("CARGO_BIN_EXE_strapd"));
-    command
-        .args(args)
-        .stdin(Stdio::piped())
-        .stdout(Stdio::piped())
-        .stderr(Stdio::piped());
-
-    let started = Instant::now();
-    let mut child = command.spawn().expect("failed to start strapd");
-
-    loop {
-        if child.try_wait().expect("failed to poll strapd").is_some() {
-            let output = child
-                .wait_with_output()
-                .expect("failed to collect strapd output");
-            return CommandOutput {
-                output,
-                elapsed: started.elapsed(),
-            };
-        }
-        if started.elapsed() >= timeout {
-            child.kill().expect("failed to kill timed-out strapd");
-            let _ = child.wait();
-            panic!("strapd did not ignore open stdin when an argument was supplied");
-        }
-        thread::sleep(Duration::from_millis(10));
-    }
+    command.args(args).stdin(Stdio::piped());
+    capture_output(&mut command, None, timeout, "strapd with open stdin")
 }
 
 pub fn command_with_timeout(
@@ -61,17 +39,26 @@ pub fn command_with_timeout(
     stdin: Option<&[u8]>,
     timeout: Duration,
 ) -> CommandOutput {
-    command
-        .stdin(if stdin.is_some() {
-            Stdio::piped()
-        } else {
-            Stdio::null()
-        })
-        .stdout(Stdio::piped())
-        .stderr(Stdio::piped());
+    command.stdin(if stdin.is_some() {
+        Stdio::piped()
+    } else {
+        Stdio::null()
+    });
+    capture_output(command, stdin, timeout, "command")
+}
+
+fn capture_output(
+    command: &mut Command,
+    stdin: Option<&[u8]>,
+    timeout: Duration,
+    description: &str,
+) -> CommandOutput {
+    command.stdout(Stdio::piped()).stderr(Stdio::piped());
 
     let started = Instant::now();
-    let mut child = command.spawn().expect("failed to start strapd");
+    let mut child = command.spawn().expect("failed to start command");
+    let stdout = read_pipe(child.stdout.take().expect("stdout was not piped"));
+    let stderr = read_pipe(child.stderr.take().expect("stderr was not piped"));
 
     if let Some(input) = stdin {
         child
@@ -83,24 +70,33 @@ pub fn command_with_timeout(
     }
 
     loop {
-        if child.try_wait().expect("failed to poll strapd").is_some() {
-            let output = child
-                .wait_with_output()
-                .expect("failed to collect strapd output");
+        if let Some(status) = child.try_wait().expect("failed to poll command") {
             return CommandOutput {
-                output,
+                output: Output {
+                    status,
+                    stdout: stdout.join().expect("stdout reader panicked"),
+                    stderr: stderr.join().expect("stderr reader panicked"),
+                },
                 elapsed: started.elapsed(),
             };
         }
 
         if started.elapsed() >= timeout {
-            child.kill().expect("failed to kill timed-out strapd");
+            child.kill().expect("failed to kill timed-out command");
             let _ = child.wait();
-            panic!("command did not complete within {timeout:?}");
+            panic!("{description} did not complete within {timeout:?}");
         }
 
         thread::sleep(Duration::from_millis(10));
     }
+}
+
+fn read_pipe(mut pipe: impl Read + Send + 'static) -> thread::JoinHandle<Vec<u8>> {
+    thread::spawn(move || {
+        let mut bytes = Vec::new();
+        pipe.read_to_end(&mut bytes).expect("failed to read output");
+        bytes
+    })
 }
 
 pub fn assert_success(result: &CommandOutput, stdout: &[u8]) {

@@ -37,9 +37,20 @@ pub struct DiffLine<'a> {
     pub to_line: Option<usize>,
     /// Without LF; a CR belonging to a CRLF terminator is retained.
     pub text: &'a str,
-    /// Sorted, non-adjacent byte ranges into `text`, on UTF-8 boundaries.
+    /// Sorted, non-adjacent byte ranges into the line content, on UTF-8 boundaries.
     pub emphasis: Vec<Range<usize>>,
     pub missing_newline: bool,
+}
+
+impl<'a> DiffLine<'a> {
+    /// Returns the line text without its terminator.
+    pub fn content(&self) -> &'a str {
+        if self.missing_newline {
+            self.text
+        } else {
+            self.text.strip_suffix('\r').unwrap_or(self.text)
+        }
+    }
 }
 
 /// Compares UTF-8 texts using heuristic Myers, without slider post-processing.
@@ -73,12 +84,19 @@ pub fn diff<'a>(from: &'a str, to: &'a str, context: usize) -> TextDiff<'a> {
         if prefix == 0 && suffix == 0 {
             let mut old = line(LineKind::Removed, from, Some(1), None);
             let mut new = line(LineKind::Added, to, None, Some(1));
-            let terminator = usize::from(from.ends_with('\n') && to.ends_with('\n'));
+            let (old_content, new_content) = (old.content(), new.content());
+            let old_terminator = from.len() - old_content.len();
+            let new_terminator = to.len() - new_content.len();
+            let content_suffix = if old_terminator == new_terminator {
+                byte_suffix.saturating_sub(old_terminator)
+            } else {
+                common_suffix(old_content.as_bytes(), new_content.as_bytes())
+            };
             (old.emphasis, new.emphasis) = emphasis::compare_with_edges(
-                old.text,
-                new.text,
-                byte_prefix.min(old.text.len()).min(new.text.len()),
-                byte_suffix.saturating_sub(terminator),
+                old_content,
+                new_content,
+                byte_prefix.min(old_content.len()).min(new_content.len()),
+                content_suffix,
             );
             return TextDiff {
                 hunks: vec![Hunk {
@@ -167,7 +185,7 @@ pub fn diff<'a>(from: &'a str, to: &'a str, context: usize) -> TextDiff<'a> {
             }
             let (removed, added) = hunk.lines[run_start..].split_at_mut(added_start - run_start);
             for (old, new) in removed.iter_mut().zip(added) {
-                (old.emphasis, new.emphasis) = emphasis::compare(old.text, new.text);
+                (old.emphasis, new.emphasis) = emphasis::compare(old.content(), new.content());
             }
         }
         while a < a_end {

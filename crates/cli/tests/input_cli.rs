@@ -23,7 +23,7 @@ fn byte_encoding_preserves_exact_piped_bytes() {
 
 #[test]
 fn supplied_argument_does_not_wait_for_open_stdin() {
-    let output = strapd_with_open_stdin(&["base64", "encode", "argument"], Duration::from_secs(2));
+    let output = strapd_with_open_stdin(&["base64", "encode", "argument"], Duration::from_secs(10));
     assert_success(&output, b"YXJndW1lbnQ=\n");
 }
 

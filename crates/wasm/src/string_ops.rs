@@ -5,6 +5,10 @@ use strapd_core::string::{
 };
 use wasm_bindgen::prelude::*;
 
+#[cfg(test)]
+#[path = "../tests/unit/text_diff.rs"]
+mod tests;
+
 #[wasm_bindgen]
 pub fn string_to_uppercase(input: &str) -> String {
     string::case::to_uppercase(input)
@@ -98,24 +102,25 @@ struct DiffSegment<'a> {
 
 impl<'a> From<DiffLine<'a>> for WireLine<'a> {
     fn from(line: DiffLine<'a>) -> Self {
+        let content = line.content();
         let mut segments = Vec::with_capacity(line.emphasis.len() * 2 + 1);
         let mut end = 0;
         for range in line.emphasis {
             if end < range.start {
                 segments.push(DiffSegment {
-                    text: &line.text[end..range.start],
+                    text: &content[end..range.start],
                     emphasized: false,
                 });
             }
             end = range.end;
             segments.push(DiffSegment {
-                text: &line.text[range],
+                text: &content[range],
                 emphasized: true,
             });
         }
-        if end < line.text.len() || segments.is_empty() {
+        if end < content.len() || segments.is_empty() {
             segments.push(DiffSegment {
-                text: &line.text[end..],
+                text: &content[end..],
                 emphasized: false,
             });
         }

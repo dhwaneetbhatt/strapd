@@ -146,13 +146,8 @@ fn render_column(
     };
     let mut used = 0;
     out.write_all(style)?;
-    let text = if line.missing_newline {
-        line.text
-    } else {
-        line.text.strip_suffix('\r').unwrap_or(line.text)
-    };
     let ranges = if color { &line.emphasis[..] } else { &[] };
-    for (segment, emphasized) in segments(text, ranges) {
+    for (segment, emphasized) in segments(line.content(), ranges) {
         if emphasized {
             out.write_all(REVERSE)?;
         }
@@ -188,6 +183,16 @@ fn render_segment(
                 return Ok(false);
             }
             start = i + 1;
+        } else if ch.is_control() {
+            out.write_all(&text.as_bytes()[start..i])?;
+            if width - *used < 2 {
+                return Ok(false);
+            }
+            // C1 controls have no ASCII caret equivalent; use the DEL placeholder.
+            let code = if ch < '\x20' { ch as u8 + b'@' } else { b'?' };
+            out.write_all(&[b'^', code])?;
+            *used += 2;
+            start = i + ch.len_utf8();
         } else {
             let ch_width = ch.width().unwrap_or(0);
             if ch_width > width - *used {

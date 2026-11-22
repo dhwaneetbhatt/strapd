@@ -29,7 +29,7 @@
             "segments": [
               {"text": "clé = ", "emphasized": false},
               {"text": "30", "emphasized": true},
-              {"text": ";\r", "emphasized": false}
+              {"text": ";", "emphasized": false}
             ],
             "missing-newline": false
           },
@@ -40,7 +40,7 @@
             "segments": [
               {"text": "clé = ", "emphasized": false},
               {"text": "60", "emphasized": true},
-              {"text": ";\r", "emphasized": false}
+              {"text": ";", "emphasized": false}
             ],
             "missing-newline": false
           },

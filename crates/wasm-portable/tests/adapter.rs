@@ -97,6 +97,30 @@ fn diff_adapters_match_shared_fixture_and_core_unified_output() {
     );
 }
 
+#[test]
+fn diff_segments_exclude_crlf_and_preserve_empty_lines() {
+    let from = "\r\nlet timeout = 30\r\nkeep\r\n";
+    let to = "\r\nlet timeout = 60\nkeep\r\n";
+    let actual = Tools::text_diff(from.into(), to.into(), 3);
+    let hunk = hunk_json(actual.hunks.into_iter().next().unwrap());
+    let segments: Vec<_> = hunk["lines"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .map(|line| line["segments"].clone())
+        .collect();
+    let segment = |text: &str, emphasized| json!({"text": text, "emphasized": emphasized});
+    assert_eq!(
+        segments,
+        [
+            json!([segment("", false)]),
+            json!([segment("let timeout = ", false), segment("30", true)]),
+            json!([segment("let timeout = ", false), segment("60", true)]),
+            json!([segment("keep", false)]),
+        ]
+    );
+}
+
 fn hunk_json(hunk: DiffHunk) -> Value {
     json!({
         "from-start": hunk.from_start,
