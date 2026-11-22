@@ -45,6 +45,15 @@
         { "action": "shell", "resource": "*", "effect": "ask" }
       ]
     },
+    "coder": {
+      "permissions": [
+        { "action": "shell", "resource": "git add *", "effect": "deny" },
+        { "action": "shell", "resource": "git commit *", "effect": "deny" },
+        { "action": "shell", "resource": "git push *", "effect": "deny" },
+        { "action": "shell", "resource": "git switch *", "effect": "deny" },
+        { "action": "shell", "resource": "git checkout *", "effect": "deny" }
+      ]
+    },
     "tester": {
       "permissions": [
         { "action": "shell", "resource": "git add *", "effect": "deny" },
