@@ -52,6 +52,34 @@ strapd random number --min 1 --max 10 --count 3
 
 Random strings include letters, digits, and symbols by default. Add flags to choose what to include: `--digits` creates a string of digits only. `string random` also works in place of `random string`.
 
+### Compare two texts
+
+`text diff` prints a unified diff, the same format as `diff -u` and `git diff`:
+
+```bash
+strapd text diff $'host: a\nport: 80\n' $'host: a\nport: 8080\n'
+# --- a
+# +++ b
+# @@ -1,2 +1,2 @@
+#  host: a
+# -port: 80
+# +port: 8080
+```
+
+Compare files with `--from-file` and `--to-file`, or use `-` to read one side from piped input:
+
+```bash
+strapd text diff --from-file old.yaml --to-file new.yaml
+kubectl get cm app -o yaml | strapd text diff --from-file app.yaml -
+```
+
+Text, files, and piped input are compared exactly as given; trailing newlines and `\r\n` line endings count as differences. `-U 1` shows one line of context instead of three, `--label old --label new` renames the headers, and `-y` shows the two versions side by side (`-W` sets the width, 130 by default).
+
+Colour follows git: removed lines are red, added lines green, and the changed words inside a line are highlighted. Colour turns off automatically when the output is piped or `NO_COLOR` is set; force it with `--color always` or turn it off with `--color never`.
+
+The command exits 0 even when the texts differ, so it composes with other commands. In scripts, add `--exit-code` to get 0 for identical texts, 1 for differences, and 2 for errors. To compare the literal text `-`, put it in a file.
+For other literal text beginning with `-`, put `--` before the positional arguments, for example `strapd text diff -- -x y`.
+
 ## Encoding and data formats
 
 Encode or decode text with `base64`, `url`, or `hex`. When encoding a file as Base64 or Hex, pipe it in to preserve its bytes. For text, use `printf` instead of `echo` to avoid adding a newline:
@@ -176,6 +204,8 @@ Use Pipes to run several tools in sequence. For example, lowercase some text, th
 4. Enter `Hello World` and run the pipe.
 5. The result is `aGVsbG8gd29ybGQ=`.
 
+**Text Diff** compares an Original and a Changed text: removed lines are red, added lines green, and changed words get a stronger highlight. Switch between unified and split views, choose how much surrounding context to show, and copy the result as a patch. Text Diff takes two inputs, so it is not available in Pipes.
+
 Each step passes its result to the next. Generator tools can start a pipe without input. JSON Sample passes only the sampled JSON, without its statistics.
 
 Saved pipes stay in the current browser and profile. Export them before clearing browser data or moving to another browser. Exports include the steps and settings, but not the text you ran through them.
@@ -281,13 +311,14 @@ finally:
 # Contact: [REDACTED_EMAIL]
 ```
 
-For other languages, generate bindings from `tools.wit` for world `tools`. The package name is `strapd:tools@0.1.0`. Choose a generator that supports your runtime and the types used in the [function reference](../crates/wasm-portable/wit/tools.wit).
+For other languages, generate bindings from `tools.wit` for world `tools`. The package name is `strapd:tools@0.2.0`. Choose a generator that supports your runtime and the types used in the [function reference](../crates/wasm-portable/wit/tools.wit).
 
 ### Inputs and results
 
 - Base64 and hex use byte arrays, so decoding preserves binary data. For example, `base64-decode("/w==")` returns the byte `255`.
 - `detect-pii` returns `{category, start, end}` records. Offsets count UTF-8 bytes; use the [PII category bits above](#rust-and-browser-wasm-detection). Secret sanitization has its own category mask.
 - `json-sample` returns the shortened JSON plus counts of removed and skipped items. Its seed is a 64-bit unsigned integer.
+- `text-diff` returns hunks of lines. Each line has a kind (`context`, `removed`, or `added`), its line numbers, and segments marking the changed words. Only the changed parts and their context are returned, so the result stays small for large inputs. `text-diff-unified` returns the same diff as patch text. A context value larger than either text shows the whole text.
 - Functions that can fail return either a result or an error message. For example, invalid Base64 returns an error rather than an empty byte array.
 - UUIDs and ULIDs are returned as newline-separated text. Generation counts must be between 1 and 1024. Random numbers and random strings are returned as lists.
 - Random strings accept a list of character types (`lowercase`, `uppercase`, `digits`, `symbols`) and an optional custom character set. Unlike the CLI, you must choose the character types or supply a custom set.

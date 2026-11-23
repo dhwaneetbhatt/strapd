@@ -163,6 +163,13 @@ expect_pipe_failure() {
     fi
 }
 
+local_epoch_iso() {
+    local format='+%Y-%m-%dT%H:%M:%S%z'
+    local timestamp
+    timestamp=$(date -d @0 "$format" 2>/dev/null) || timestamp=$(date -r 0 "$format") || return 1
+    printf '%s:%s\n' "${timestamp%??}" "${timestamp: -2}"
+}
+
 if [[ -n ${STRAPD_BIN:-} ]]; then
     if [[ $STRAPD_BIN != /* ]]; then
         STRAPD_BIN="$REPO_ROOT/$STRAPD_BIN"
@@ -315,8 +322,12 @@ check_contains "convert temperature" "32" "$STRAPD_BIN" convert "0 c to f"
 expect_pipe_failure "convert rejects empty input" '' "No input provided" "$STRAPD_BIN" convert
 check_regex "current Unix time" '^[0-9]{10}$' "$STRAPD_BIN" time now
 check_regex "current Unix time milliseconds" '^[0-9]{13}$' "$STRAPD_BIN" time now --millis
-check_eq "time from epoch argument" "1970-01-01T00:00:00+00:00" "$STRAPD_BIN" time from 0 --format iso
-check_pipe_eq "time from epoch stdin" '0\n' "1970-01-01T00:00:00+00:00" "$STRAPD_BIN" time from --format iso
+if EPOCH_ISO=$(local_epoch_iso); then
+    check_eq "time from epoch argument" "$EPOCH_ISO" "$STRAPD_BIN" time from 0 --format iso
+    check_pipe_eq "time from epoch stdin" '0\n' "$EPOCH_ISO" "$STRAPD_BIN" time from --format iso
+else
+    fail "time from epoch" "could not determine local epoch time with date"
+fi
 expect_pipe_failure "invalid timestamp" 'not-a-number\n' "expected a whole number" "$STRAPD_BIN" time from
 
 if command -v timeout >/dev/null 2>&1; then

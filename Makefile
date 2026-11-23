@@ -17,6 +17,7 @@ help:
 	@echo "  cli-build             - Build CLI crate (debug)"
 	@echo "  cli-release           - Build CLI crate (release)"
 	@echo "  rust-test             - Run Rust tests"
+	@echo "  rust-bench            - Benchmark core text diff (BENCH_ARGS supported)"
 	@echo "  wasm-build            - Build WASM module for webapp"
 	@echo "  portable-wasm-setup   - Install pinned portable WASM tooling"
 	@echo "  portable-wasm-build   - Build portable core module and component"
@@ -63,7 +64,11 @@ rust-fmt-check:
 
 # Run Rust linter (clippy)
 rust-lint:
-	cargo clippy -- -D warnings
+	cargo clippy --all-targets -- -D warnings
+
+.PHONY: rust-bench
+rust-bench:
+	cargo bench -p strapd-core --bench text_diff $(BENCH_ARGS)
 
 rust-audit:
 	cargo audit
@@ -185,6 +190,13 @@ webapp-test:
 # Test responsive flows in a real browser
 webapp-e2e:
 	cd webapp && pnpm test:e2e $(TEST_ARGS)
+
+.PHONY: webapp-bench
+webapp-bench:
+ifeq ($(WEBAPP_BENCH_CHECK),)
+	cd webapp && pnpm build --mode benchmark --outDir ../target/webapp-bench-dist --emptyOutDir
+endif
+	cd webapp && pnpm test:e2e --config playwright.bench.config.ts $(TEST_ARGS)
 
 # Test webapp with coverage
 webapp-coverage:

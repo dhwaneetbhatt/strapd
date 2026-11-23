@@ -23,7 +23,7 @@ It's primarily CLI-focused, with a WebApp and reusable Rust and [portable WASM l
 
 ## Current Features
 
-- **String Tools**: case, trim, slugify, reverse, replace, analysis
+- **String Tools**: case, trim, slugify, reverse, replace, analysis, diff
 - **Identifiers**: UUIDs (v4, v7), ULIDs
 - **Encoding**: Base64, URL, Hex
 - **Data Formatting**: JSON, YAML, XML, SQL (beautify, minify, sort), plus recursive seeded JSON array sampling

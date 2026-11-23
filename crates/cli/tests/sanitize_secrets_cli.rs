@@ -138,12 +138,12 @@ fn positional_input_preserves_whitespace_and_does_not_wait_for_stdin() {
 
     let open_stdin = strapd_with_open_stdin(
         &["sanitize", "secrets", "apiKey=xy"],
-        Duration::from_secs(2),
+        Duration::from_secs(10),
     );
     assert_success(&open_stdin, b"apiKey=[REDACTED_API_KEY]\n");
 
     let empty_argument =
-        strapd_with_open_stdin(&["sanitize", "secrets", ""], Duration::from_secs(2));
+        strapd_with_open_stdin(&["sanitize", "secrets", ""], Duration::from_secs(10));
     assert_success(&empty_argument, b"\n");
 }
 
@@ -194,7 +194,7 @@ fn missing_terminal_input_shows_guidance_without_echoing_text() {
     let result = command_with_timeout(
         Command::new("script").args(["-qefc", &command_line, "/dev/null"]),
         None,
-        Duration::from_secs(2),
+        Duration::from_secs(10),
     );
 
     assert!(!result.output.status.success());

@@ -4,8 +4,8 @@ use std::{
 };
 
 use super::{
-    bytes_with_piped_trim, piped_text_from, required_bytes_from, required_text_from,
-    text_with_piped_trim,
+    bytes_with_piped_trim, piped_text_from, read_stdin_bytes_from, required_bytes_from,
+    required_text_from, text_with_piped_trim,
 };
 
 struct PanicReader;
@@ -106,6 +106,17 @@ fn arbitrary_bytes_are_exact() {
     let bytes = [0, b' ', b'\n', 0xff];
     let input = required_bytes_from(None, "input", Cursor::new(bytes), false).unwrap();
     assert_eq!(input.as_ref(), bytes);
+}
+
+#[test]
+fn raw_stdin_rejects_interactive_reads_and_keeps_exact_bytes() {
+    let error = read_stdin_bytes_from("to input", PanicReader, true).unwrap_err();
+    assert!(error.contains("No to input provided"));
+    let bytes = b" \tvalue\r\n\n\xff";
+    assert_eq!(
+        read_stdin_bytes_from("from input", Cursor::new(bytes), false).unwrap(),
+        bytes
+    );
 }
 
 #[test]

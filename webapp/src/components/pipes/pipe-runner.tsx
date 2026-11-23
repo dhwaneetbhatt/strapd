@@ -19,6 +19,7 @@ import {
   Textarea,
   Tooltip,
   useClipboard,
+  usePrefersReducedMotion,
   VStack,
 } from "@chakra-ui/react";
 import type React from "react";
@@ -78,6 +79,7 @@ const DataPane: React.FC<{
   const dataType = detectDataType(value);
   const lineCount = value ? value.split("\n").length : 1;
   const [isExpanded, setIsExpanded] = useState(false);
+  const reduceMotion = usePrefersReducedMotion({ ssr: false });
   const gutterRef = useRef<HTMLPreElement>(null);
   const expandButtonRef = useRef<HTMLButtonElement>(null);
   const modalCloseRef = useRef<HTMLButtonElement>(null);
@@ -259,6 +261,7 @@ const DataPane: React.FC<{
         onClose={() => setIsExpanded(false)}
         finalFocusRef={expandButtonRef}
         initialFocusRef={modalCloseRef}
+        motionPreset={reduceMotion ? "none" : "scale"}
         size="full"
       >
         <ModalOverlay bg="overlay.base" />
@@ -266,6 +269,7 @@ const DataPane: React.FC<{
           m={{ base: 2, md: 4 }}
           maxW={{ base: "calc(100vw - 1rem)", md: "calc(100vw - 2rem)" }}
           h={{ base: "calc(100dvh - 2rem)", md: "calc(100dvh - 3rem)" }}
+          minH={0}
           maxH={{ base: "calc(100dvh - 2rem)", md: "calc(100dvh - 3rem)" }}
           bg="transparent"
           boxShadow="0 12px 32px rgba(0, 0, 0, 0.18)"

@@ -3,6 +3,8 @@ pub mod clipboard_handler;
 pub mod conversion_handler;
 pub mod data_formats_handler;
 pub mod datetime_handler;
+pub mod diff_handler;
+mod diff_render;
 pub mod encoding_handler;
 pub mod identifiers_handler;
 pub mod jwt_handler;

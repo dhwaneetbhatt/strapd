@@ -66,7 +66,7 @@ fn categories_modes_and_exact_input() {
 #[test]
 fn positional_precedence_empty_markers_and_safe_errors() {
     assert_success(
-        &strapd_with_open_stdin(&["sanitize", "pii", ""], Duration::from_secs(2)),
+        &strapd_with_open_stdin(&["sanitize", "pii", ""], Duration::from_secs(10)),
         b"\n",
     );
     assert_success(

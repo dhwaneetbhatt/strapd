@@ -15,6 +15,7 @@ import type { Pipe } from "../lib/pipes";
 import { Pipes } from "./pipes";
 
 let workspaceState: Record<string, unknown>;
+let prefersReducedMotion: boolean;
 
 vi.mock("../hooks/use-pipe-workspace", () => ({
   usePipeWorkspace: () => workspaceState,
@@ -151,7 +152,8 @@ beforeAll(() => {
     configurable: true,
     writable: true,
     value: vi.fn().mockImplementation((query) => ({
-      matches: false,
+      matches:
+        query === "(prefers-reduced-motion: reduce)" && prefersReducedMotion,
       media: query,
       onchange: null,
       addListener: vi.fn(),
@@ -166,7 +168,64 @@ beforeAll(() => {
 describe("Pipes page correctness states", () => {
   beforeEach(() => {
     workspaceState = baseWorkspace();
+    prefersReducedMotion = false;
   });
+
+  it.each([
+    {
+      name: "expanded pane",
+      open: () => {
+        render(<Pipes />, { wrapper });
+        fireEvent.click(
+          screen.getByRole("button", { name: "Expand input pane" }),
+        );
+        return screen.getByRole("dialog");
+      },
+    },
+    {
+      name: "delete confirmation",
+      open: async () => {
+        render(<Pipes />, { wrapper });
+        await openPipeActions();
+        fireEvent.click(screen.getByRole("menuitem", { name: "Delete" }));
+        return screen.getByRole("alertdialog", { name: "Delete this pipe?" });
+      },
+    },
+    {
+      name: "import conflict",
+      open: () => {
+        workspaceState.importConflict = {
+          kind: "identity-conflict",
+          existingPipe: pipe,
+          importedPipe: pipe,
+        };
+        render(<Pipes />, { wrapper });
+        return screen.getByRole("alertdialog", { name: "Pipe already exists" });
+      },
+    },
+    {
+      name: "unsaved changes confirmation",
+      open: () => {
+        workspaceState.hasUnsavedChanges = true;
+        render(<Pipes />, { wrapper });
+        fireEvent.click(screen.getByRole("link", { name: "CLI Tool" }));
+        return screen.getByRole("alertdialog", {
+          name: "Leave without saving?",
+        });
+      },
+    },
+  ])(
+    "opens the $name without an entrance animation when motion is reduced",
+    async ({ open }) => {
+      prefersReducedMotion = true;
+      workspaceState = selectedWorkspace();
+
+      const dialog = await open();
+
+      expect(dialog.style.transform).toBe("");
+      expect(dialog.style.opacity).toBe("");
+    },
+  );
 
   it("uses a real button to trigger the existing hidden import input", () => {
     render(<Pipes />, { wrapper });

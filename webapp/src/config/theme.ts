@@ -255,6 +255,30 @@ const theme = extendTheme({
         default: "white", // White output areas
         _dark: "#2a2a2a", // Slightly lighter than main background for better separation
       },
+      "diff.removed.bg": {
+        default: "#ffebe9",
+        _dark: "rgba(248, 81, 73, 0.15)",
+      },
+      "diff.removed.emphasis": {
+        default: "#ffc1ba",
+        _dark: "rgba(248, 81, 73, 0.40)",
+      },
+      "diff.removed.fg": {
+        default: "#cf222e",
+        _dark: "#ff7b72",
+      },
+      "diff.added.bg": {
+        default: "#e6ffec",
+        _dark: "rgba(46, 160, 67, 0.15)",
+      },
+      "diff.added.emphasis": {
+        default: "#abf2bc",
+        _dark: "rgba(46, 160, 67, 0.40)",
+      },
+      "diff.added.fg": {
+        default: "#1a7f37",
+        _dark: "#56d364",
+      },
     },
     sizes: {
       // Tool interface heights - calculated to fill viewport minus header and padding

@@ -23,6 +23,7 @@ import {
   MenuList,
   Text,
   useDisclosure,
+  usePrefersReducedMotion,
   VisuallyHidden,
   VStack,
 } from "@chakra-ui/react";
@@ -53,6 +54,9 @@ const IMPORT_INPUT_ID = "pipe-import-input";
 
 export const Pipes: React.FC = () => {
   const workspace = usePipeWorkspace();
+  const modalMotionPreset = usePrefersReducedMotion({ ssr: false })
+    ? "none"
+    : "scale";
   const {
     isOpen: isDeleteOpen,
     onOpen: openDelete,
@@ -455,6 +459,7 @@ export const Pipes: React.FC = () => {
         isOpen={isDeleteOpen}
         leastDestructiveRef={deleteCancelRef}
         onClose={closeDelete}
+        motionPreset={modalMotionPreset}
         isCentered
       >
         <AlertDialogOverlay>
@@ -496,6 +501,7 @@ export const Pipes: React.FC = () => {
         isOpen={Boolean(workspace.importConflict)}
         leastDestructiveRef={conflictCancelRef}
         onClose={workspace.dismissImportConflict}
+        motionPreset={modalMotionPreset}
         isCentered
       >
         <AlertDialogOverlay>
@@ -559,6 +565,7 @@ export const Pipes: React.FC = () => {
         isOpen={navigationGuard.isNavigationBlocked}
         leastDestructiveRef={navigationCancelRef}
         onClose={navigationGuard.cancelNavigation}
+        motionPreset={modalMotionPreset}
         isCentered
       >
         <AlertDialogOverlay>

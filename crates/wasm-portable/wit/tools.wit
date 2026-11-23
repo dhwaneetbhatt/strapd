@@ -1,4 +1,4 @@
-package strapd:tools@0.1.0;
+package strapd:tools@0.2.0;
 
 /// Stateless developer tools. Calls on each instance must be serialized.
 world tools {
@@ -17,6 +17,23 @@ world tools {
     enum unit-category { bytes, time, length, temperature }
     enum character-type { lowercase, uppercase, digits, symbols }
     record unit { canonical-name: string, aliases: list<string>, category: unit-category }
+    enum diff-line-kind { context, removed, added }
+    record diff-segment { text: string, emphasized: bool }
+    record diff-line {
+        kind: diff-line-kind,
+        from-line: option<u32>,
+        to-line: option<u32>,
+        segments: list<diff-segment>,
+        missing-newline: bool,
+    }
+    record diff-hunk {
+        from-start: u32,
+        from-count: u32,
+        to-start: u32,
+        to-count: u32,
+        lines: list<diff-line>,
+    }
+    record text-diff-result { hunks: list<diff-hunk>, added: u32, removed: u32 }
 
     export base64-encode: func(input: list<u8>) -> string;
     export base64-decode: func(input: string) -> result<list<u8>, string>;
@@ -36,6 +53,10 @@ world tools {
     export string-replace: func(input: string, search: string, replacement: string) -> string;
     export string-slugify: func(input: string, separator: char) -> string;
     export string-trim: func(input: string, left: bool, right: bool, all: bool) -> string;
+
+    /// Context at or above the larger line count includes both complete texts.
+    export text-diff: func(%from: string, to: string, context: u32) -> text-diff-result;
+    export text-diff-unified: func(%from: string, to: string, context: u32, from-label: string, to-label: string) -> string;
 
     export json-beautify: func(input: string, sort: bool, spaces: u8) -> result<string, string>;
     export json-minify: func(input: string, sort: bool) -> result<string, string>;

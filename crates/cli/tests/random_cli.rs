@@ -99,7 +99,7 @@ fn test_cli_random_number_defaults() {
             assert!(result.is_ok());
             let output = result_to_string(result).unwrap();
             let num: i64 = output.trim().parse().unwrap();
-            assert!(num >= 0 && num <= 100);
+            assert!((0..=100).contains(&num));
         }
         _ => panic!("Expected Random command"),
     }
@@ -114,7 +114,7 @@ fn test_cli_random_number_range() {
             assert!(result.is_ok());
             let output = result_to_string(result).unwrap();
             let num: i64 = output.trim().parse().unwrap();
-            assert!(num >= 10 && num <= 20);
+            assert!((10..=20).contains(&num));
         }
         _ => panic!("Expected Random command"),
     }

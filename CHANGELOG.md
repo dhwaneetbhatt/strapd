@@ -6,6 +6,22 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+### core
+
+- feat: add line diff with intra-line change emphasis and unified patch rendering, sub-millisecond on 10 MB inputs with localized changes
+
+### cli
+
+- feat: add `strapd text diff` with unified and side-by-side output, git colours and `--exit-code`
+
+### wasm
+
+- feat: expose text diff from the browser module and the portable WIT package (`strapd:tools@0.2.0`)
+
+### webapp
+
+- feat: add Text Diff tool with red/green deltas, unified/split views and copy-as-patch
+
 ## [v1.5.1] - 2026-11-16
 
 ### core

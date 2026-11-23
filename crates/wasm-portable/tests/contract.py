@@ -60,31 +60,115 @@ class Core:
         self.exports = linker.instantiate(self.store, module).exports(self.store)
         self.memory = self.exports["memory"]
 
-    def call(self, name, strings, scalars=(), kind="string"):
+    def call(self, name, *inputs, kind="string"):
         # Inputs transfer to the guest; copy output before generated post-return.
         args = []
-        for text in strings:
-            data = text.encode("utf-8")
-            pointer = self.exports["cabi_realloc"](self.store, 0, 0, 1, len(data))
-            self.memory.write(self.store, data, pointer)
-            args.extend((pointer, len(data)))
-        result = self.exports[name](self.store, *args, *scalars)
+        for value in inputs:
+            if isinstance(value, str):
+                data = value.encode("utf-8")
+                pointer = self.exports["cabi_realloc"](self.store, 0, 0, 1, len(data))
+                self.memory.write(self.store, data, pointer)
+                args.extend((pointer, len(data)))
+            else:
+                args.append(value)
+        result = self.exports[name](self.store, *args)
         try:
             if kind == "result":
                 tag = self.memory.read(self.store, result, result + 1)[0]
                 pointer, length = self.words(result + 4)
                 data = bytes(self.memory.read(self.store, pointer, pointer + length))
                 return tag, data
-            pointer, length = self.words(result)
             if kind == "detect":
+                pointer, length = self.words(result)
                 data = self.memory.read(self.store, pointer, pointer + length * 12)
                 return [struct.unpack_from("<B3xII", data, i * 12) for i in range(length)]
-            return bytes(self.memory.read(self.store, pointer, pointer + length)).decode()
+            if kind == "diff":
+                added, removed = self.words(result + 8)
+                return {"hunks": self.read_list(result, 24, self.diff_hunk),
+                        "added": added, "removed": removed}
+            return self.read_string(result)
         finally:
             self.exports["cabi_post_" + name](self.store, result)
 
     def words(self, pointer):
         return struct.unpack("<II", self.memory.read(self.store, pointer, pointer + 8))
+
+    def read_string(self, address):
+        pointer, length = self.words(address)
+        return bytes(self.memory.read(self.store, pointer, pointer + length)).decode()
+
+    def read_list(self, address, stride, read_item):
+        pointer, length = self.words(address)
+        return [read_item(pointer + i * stride) for i in range(length)]
+
+    def diff_hunk(self, address):
+        from_start, from_count = self.words(address)
+        to_start, to_count = self.words(address + 8)
+        return {"from-start": from_start, "from-count": from_count,
+                "to-start": to_start, "to-count": to_count,
+                "lines": self.read_list(address + 16, 32, self.diff_line)}
+
+    def diff_line(self, address):
+        # Each option<u32> is a byte discriminant, three padding bytes and a u32.
+        data = self.memory.read(self.store, address, address + 32)
+        kind, from_tag, from_line, to_tag, to_line = struct.unpack_from("<B3xB3xIB3xI", data)
+        assert from_tag in (0, 1) and to_tag in (0, 1) and data[28] in (0, 1)
+        return {"kind": ("context", "removed", "added")[kind],
+                "from-line": from_line if from_tag else None,
+                "to-line": to_line if to_tag else None,
+                "segments": self.read_list(address + 20, 12, self.diff_segment),
+                "missing-newline": bool(data[28])}
+
+    def diff_segment(self, address):
+        emphasized = self.memory.read(self.store, address + 8, address + 9)[0]
+        assert emphasized in (0, 1)
+        return {"text": self.read_string(address), "emphasized": bool(emphasized)}
+
+
+def record_value(value):
+    if isinstance(value, component.Record):
+        return {name: record_value(field) for name, field in vars(value).items()}
+    if isinstance(value, list):
+        return [record_value(item) for item in value]
+    return value
+
+
+def verify_diff(host, core):
+    fixture = json.loads((Path(__file__).parent / "fixtures" / "text-diff.json").read_text(encoding="utf-8"))
+    original, changed = fixture["from"], fixture["to"]
+    labels = fixture["from-label"], fixture["to-label"]
+
+    def structured(original, changed, context):
+        args = original, changed, context
+        diff = record_value(host.ok("text-diff", *args))
+        assert diff == core.call("text-diff", *args, kind="diff")
+        return diff
+
+    args = original, changed, fixture["context"]
+    assert structured(*args) == fixture["structured"]
+    assert host.ok("text-diff-unified", *args, *labels) == fixture["unified"]
+    assert core.call("text-diff-unified", *args, *labels) == fixture["unified"]
+    assert structured(original, original, 3) == {"hunks": [], "added": 0, "removed": 0}
+
+    full = structured(original, changed, 4)
+    assert full == structured(original, changed, 2**32 - 1)
+    hunk, = full["hunks"]
+    assert (hunk["from-start"], hunk["from-count"], hunk["to-start"], hunk["to-count"]) == (1, 4, 1, 4)
+    assert hunk["lines"][1:] == fixture["structured"]["hunks"][0]["lines"]
+
+    unchanged = "ordinary unchanged line\n"
+    half_lines = (5 * 1024**2 + len(unchanged) - 1) // len(unchanged)
+    padding = unchanged * half_lines
+    original = padding + "clé = 30;\n" + padding
+    changed = padding + "clé = 60;\n" + padding
+    diff = structured(original, changed, 3)
+    assert diff["added"] == diff["removed"] == 1
+    hunk, = diff["hunks"]
+    assert hunk["from-start"] == hunk["to-start"] == half_lines - 2
+    assert hunk["from-count"] == hunk["to-count"] == 7
+    lines = hunk["lines"]
+    assert [line["kind"] for line in lines] == ["context"] * 3 + ["removed", "added"] + ["context"] * 3
+    assert lines[3]["from-line"] == lines[4]["to-line"] == half_lines + 1
 
 
 def verify_component(host):
@@ -204,33 +288,36 @@ def main():
     engine = wasmtime.Engine()
     host = Component(engine, directory)
     verify_component(host)
-    expected = set(re.findall(r"export ([\w-]+): func", (directory / "tools.wit").read_text()))
-    assert host.called == expected, (expected - host.called, host.called - expected)
     core = Core(engine, directory)
+    verify_diff(host, core)
+    wit = (directory / "tools.wit").read_text()
+    assert wit.startswith("package strapd:tools@0.2.0;")
+    expected = set(re.findall(r"export ([\w-]+): func", wit))
+    assert host.called == expected, (expected - host.called, host.called - expected)
     assert expected <= set(core.exports)
     text = "🙂 dev@example.com"
-    assert core.call("detect-pii", [text], [255], "detect") == [(2, 5, 20)]
-    assert core.call("base64-decode", ["AP+ACg=="], kind="result") == (0, b"\x00\xff\x80\n")
-    assert core.call("base64-decode", ["!"], kind="result")[0] == 1
+    assert core.call("detect-pii", text, 255, kind="detect") == [(2, 5, 20)]
+    assert core.call("base64-decode", "AP+ACg==", kind="result") == (0, b"\x00\xff\x80\n")
+    assert core.call("base64-decode", "!", kind="result")[0] == 1
     expected_hmac = hmac.new(b"key", "🙂\0".encode(), "sha256").hexdigest().encode()
-    assert core.call("hmac-sha256", ["🙂\0", "key"], kind="result") == (0, expected_hmac)
+    assert core.call("hmac-sha256", "🙂\0", "key", kind="result") == (0, expected_hmac)
     clean = "ordinary text without personal information. " * 1600
     assert host.ok("detect-pii", clean, 255) == []
     assert host.ok("sanitize-pii", clean, 255, False) == clean
-    assert core.call("detect-pii", [clean], [255], "detect") == []
+    assert core.call("detect-pii", clean, 255, kind="detect") == []
     large = "dev@example.com " * 4096
-    core.call("detect-pii", [large], [255], "detect")
+    core.call("detect-pii", large, 255, kind="detect")
     memory = core.memory.data_len(core.store)
     for _ in range(1000):
-        assert len(core.call("detect-pii", [large], [255], "detect")) == 4096
-        assert core.call("base64-decode", ["!"], kind="result")[0] == 1
-        assert core.call("base64-decode", ["aGk="], kind="result") == (0, b"hi")
+        assert len(core.call("detect-pii", large, 255, kind="detect")) == 4096
+        assert core.call("base64-decode", "!", kind="result")[0] == 1
+        assert core.call("base64-decode", "aGk=", kind="result") == (0, b"hi")
     assert core.memory.data_len(core.store) == memory
     for _ in range(10):
         assert len(host.ok("detect-pii", large, 255)) == 4096
         host.error("base64-decode", "!")
         assert bytes(host.ok("base64-decode", "aGk=")) == b"hi"
-    print(f"Portable WASM: all {len(expected)} component exports; core ABI/imports; errors, binary, Unicode, 64-bit values, clocks/randomness and reuse passed")
+    print(f"Portable WASM: all {len(expected)} component exports; core ABI/imports; errors, binary, Unicode, 64-bit values, clocks/randomness, diff parity and reuse passed")
 
 
 if __name__ == "__main__":

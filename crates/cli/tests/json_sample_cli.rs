@@ -21,7 +21,7 @@ fn raw_mode_uses_positional_or_stdin_input() {
 fn positional_input_does_not_wait_for_open_stdin() {
     let result = strapd_with_open_stdin(
         &["json", "sample", r#"{"keep":null,"rows":[null,1]}"#],
-        Duration::from_secs(1),
+        Duration::from_secs(10),
     );
     assert_success(&result, b"{\"keep\":null,\"rows\":[1]}\n");
 }

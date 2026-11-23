@@ -1,7 +1,11 @@
-use clap::Subcommand;
+use clap::{Args, Subcommand, ValueEnum};
+use std::path::PathBuf;
+use strapd_core::string::diff::DEFAULT_CONTEXT;
 
 #[derive(Subcommand, Debug)]
 pub enum StringOperation {
+    /// Compare two UTF-8 texts
+    Diff(DiffArgs),
     /// Convert string to uppercase
     #[command(aliases = ["upper", "upper_case", "uc"])]
     Uppercase {
@@ -114,4 +118,51 @@ pub enum StringOperation {
         #[arg(short = 'c', long = "characters", conflicts_with_all = ["words"])]
         chars: bool,
     },
+}
+
+#[derive(Args, Debug)]
+pub struct DiffArgs {
+    /// Literal text for each side without a file; use - to read one side from stdin
+    #[arg(value_name = "TEXT")]
+    pub inputs: Vec<String>,
+
+    /// Read the from side from a file
+    #[arg(long, value_name = "PATH")]
+    pub from_file: Option<PathBuf>,
+
+    /// Read the to side from a file
+    #[arg(long, value_name = "PATH")]
+    pub to_file: Option<PathBuf>,
+
+    /// Number of unchanged context lines
+    #[arg(short = 'U', long = "unified", value_name = "N", default_value_t = DEFAULT_CONTEXT as u32)]
+    pub context: u32,
+
+    /// Show the old and new lines in two columns
+    #[arg(short = 'y', long)]
+    pub side_by_side: bool,
+
+    /// Total width of side-by-side output
+    #[arg(short = 'W', long, value_name = "N", default_value_t = 130, requires = "side_by_side",
+        value_parser = clap::value_parser!(u32).range(3..))]
+    pub width: u32,
+
+    /// Override the from label, then optionally the to label
+    #[arg(long = "label", value_name = "TEXT", action = clap::ArgAction::Append)]
+    pub labels: Vec<String>,
+
+    /// When to use ANSI colour
+    #[arg(long, value_enum, default_value = "auto")]
+    pub color: DiffColor,
+
+    /// Exit 1 if the inputs differ, or 2 on error
+    #[arg(long)]
+    pub exit_code: bool,
+}
+
+#[derive(Clone, Copy, Debug, ValueEnum)]
+pub enum DiffColor {
+    Auto,
+    Always,
+    Never,
 }

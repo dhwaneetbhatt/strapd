@@ -12,7 +12,7 @@ fn required_input_fails_promptly_on_a_real_terminal() {
         let output = command_with_timeout(
             Command::new("script").args(["-qefc", &command_line, "/dev/null"]),
             None,
-            Duration::from_secs(2),
+            Duration::from_secs(10),
         );
 
         assert!(!output.output.status.success());

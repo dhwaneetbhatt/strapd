@@ -1,4 +1,6 @@
-use strapd_wasm_portable::{CharacterType, Guest, Tools};
+use serde_json::{Value, json};
+use strapd_core::string::diff;
+use strapd_wasm_portable::{CharacterType, DiffHunk, DiffLine, DiffLineKind, Guest, Tools};
 
 #[test]
 fn generation_rejects_invalid_counts_and_ranges() {
@@ -57,4 +59,93 @@ fn detection_adapter_uses_utf8_offsets_and_category_bits() {
         assert_eq!(actual.end as usize, expected.range.end);
     }
     assert!(Tools::detect_pii(input.into(), 0).is_empty());
+}
+
+#[test]
+fn diff_adapters_match_shared_fixture_and_core_unified_output() {
+    let fixture: Value = serde_json::from_str(include_str!("fixtures/text-diff.json")).unwrap();
+    let from = fixture["from"].as_str().unwrap();
+    let to = fixture["to"].as_str().unwrap();
+    let context = fixture["context"].as_u64().unwrap() as u32;
+    let from_label = fixture["from-label"].as_str().unwrap();
+    let to_label = fixture["to-label"].as_str().unwrap();
+    let expected = diff::unified(
+        &diff::diff(from, to, context as usize),
+        from_label,
+        to_label,
+    );
+
+    let actual = Tools::text_diff(from.into(), to.into(), context);
+    assert_eq!(
+        json!({
+            "added": actual.added,
+            "removed": actual.removed,
+            "hunks": actual.hunks.into_iter().map(hunk_json).collect::<Vec<_>>(),
+        }),
+        fixture["structured"]
+    );
+    assert_eq!(expected, fixture["unified"].as_str().unwrap());
+    assert_eq!(
+        Tools::text_diff_unified(
+            from.into(),
+            to.into(),
+            context,
+            from_label.into(),
+            to_label.into()
+        ),
+        expected
+    );
+}
+
+#[test]
+fn diff_segments_exclude_crlf_and_preserve_empty_lines() {
+    let from = "\r\nlet timeout = 30\r\nkeep\r\n";
+    let to = "\r\nlet timeout = 60\nkeep\r\n";
+    let actual = Tools::text_diff(from.into(), to.into(), 3);
+    let hunk = hunk_json(actual.hunks.into_iter().next().unwrap());
+    let segments: Vec<_> = hunk["lines"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .map(|line| line["segments"].clone())
+        .collect();
+    let segment = |text: &str, emphasized| json!({"text": text, "emphasized": emphasized});
+    assert_eq!(
+        segments,
+        [
+            json!([segment("", false)]),
+            json!([segment("let timeout = ", false), segment("30", true)]),
+            json!([segment("let timeout = ", false), segment("60", true)]),
+            json!([segment("keep", false)]),
+        ]
+    );
+}
+
+fn hunk_json(hunk: DiffHunk) -> Value {
+    json!({
+        "from-start": hunk.from_start,
+        "from-count": hunk.from_count,
+        "to-start": hunk.to_start,
+        "to-count": hunk.to_count,
+        "lines": hunk.lines.into_iter().map(line_json).collect::<Vec<_>>(),
+    })
+}
+
+fn line_json(line: DiffLine) -> Value {
+    let segments: Vec<_> = line
+        .segments
+        .into_iter()
+        .map(|segment| json!({"text": segment.text, "emphasized": segment.emphasized}))
+        .collect();
+    json!({
+        "kind": match line.kind {
+            DiffLineKind::Context => "context",
+            DiffLineKind::Removed => "removed",
+            DiffLineKind::Added => "added",
+        },
+        "from-line": line.from_line,
+        "to-line": line.to_line,
+        "segments": segments,
+        "missing-newline": line.missing_newline,
+    })
 }
