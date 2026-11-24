@@ -123,5 +123,5 @@
       ]
     }
   },
-  "experimental": { "subagent_depth": 2 }
+  "experimental": { "subagent_depth": 1 }
 }
