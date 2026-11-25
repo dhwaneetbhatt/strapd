@@ -39,16 +39,16 @@
 - Final identity copy: exact short manifest description, brand-only popup header, and `0 bytes sent · Fully offline` in the Proof summary; unused header CSS was removed.
 - Chrome verified `connect-src 'none'`: the Proof drawer reported `✓ Verified: 4 findings in 1.6ms round trip`, and the dummy payload was redacted. The strict directive is now shipped.
 
-## Manual checks remaining
+## Manual checks
 
-Chrome-specific checks are being completed by the user:
+The user completed the Chrome smoke checks:
 
 - Ask mode bottom-sheet placement, diff, and keyboard actions.
 - Auto-redact inserts with no popup or confirmation.
 - Add/remove a custom site across a browser reload.
 - Cold-start service worker recovery.
-- Offline Self-Test with network disabled. The `connect-src 'none'` experiment was completed and verified by the user; the built package reports `connect-src 'none'`.
+- Offline Self-Test with network disabled. The strict `connect-src 'none'` build was verified by the user.
 
 ## Notes
 
-No issue number was provided for this worktree, so the OpenSpec change uses the descriptive name `browser-extension-paste-intercept` instead of the `gh-<issue-number>-...` convention. The change remains open until the user completes the manual Chrome checks.
+No issue number was provided for this worktree, so the OpenSpec change uses the descriptive name `browser-extension-paste-intercept` instead of the `gh-<issue-number>-...` convention. All implementation, review, and manual Chrome checks are complete.

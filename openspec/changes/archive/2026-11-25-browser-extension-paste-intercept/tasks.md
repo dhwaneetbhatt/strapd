@@ -54,7 +54,7 @@
 - [x] 9.1 Add tests for settings normalization, pause expiry, detector filtering, diff segments, insertion, bottom-sheet placement, and mode flows.
 - [x] 9.2 Update the local fixture and documentation for `strapd guard`, three modes, custom sites, and the proof drawer.
 - [x] 9.3 Run `make extension-build`, `make extension-typecheck`, `make extension-test`, repository checks, and a built-artifact audit for external URLs and real WASM hash.
-- [ ] 9.4 Complete the remaining manual Chrome smoke checks for ask, auto, custom-site persistence, cold start, and network-disabled offline self-test. The independent review and the strict-CSP/Proof checks are complete.
+- [x] 9.4 Complete the remaining manual Chrome smoke checks for ask, auto, custom-site persistence, cold start, and network-disabled offline self-test. The independent review and the strict-CSP/Proof checks are complete.
 
 ## 10. Feedback fixes
 
