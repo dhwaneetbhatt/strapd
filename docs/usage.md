@@ -210,6 +210,16 @@ Each step passes its result to the next. Generator tools can start a pipe withou
 
 Saved pipes stay in the current browser and profile. Export them before clearing browser data or moving to another browser. Exports include the steps and settings, but not the text you ran through them.
 
+## Browser extension paste firewall
+
+The `extension/` workspace builds a Manifest V3 Chrome extension that scans pasted text on `chatgpt.com`, `claude.ai`, and `gemini.google.com` before it reaches the chat input. Scanning runs locally in the extension service worker against the same browser WASM detection and sanitization used by the WebApp. The extension requests only `storage`; pasted text never leaves the browser.
+
+```bash
+make extension-build
+```
+
+Load `extension/dist/` with **Load unpacked** at `chrome://extensions`. When a paste contains secrets or PII, a warning card offers **Paste scrubbed** (Enter), **Paste raw** (Shift+Enter), or **Cancel** (Esc). Use the toolbar popup to pause scanning. For a local fixture, open `chrome-extension://<extension-id>/test.html`; it includes a textarea, a contenteditable editor, and copyable dummy payloads. See [the extension guide](../extension/README.md) for build and cold-start checks.
+
 ## Rust and browser WASM detection
 
 In Rust, use `detect` when you want to find personal information without changing the text:

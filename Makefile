@@ -1,6 +1,6 @@
 # Makefile for strapd project
 
-.PHONY: all setup rust-fmt rust-fmt-check rust-lint rust-audit rust-install rust-install-coverage rust-build cli-build cli-release rust-test rust-coverage rust-coverage-report wasm-build webapp-install webapp-fmt webapp-fmt-check webapp-lint webapp-audit webapp-dev webapp-build webapp-test webapp-e2e webapp-coverage webapp-coverage-open audit coverage help lint fmt fmt-check test install-hooks brew-formula-check brew-update-checksums
+.PHONY: all setup rust-fmt rust-fmt-check rust-lint rust-audit rust-install rust-install-coverage rust-build cli-build cli-release rust-test rust-coverage rust-coverage-report wasm-build extension-install extension-wasm extension-build extension-typecheck extension-test webapp-install webapp-fmt webapp-fmt-check webapp-lint webapp-audit webapp-dev webapp-build webapp-test webapp-e2e webapp-coverage webapp-coverage-open audit coverage help lint fmt fmt-check test install-hooks brew-formula-check brew-update-checksums
 
 # -------------------
 # Help
@@ -19,6 +19,9 @@ help:
 	@echo "  rust-test             - Run Rust tests"
 	@echo "  rust-bench            - Benchmark core text diff (BENCH_ARGS supported)"
 	@echo "  wasm-build            - Build WASM module for webapp"
+	@echo "  extension-build       - Build the browser extension"
+	@echo "  extension-typecheck   - Typecheck the browser extension"
+	@echo "  extension-test        - Test the browser extension"
 	@echo "  portable-wasm-setup   - Install pinned portable WASM tooling"
 	@echo "  portable-wasm-build   - Build portable core module and component"
 	@echo "  portable-wasm-test    - Test portable artifact contracts"
@@ -111,6 +114,25 @@ rust-coverage-report:
 # Build WASM module for webapp
 wasm-build:
 	RUSTFLAGS="--cfg getrandom_backend=\"wasm_js\"" wasm-pack build crates/wasm --out-dir $(CURDIR)/webapp/wasm
+
+# -------------------
+# Browser extension
+# -------------------
+
+extension-install:
+	cd extension && pnpm install --frozen-lockfile
+
+extension-wasm:
+	RUSTFLAGS="--cfg getrandom_backend=\"wasm_js\"" wasm-pack build crates/wasm --target web --out-dir $(CURDIR)/extension/wasm
+
+extension-build: extension-wasm extension-install
+	cd extension && pnpm build
+
+extension-typecheck: extension-wasm extension-install
+	cd extension && pnpm typecheck
+
+extension-test: extension-wasm extension-install
+	cd extension && pnpm test
 
 # Portable library: one WIT contract, core WASI module and component.
 WASM_TOOLS ?= $(CURDIR)/target/portable-tools/bin/wasm-tools

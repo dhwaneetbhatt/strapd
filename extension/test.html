@@ -1,0 +1,199 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>strapd Paste Firewall - local test</title>
+    <style>
+      :root {
+        color-scheme: light dark;
+        --bg: #ffffff;
+        --fg: #111827;
+        --muted: #5b6474;
+        --panel: #f5f7fb;
+        --border: #d7dde8;
+        --accent: #1f5eff;
+        --accent-ink: #ffffff;
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --bg: #16181d;
+          --fg: #f4f7fb;
+          --muted: #a9b3c2;
+          --panel: #1f232b;
+          --border: #353c49;
+          --accent: #8ab4ff;
+          --accent-ink: #0a1220;
+        }
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0 auto;
+        max-width: 860px;
+        padding: 32px 20px 64px;
+        background: var(--bg);
+        color: var(--fg);
+        font: 14px/1.55 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      }
+      h1 {
+        margin: 0 0 4px;
+        font-size: 24px;
+      }
+      h2 {
+        margin: 0 0 8px;
+        font-size: 16px;
+      }
+      p {
+        margin: 0 0 12px;
+        color: var(--muted);
+      }
+      code {
+        padding: 1px 5px;
+        border: 1px solid var(--border);
+        border-radius: 5px;
+        background: var(--panel);
+        font: 12px/1.4 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      }
+      .panel {
+        margin: 18px 0;
+        padding: 16px;
+        border: 1px solid var(--border);
+        border-radius: 14px;
+        background: var(--panel);
+      }
+      .status {
+        display: inline-block;
+        margin-bottom: 16px;
+        padding: 6px 10px;
+        border: 1px solid var(--border);
+        border-radius: 999px;
+        background: var(--panel);
+        color: var(--muted);
+        font-size: 12px;
+      }
+      .field {
+        width: 100%;
+        min-height: 120px;
+        margin-top: 8px;
+        padding: 12px;
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        background: var(--bg);
+        color: var(--fg);
+        font: inherit;
+        resize: vertical;
+      }
+      .rich-field {
+        min-height: 120px;
+        margin-top: 8px;
+        padding: 12px;
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        background: var(--bg);
+        outline: none;
+      }
+      .rich-field:focus {
+        border-color: var(--accent);
+        box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 22%, transparent);
+      }
+      .payload {
+        display: grid;
+        gap: 8px;
+        margin-top: 12px;
+      }
+      .payload textarea {
+        width: 100%;
+        min-height: 86px;
+        padding: 10px;
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        background: var(--bg);
+        color: var(--fg);
+        font: 12px/1.45 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+        resize: vertical;
+      }
+      button {
+        justify-self: start;
+        padding: 7px 11px;
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        background: var(--bg);
+        color: var(--fg);
+        font: inherit;
+        cursor: pointer;
+      }
+      button:hover {
+        border-color: var(--accent);
+      }
+      .note {
+        margin-top: 10px;
+        font-size: 12px;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>strapd Paste Firewall test page</h1>
+    <p>
+      Open this page from the loaded extension:
+      <code>chrome-extension://&lt;extension-id&gt;/test.html</code>. The page imports the
+      same interceptor module as the content script, so paste handling, WASM scanning,
+      and the warning card all run here.
+    </p>
+    <p id="harness-status" class="status">Loading interceptor…</p>
+
+    <section class="panel">
+      <h2>Plain textarea</h2>
+      <p>Paste a payload below. A clean paste inserts immediately; a dirty paste opens the warning card.</p>
+      <textarea id="paste-target" class="field" placeholder="Paste here…"></textarea>
+    </section>
+
+    <section class="panel">
+      <h2>Contenteditable editor</h2>
+      <p>This exercises the rich-text insertion path used by ChatGPT, Claude, and Gemini.</p>
+      <div id="paste-target-rich" class="rich-field" contenteditable="true" role="textbox" aria-multiline="true" aria-label="Rich text paste target">
+        Paste here…
+      </div>
+    </section>
+
+    <section class="panel">
+      <h2>Dummy payloads</h2>
+      <p>These values are fake and safe to use for manual checks.</p>
+
+      <div class="payload">
+        <strong>AWS access key</strong>
+        <textarea id="payload-aws" readonly>AWS_ACCESS_KEY_ID=AKIAIOSFODNN7EXAMPLE</textarea>
+        <button type="button" data-copy="payload-aws">Copy AWS payload</button>
+      </div>
+
+      <div class="payload">
+        <strong>JWT</strong>
+        <textarea id="payload-jwt" readonly>eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c</textarea>
+        <button type="button" data-copy="payload-jwt">Copy JWT payload</button>
+      </div>
+
+      <div class="payload">
+        <strong>PII</strong>
+        <textarea id="payload-pii" readonly>Contact dev@example.com or +1 415 555 0132. Card 4111 1111 1111 1111.</textarea>
+        <button type="button" data-copy="payload-pii">Copy PII payload</button>
+      </div>
+
+      <div class="payload">
+        <strong>Mixed secrets and PII</strong>
+        <textarea id="payload-mixed" readonly>Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c
+AWS_ACCESS_KEY_ID=AKIAIOSFODNN7EXAMPLE
+Contact dev@example.com</textarea>
+        <button type="button" data-copy="payload-mixed">Copy mixed payload</button>
+      </div>
+    </section>
+
+    <p class="note">
+      Cold-start check: wait for the service worker to become idle (or stop it from
+      <code>chrome://serviceworker-internals</code>), then paste again. The scan should still
+      complete because WASM initialization is lazy and cached inside the message handler.
+    </p>
+
+    <script type="module" src="test.js"></script>
+  </body>
+</html>

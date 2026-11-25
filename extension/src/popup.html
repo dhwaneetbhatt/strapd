@@ -1,0 +1,156 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>strapd Paste Firewall</title>
+    <style>
+      :root {
+        color-scheme: light dark;
+        --bg: #ffffff;
+        --fg: #111827;
+        --muted: #5b6474;
+        --panel: #f5f7fb;
+        --border: #d7dde8;
+        --accent: #1f5eff;
+        --accent-ink: #ffffff;
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --bg: #16181d;
+          --fg: #f4f7fb;
+          --muted: #a9b3c2;
+          --panel: #1f232b;
+          --border: #353c49;
+          --accent: #8ab4ff;
+          --accent-ink: #0a1220;
+        }
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        width: 320px;
+        margin: 0;
+        padding: 16px;
+        background: var(--bg);
+        color: var(--fg);
+        font: 13px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      }
+      header {
+        display: grid;
+        gap: 4px;
+        margin-bottom: 14px;
+      }
+      .brand {
+        color: var(--accent);
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+      h1 {
+        margin: 0;
+        font-size: 17px;
+        line-height: 1.25;
+      }
+      p {
+        margin: 0;
+        color: var(--muted);
+        font-size: 12px;
+      }
+      .toggle-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        padding: 12px;
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        background: var(--panel);
+        cursor: pointer;
+      }
+      .toggle-copy {
+        display: grid;
+        gap: 2px;
+      }
+      .toggle-copy strong {
+        font-size: 13px;
+      }
+      .toggle-copy small {
+        color: var(--muted);
+        font-size: 11px;
+      }
+      .switch {
+        position: relative;
+        flex: 0 0 auto;
+        width: 40px;
+        height: 24px;
+      }
+      .switch input {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        opacity: 0;
+      }
+      .track {
+        position: absolute;
+        inset: 0;
+        border-radius: 999px;
+        background: var(--border);
+        transition: background 120ms ease;
+      }
+      .track::after {
+        content: "";
+        position: absolute;
+        top: 3px;
+        left: 3px;
+        width: 18px;
+        height: 18px;
+        border-radius: 50%;
+        background: var(--bg);
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
+        transition: transform 120ms ease;
+      }
+      .switch input:checked + .track {
+        background: var(--accent);
+      }
+      .switch input:checked + .track::after {
+        transform: translateX(16px);
+      }
+      .switch input:focus-visible + .track {
+        outline: 2px solid var(--accent);
+        outline-offset: 2px;
+      }
+      footer {
+        margin-top: 12px;
+        color: var(--muted);
+        font-size: 11px;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <header>
+        <span class="brand">strapd</span>
+        <h1>Paste Firewall</h1>
+        <p>Local secret and PII checks for ChatGPT, Claude, and Gemini.</p>
+      </header>
+
+      <label class="toggle-row" for="enabled">
+        <span class="toggle-copy">
+          <strong id="status">Enabled</strong>
+          <small id="description">Pastes are scanned before insertion.</small>
+        </span>
+        <span class="switch">
+          <input id="enabled" type="checkbox" role="switch" />
+          <span class="track"></span>
+        </span>
+      </label>
+
+      <footer>No network access. Pasted text never leaves this browser.</footer>
+    </main>
+
+    <script src="popup.js"></script>
+  </body>
+</html>
