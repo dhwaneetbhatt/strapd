@@ -3,6 +3,8 @@ export interface TextSelection {
   end: number;
 }
 
+export type TextControl = HTMLTextAreaElement | HTMLInputElement;
+
 const TEXT_INPUT_TYPES = new Set([
   "text",
   "search",
@@ -101,7 +103,7 @@ export function insertText(
 }
 
 function insertIntoTextControl(
-  target: HTMLTextAreaElement | HTMLInputElement,
+  target: TextControl,
   text: string,
   selection: TextSelection | null,
 ): void {
@@ -120,13 +122,7 @@ function insertIntoTextControl(
   } catch {
     // Some text-like inputs do not expose a selection range.
   }
-  target.dispatchEvent(
-    new InputEvent("input", {
-      bubbles: true,
-      inputType: "insertFromPaste",
-      data: text,
-    }),
-  );
+  dispatchInput(target, text);
 }
 
 function insertIntoContentEditable(
@@ -135,6 +131,14 @@ function insertIntoContentEditable(
   capturedRange: Range | null,
 ): void {
   restoreSelection(target, capturedRange);
+
+  const selection = window.getSelection();
+  if (!selection || selection.rangeCount === 0) {
+    return;
+  }
+
+  const start = selection.getRangeAt(0).cloneRange();
+  start.collapse(true);
 
   try {
     if (document.execCommand("insertText", false, text)) {
@@ -208,6 +212,10 @@ function insertWithRange(target: HTMLElement, text: string): void {
   selection.removeAllRanges();
   selection.addRange(range);
 
+  dispatchInput(target, text);
+}
+
+function dispatchInput(target: HTMLElement, text: string): void {
   target.dispatchEvent(
     new InputEvent("input", {
       bubbles: true,
@@ -217,7 +225,7 @@ function insertWithRange(target: HTMLElement, text: string): void {
   );
 }
 
-function setNativeValue(target: HTMLTextAreaElement | HTMLInputElement, value: string): void {
+function setNativeValue(target: TextControl, value: string): void {
   const prototype =
     target instanceof HTMLTextAreaElement
       ? HTMLTextAreaElement.prototype

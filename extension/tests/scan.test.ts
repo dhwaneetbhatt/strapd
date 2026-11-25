@@ -1,7 +1,9 @@
 import { describe, expect, it } from "vitest";
+import { buildDiffSegments } from "../src/diff";
 import {
   aggregatePiiFindings,
   aggregateSecretFindings,
+  detectorBits,
   scanText,
   type WasmScanner,
 } from "../src/scan";
@@ -36,6 +38,42 @@ describe("aggregateSecretFindings", () => {
   });
 });
 
+describe("detectorBits", () => {
+  it("maps all four chips onto the existing WASM categories", () => {
+    expect(detectorBits({ apiKey: true, jwt: true, email: true, ip: true })).toEqual({
+      secrets: 255,
+      pii: 63,
+    });
+  });
+
+  it("maps only enabled chips", () => {
+    expect(
+      detectorBits({ apiKey: true, jwt: false, email: false, ip: true }),
+    ).toEqual({ secrets: 191, pii: 1 });
+    expect(
+      detectorBits({ apiKey: false, jwt: false, email: false, ip: false }),
+    ).toEqual({ secrets: 0, pii: 0 });
+  });
+});
+
+describe("buildDiffSegments", () => {
+  it("returns no segments for unchanged text", () => {
+    expect(buildDiffSegments("hello", "hello")).toEqual([]);
+  });
+
+  it("pairs raw values with their redaction tags", () => {
+    const segments = buildDiffSegments(
+      "key=ABC email=a@b.com",
+      "key=[REDACTED_API_KEY] email=[REDACTED_EMAIL]",
+    );
+
+    expect(segments.map(({ raw, tag }) => ({ raw, tag }))).toEqual([
+      { raw: "ABC", tag: "[REDACTED_API_KEY]" },
+      { raw: "a@b.com", tag: "[REDACTED_EMAIL]" },
+    ]);
+  });
+});
+
 describe("scanText", () => {
   it("combines secret and PII findings with scrubbed text", () => {
     const engine: WasmScanner = {
@@ -54,6 +92,7 @@ describe("scanText", () => {
       { kind: "Email", count: 2 },
     ]);
     expect(response.scrubbedText).toBe("[REDACTED_EMAIL] [REDACTED_API_KEY]");
+    expect(response.elapsedMs).toBeGreaterThanOrEqual(0);
   });
 
   it("reports clean text without findings", () => {
@@ -63,12 +102,15 @@ describe("scanText", () => {
       sanitize_pii: (input) => input,
     };
 
-    expect(scanText(engine, "ordinary text")).toEqual({
+    const response = scanText(engine, "ordinary text");
+
+    expect(response).toMatchObject({
       ok: true,
       clean: true,
       findings: [],
       scrubbedText: "ordinary text",
     });
+    expect(response.elapsedMs).toBeGreaterThanOrEqual(0);
   });
 
   it("does not report clean when text changed without a known finding", () => {
@@ -83,5 +125,29 @@ describe("scanText", () => {
     expect(response.clean).toBe(false);
     expect(response.findings).toEqual([]);
     expect(response.scrubbedText).toBe("[REDACTED_UNKNOWN]");
+  });
+
+  it("forwards detector flags to the WASM category arguments", () => {
+    const secretBits: number[] = [];
+    const piiBits: number[] = [];
+    const engine: WasmScanner = {
+      detect_pii: (_input, categories) => {
+        piiBits.push(categories);
+        return new Uint32Array();
+      },
+      sanitize_secrets: (input, categories) => {
+        secretBits.push(categories);
+        return input;
+      },
+      sanitize_pii: (input, categories) => {
+        piiBits.push(categories);
+        return input;
+      },
+    };
+
+    scanText(engine, "text", { apiKey: true, jwt: false, email: false, ip: true });
+
+    expect(secretBits).toEqual([191]);
+    expect(piiBits).toEqual([1, 1]);
   });
 });

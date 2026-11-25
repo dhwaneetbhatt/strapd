@@ -1,9 +1,10 @@
 {
   "manifest_version": 3,
-  "name": "strapd Paste Firewall",
+  "name": "strapd guard",
   "version": "0.1.0",
-  "description": "Catch secrets and personal data before they reach an AI chat. Everything is scanned locally.",
-  "permissions": ["storage"],
+  "description": "Scrub secrets and PII before pasting. Zero network access.",
+  "permissions": ["storage", "scripting", "activeTab"],
+  "optional_host_permissions": ["https://*/*", "http://*/*"],
   "host_permissions": [
     "https://chatgpt.com/*",
     "https://claude.ai/*",
@@ -14,8 +15,20 @@
     "type": "module"
   },
   "action": {
-    "default_title": "strapd Paste Firewall",
-    "default_popup": "popup.html"
+    "default_title": "strapd guard",
+    "default_popup": "popup.html",
+    "default_icon": {
+      "16": "icons/16.png",
+      "32": "icons/32.png",
+      "48": "icons/48.png",
+      "128": "icons/128.png"
+    }
+  },
+  "icons": {
+    "16": "icons/16.png",
+    "32": "icons/32.png",
+    "48": "icons/48.png",
+    "128": "icons/128.png"
   },
   "content_scripts": [
     {
@@ -29,6 +42,6 @@
     }
   ],
   "content_security_policy": {
-    "extension_pages": "script-src 'self' 'wasm-unsafe-eval'; object-src 'self'"
+    "extension_pages": "script-src 'self' 'wasm-unsafe-eval'; connect-src 'none'; object-src 'self'"
   }
 }

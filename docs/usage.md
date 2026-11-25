@@ -210,15 +210,21 @@ Each step passes its result to the next. Generator tools can start a pipe withou
 
 Saved pipes stay in the current browser and profile. Export them before clearing browser data or moving to another browser. Exports include the steps and settings, but not the text you ran through them.
 
-## Browser extension paste firewall
+## Browser extension: strapd guard
 
-The `extension/` workspace builds a Manifest V3 Chrome extension that scans pasted text on `chatgpt.com`, `claude.ai`, and `gemini.google.com` before it reaches the chat input. Scanning runs locally in the extension service worker against the same browser WASM detection and sanitization used by the WebApp. The extension requests only `storage`; pasted text never leaves the browser.
+The `extension/` workspace builds `strapd guard`, a Manifest V3 paste firewall. It scans plain-text pastes in the extension service worker with the same browser WASM detection and sanitization used by the WebApp, then applies the selected mode before text reaches an AI chat composer. Pasted text never leaves the browser.
 
 ```bash
 make extension-build
 ```
 
-Load `extension/dist/` with **Load unpacked** at `chrome://extensions`. When a paste contains secrets or PII, a warning card offers **Paste scrubbed** (Enter), **Paste raw** (Shift+Enter), or **Cancel** (Esc). Use the toolbar popup to pause scanning. For a local fixture, open `chrome-extension://<extension-id>/test.html`; it includes a textarea, a contenteditable editor, and copyable dummy payloads. See [the extension guide](../extension/README.md) for build and cold-start checks.
+Load `extension/dist/` with **Load unpacked** at `chrome://extensions`.
+
+The popup persists three modes: **Ask before pasting** (default) opens a compact local review card docked at the bottom of the screen for dirty text with **Paste redacted** (`Enter`), **Paste raw** (`Shift+Enter`), and **Cancel** (`Esc`); **Auto-redact (Silent)** scrubs immediately with no popup or undo control; **Paused** allows raw pastes for 15 minutes and shows an amber `OFF` badge until it expires back to the previous mode. Four detector chips filter `apiKey`, `jwt`, `email`, and `ip` categories.
+
+Default host access covers `chatgpt.com`, `claude.ai`, and `gemini.google.com`. Use **+ Add &lt;hostname&gt;** in the popup to grant a custom HTTP(S) origin, register a persistent content script, and inject into the open tab without a reload. Custom-site pills include a `×` to unregister the script and revoke the permission.
+
+The **Proof** drawer reports the exact active `connect-src 'none'` directive, live granted origins, the generated WASM SHA-256, a RAM-only blocked counter, and a real offline self-test result. For a local fixture, open `chrome-extension://<extension-id>/test.html`; it includes a textarea, a contenteditable editor, and copyable dummy payloads. See [the extension guide](../extension/README.md) for build, proof, and cold-start checks.
 
 ## Rust and browser WASM detection
 

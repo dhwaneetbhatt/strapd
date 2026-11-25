@@ -128,10 +128,10 @@ extension-wasm:
 extension-build: extension-wasm extension-install
 	cd extension && pnpm build
 
-extension-typecheck: extension-wasm extension-install
+extension-typecheck: extension-build
 	cd extension && pnpm typecheck
 
-extension-test: extension-wasm extension-install
+extension-test: extension-build
 	cd extension && pnpm test
 
 # Portable library: one WIT contract, core WASI module and component.

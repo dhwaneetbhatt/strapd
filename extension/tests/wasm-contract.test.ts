@@ -1,3 +1,4 @@
+import { createHash } from "node:crypto";
 import { existsSync } from "node:fs";
 import { readFile } from "node:fs/promises";
 import { join } from "node:path";
@@ -52,5 +53,27 @@ describe.skipIf(!wasmBuilt)("WASM contract", () => {
         false,
       ),
     ).toBe("Contact [REDACTED_EMAIL]");
+  });
+});
+
+const metadataPath = join(process.cwd(), "src", "generated-meta.ts");
+const manifestPath = join(process.cwd(), "manifest.json");
+
+describe.skipIf(!wasmBuilt || !existsSync(metadataPath))("generated metadata", () => {
+  it("matches the built WASM digest and CSP directive", async () => {
+    const wasmBytes = await readFile(wasmPath);
+    const digest = createHash("sha256").update(wasmBytes).digest("hex");
+    const metadata = await import("../src/generated-meta");
+    const manifest = JSON.parse(await readFile(manifestPath, "utf8")) as {
+      content_security_policy: { extension_pages: string };
+    };
+    const directive = manifest.content_security_policy.extension_pages
+      .split(";")
+      .map((part) => part.trim())
+      .find((part) => part.startsWith("connect-src"));
+
+    expect(metadata.WASM_SHA256).toBe(digest);
+    expect(metadata.CSP_CONNECT_SRC).toBe(directive);
+    expect(directive).toBe("connect-src 'none'");
   });
 });

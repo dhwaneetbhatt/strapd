@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>strapd Paste Firewall - local test</title>
+    <title>strapd guard - local paste test</title>
     <style>
       :root {
         color-scheme: light dark;
@@ -134,18 +134,23 @@
     </style>
   </head>
   <body>
-    <h1>strapd Paste Firewall test page</h1>
+    <h1>strapd guard test page</h1>
     <p>
       Open this page from the loaded extension:
-      <code>chrome-extension://&lt;extension-id&gt;/test.html</code>. The page imports the
-      same interceptor module as the content script, so paste handling, WASM scanning,
-      and the warning card all run here.
+      <code>chrome-extension://&lt;extension-id&gt;/test.html</code>. It imports the same
+      interceptor module as the content script, so paste handling, WASM scanning, and
+      the bottom-docked ask-mode card all run here. Auto mode inserts silently.
+    </p>
+    <p>
+      Set <strong>Ask</strong>, <strong>Auto-redact (Silent)</strong>, or
+      <strong>Paused</strong> in the toolbar popup first. Clean pastes insert
+      immediately; dirty pastes follow the active mode.
     </p>
     <p id="harness-status" class="status">Loading interceptor…</p>
 
     <section class="panel">
       <h2>Plain textarea</h2>
-      <p>Paste a payload below. A clean paste inserts immediately; a dirty paste opens the warning card.</p>
+      <p>Paste a payload below. A clean paste inserts immediately; a dirty paste follows the selected mode.</p>
       <textarea id="paste-target" class="field" placeholder="Paste here…"></textarea>
     </section>
 
@@ -190,8 +195,10 @@ Contact dev@example.com</textarea>
 
     <p class="note">
       Cold-start check: wait for the service worker to become idle (or stop it from
-      <code>chrome://serviceworker-internals</code>), then paste again. The scan should still
-      complete because WASM initialization is lazy and cached inside the message handler.
+      <code>chrome://serviceworker-internals</code>), then paste again. The scan should
+      still complete because WASM initialization is lazy and cached inside the message
+      handler. The Proof drawer in the popup runs the same scanner against an offline
+      self-test payload.
     </p>
 
     <script type="module" src="test.js"></script>

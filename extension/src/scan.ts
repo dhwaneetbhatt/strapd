@@ -1,4 +1,5 @@
-import type { Finding, ScanResponse } from "./types";
+import { normalizeDetectors } from "./storage";
+import type { DetectorSettings, Finding, ScanResponse } from "./types";
 
 export interface WasmScanner {
   detect_pii(input: string, categories: number): Uint32Array;
@@ -8,6 +9,8 @@ export interface WasmScanner {
 
 export const ALL_PII_CATEGORIES = 63;
 export const ALL_SECRET_CATEGORIES = 255;
+
+const EMPTY_TRIPLES = new Uint32Array(0);
 
 const PII_KINDS = [
   { category: 1, kind: "IP address" },
@@ -29,13 +32,45 @@ const SECRET_MARKERS = [
   { placeholder: "[REDACTED_SIGNED_URL]", kind: "Signed URL" },
 ] as const;
 
-export function scanText(engine: WasmScanner, text: string): ScanResponse {
-  const scrubbedSecrets = engine.sanitize_secrets(text, ALL_SECRET_CATEGORIES);
-  const piiTriples = engine.detect_pii(scrubbedSecrets, ALL_PII_CATEGORIES);
-  const scrubbedText = engine.sanitize_pii(scrubbedSecrets, ALL_PII_CATEGORIES, false);
+export function detectorBits(detectors?: DetectorSettings): { secrets: number; pii: number } {
+  const settings = normalizeDetectors(detectors);
+  let secrets = 0;
+  let pii = 0;
+
+  if (settings.apiKey) {
+    secrets |= 1 | 2 | 4 | 8 | 16 | 32 | 128;
+  }
+  if (settings.jwt) {
+    secrets |= 64;
+  }
+  if (settings.ip) {
+    pii |= 1;
+  }
+  if (settings.email) {
+    pii |= 2 | 4 | 8 | 16 | 32;
+  }
+
+  return { secrets, pii };
+}
+
+export function scanText(
+  engine: WasmScanner,
+  text: string,
+  detectors?: DetectorSettings,
+): ScanResponse {
+  const started = performance.now();
+  const bits = detectorBits(detectors);
+  const scrubbedSecrets = bits.secrets === 0 ? text : engine.sanitize_secrets(text, bits.secrets);
+  const piiTriples = bits.pii === 0
+    ? EMPTY_TRIPLES
+    : engine.detect_pii(scrubbedSecrets, bits.pii);
+  const scrubbedText = bits.pii === 0
+    ? scrubbedSecrets
+    : engine.sanitize_pii(scrubbedSecrets, bits.pii, false);
+
   const findings = [
-    ...aggregateSecretFindings(text, scrubbedSecrets),
-    ...aggregatePiiFindings(piiTriples),
+    ...(bits.secrets === 0 ? [] : aggregateSecretFindings(text, scrubbedSecrets)),
+    ...(bits.pii === 0 ? [] : aggregatePiiFindings(piiTriples)),
   ];
 
   return {
@@ -43,7 +78,12 @@ export function scanText(engine: WasmScanner, text: string): ScanResponse {
     clean: findings.length === 0 && scrubbedText === text,
     findings,
     scrubbedText,
+    elapsedMs: Math.max(0, performance.now() - started),
   };
+}
+
+export function countFindings(findings: Finding[]): number {
+  return findings.reduce((total, finding) => total + finding.count, 0);
 }
 
 export function aggregateSecretFindings(original: string, scrubbed: string): Finding[] {

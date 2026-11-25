@@ -63,3 +63,4 @@ webapp/wasm/{*.wasm,*.js,*.ts,*.json}
 extension/dist/
 extension/node_modules/
 extension/wasm/
+extension/src/generated-meta.ts

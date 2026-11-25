@@ -1,16 +1,33 @@
-import { captureSelection, findEditableTarget, insertText } from "./insert";
+import { getLocalSettings, sendToWorker, setLocalSettings } from "./chrome";
+import {
+  captureSelection,
+  findEditableTarget,
+  insertText,
+  type SelectionSnapshot,
+} from "./insert";
+import { SETTINGS_KEY, isPauseExpired, normalizeSettings } from "./storage";
+import type {
+  ExtensionSettings,
+  Finding,
+  PasteMode,
+  ScanRequest,
+  ScanResponse,
+  WarningSelection,
+} from "./types";
 import { showWarning } from "./ui";
-import type { ScanRequest, ScanResponse, WarningAction } from "./types";
 
 const SCAN_TIMEOUT_MS = 15_000;
-const ENABLED_DEFAULTS = { enabled: true };
 
-let enabled = true;
+interface Dismissable {
+  dismiss: () => void;
+}
+
+let settings: ExtensionSettings | null = null;
 let requestSequence = 0;
-let activeWarning: ReturnType<typeof showWarning> | null = null;
+let activeOverlay: Dismissable | null = null;
 
 function onPaste(event: ClipboardEvent): void {
-  if (!enabled) {
+  if (!settings || settings.mode === "paused" && !isPauseExpired(settings.pauseUntil)) {
     return;
   }
 
@@ -38,51 +55,109 @@ function onPaste(event: ClipboardEvent): void {
 
 async function handlePaste(target: HTMLElement, text: string): Promise<void> {
   const request = ++requestSequence;
-
-  activeWarning?.dismiss();
-  activeWarning = null;
-
+  activeOverlay?.dismiss();
+  activeOverlay = null;
   const snapshot = captureSelection(target);
-  const response = await scan(text);
+
+  if (!settings) {
+    insertText(target, text, snapshot);
+    return;
+  }
+
+  if (settings.mode === "paused") {
+    await resumeExpiredPause();
+  }
+  if (request !== requestSequence) {
+    return;
+  }
+  if (!settings || settings.mode === "paused") {
+    insertText(target, text, snapshot);
+    return;
+  }
+
+  const mode = settings.mode;
+  const response = await scan(text, settings);
 
   if (request !== requestSequence) {
     return;
   }
-
   if (!response.ok || response.clean) {
     insertText(target, text, snapshot);
     return;
   }
 
-  let warning: ReturnType<typeof showWarning>;
+  if (mode === "auto") {
+    autoRedact(target, response, snapshot);
+    return;
+  }
+
+  await askBeforePaste(target, text, response, snapshot, request);
+}
+
+function autoRedact(
+  target: HTMLElement,
+  response: ScanResponse,
+  snapshot: SelectionSnapshot,
+): void {
+  insertText(target, response.scrubbedText, snapshot);
+  recordRedaction(response.findings);
+}
+
+async function askBeforePaste(
+  target: HTMLElement,
+  text: string,
+  response: ScanResponse,
+  snapshot: SelectionSnapshot,
+  request: number,
+): Promise<void> {
+  let selection: WarningSelection;
+  let warning: ReturnType<typeof showWarning> | null = null;
   try {
     warning = showWarning({
       findings: response.findings,
+      originalText: text,
       scrubbedText: response.scrubbedText,
     });
+    activeOverlay = warning;
+    selection = await warning.result;
   } catch {
+    // Fail open: the original text is already known and no UI is mandatory.
     insertText(target, text, snapshot);
     return;
   }
-  activeWarning = warning;
 
-  const action: WarningAction = await warning.result;
-
-  if (activeWarning === warning) {
-    activeWarning = null;
+  if (activeOverlay === warning) {
+    activeOverlay = null;
   }
   if (request !== requestSequence) {
     return;
   }
-  if (action === "cancel") {
+
+  if (selection.alwaysAuto) {
+    settings = { ...settings!, mode: "auto", pauseUntil: null };
+    void setLocalSettings({ [SETTINGS_KEY]: settings }).catch(() => undefined);
+  }
+
+  if (selection.action === "cancel") {
     target.focus({ preventScroll: true });
     return;
   }
 
-  insertText(target, action === "scrubbed" ? response.scrubbedText : text, snapshot);
+  insertText(target, selection.action === "scrubbed" ? response.scrubbedText : text, snapshot);
+  if (selection.action === "scrubbed") {
+    recordRedaction(response.findings);
+  }
 }
 
-function scan(text: string): Promise<ScanResponse> {
+function recordRedaction(findings: Finding[]): void {
+  const count = countFindings(findings);
+  if (count <= 0) {
+    return;
+  }
+  void sendToWorker({ type: "RECORD_REDACTION", count }).catch(() => undefined);
+}
+
+function scan(text: string, current: ExtensionSettings): Promise<ScanResponse> {
   return new Promise((resolve) => {
     let settled = false;
     let timer: ReturnType<typeof setTimeout> | undefined;
@@ -102,7 +177,11 @@ function scan(text: string): Promise<ScanResponse> {
       finish(failOpen(text, "Scan timed out"));
     }, SCAN_TIMEOUT_MS);
 
-    const request: ScanRequest = { type: "SCAN_TEXT", text };
+    const request: ScanRequest = {
+      type: "SCAN_TEXT",
+      text,
+      detectors: current.detectors,
+    };
 
     try {
       chrome.runtime.sendMessage(request, (response: unknown) => {
@@ -123,12 +202,26 @@ function scan(text: string): Promise<ScanResponse> {
   });
 }
 
+async function resumeExpiredPause(): Promise<void> {
+  try {
+    const response = await sendToWorker<{ mode?: PasteMode }>({
+      type: "RESUME_PAUSED",
+    });
+    if (settings && (response?.mode === "ask" || response?.mode === "auto")) {
+      settings = { ...settings, mode: response.mode, pauseUntil: null };
+    }
+  } catch {
+    // An unreachable worker leaves the cached pause until storage syncs.
+  }
+}
+
 function failOpen(text: string, error: string): ScanResponse {
   return {
     ok: false,
     clean: true,
     findings: [],
     scrubbedText: text,
+    elapsedMs: 0,
     error,
   };
 }
@@ -143,19 +236,33 @@ function isScanResponse(value: unknown): value is ScanResponse {
     typeof response.ok === "boolean" &&
     typeof response.clean === "boolean" &&
     typeof response.scrubbedText === "string" &&
-    Array.isArray(response.findings)
+    Array.isArray(response.findings) &&
+    typeof response.elapsedMs === "number"
   );
 }
 
-function syncEnabled(): void {
-  chrome.storage.local.get(ENABLED_DEFAULTS, (result) => {
-    enabled = result.enabled !== false;
-  });
+function countFindings(findings: Finding[]): number {
+  return findings.reduce((total, finding) => total + finding.count, 0);
+}
+
+function syncSettings(): void {
+  void getLocalSettings()
+    .then((stored) => {
+      settings = normalizeSettings(stored[SETTINGS_KEY] ?? stored, Date.now(), true);
+    })
+    .catch(() => {
+      settings = null;
+    });
 
   chrome.storage.onChanged.addListener((changes, area) => {
-    if (area === "local" && changes.enabled) {
-      enabled = changes.enabled.newValue !== false;
+    if (area !== "local" || (!changes[SETTINGS_KEY] && !changes.enabled)) {
+      return;
     }
+
+    const change = changes[SETTINGS_KEY]?.newValue ?? {
+      enabled: changes.enabled?.newValue,
+    };
+    settings = normalizeSettings(change, Date.now(), true);
   });
 }
 
@@ -165,15 +272,15 @@ function install(): void {
   }
 
   const scope = window as typeof window & {
-    __strapdPasteFirewallInstalled?: boolean;
+    __strapdGuardInstalled?: boolean;
   };
 
-  if (scope.__strapdPasteFirewallInstalled) {
+  if (scope.__strapdGuardInstalled) {
     return;
   }
-  scope.__strapdPasteFirewallInstalled = true;
+  scope.__strapdGuardInstalled = true;
 
-  syncEnabled();
+  syncSettings();
   window.addEventListener("paste", onPaste, true);
 }
 
