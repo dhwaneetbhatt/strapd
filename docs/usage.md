@@ -163,15 +163,15 @@ Aadhaar uses a Verhoeff checksum; PAN uses format rules. Labels such as `aadhaar
 
 Unlabelled cards require Luhn **and** one of these prefix/length combinations. This is a local plausibility check, not issuer verification. Labelled cards (including `card`, `card_number` and `payment_card`) retain plausible 13–19 digit fallback without issuer or checksum restrictions. Compact numbers, consistent space/hyphen groups of four, Amex `4-6-5` and Diners `4-6-4` grouping are supported.
 
-| Card | Prefix | Digits |
-| --- | --- | --- |
-| Visa | 4 | 13, 16, 19 |
-| Mastercard | 51–55, 2221–2720 | 16 |
-| Amex | 34, 37 | 15 |
-| Discover | 6011, 65, 644–649 | 16, 19 |
-| RuPay | 60, 65, 81, 82, 508 | 16 |
-| Diners | 300–305, 36, 38, 39 | 14 |
-| JCB | 3528–3589 | 16 |
+| Card       | Prefix              | Digits     |
+| ---------- | ------------------- | ---------- |
+| Visa       | 4                   | 13, 16, 19 |
+| Mastercard | 51–55, 2221–2720    | 16         |
+| Amex       | 34, 37              | 15         |
+| Discover   | 6011, 65, 644–649   | 16, 19     |
+| RuPay      | 60, 65, 81, 82, 508 | 16         |
+| Diners     | 300–305, 36, 38, 39 | 14         |
+| JCB        | 3528–3589           | 16         |
 
 Partially masked Aadhaar values stay as they are. When assigning numbered placeholders, email domains ignore letter case, but the part before `@` must match exactly.
 
@@ -210,6 +210,10 @@ Each step passes its result to the next. Generator tools can start a pipe withou
 
 Saved pipes stay in the current browser and profile. Export them before clearing browser data or moving to another browser. Exports include the steps and settings, but not the text you ran through them.
 
+## Browser extension: strapd guard
+
+`strapd guard` scrubs secrets and personal data from text before it reaches AI chat sites. Everything runs locally in Chrome.
+
 ## Rust and browser WASM detection
 
 In Rust, use `detect` when you want to find personal information without changing the text:
@@ -240,14 +244,14 @@ Each three numbers mean `[category, start, end]`. These are byte offsets, which 
 
 Choose categories by adding their bits:
 
-| Category | Bit |
-| --- | ---: |
-| IP addresses | 1 |
-| Emails | 2 |
-| Phone numbers | 4 |
-| Payment cards | 8 |
-| Aadhaar | 16 |
-| PAN | 32 |
+| Category      | Bit |
+| ------------- | --: |
+| IP addresses  |   1 |
+| Emails        |   2 |
+| Phone numbers |   4 |
+| Payment cards |   8 |
+| Aadhaar       |  16 |
+| PAN           |  32 |
 
 For example, `3` selects IP addresses and emails. Use `63` for all PII categories or `0` for none. Secret sanitization uses a separate mask: API keys=1, auth=2, cookies=4, databases=8, crypto keys=16, passwords=32, tokens=64, signed URLs=128; all=255.
 
@@ -266,12 +270,12 @@ make portable-wasm-package
 
 The files are in `target/portable-wasm/`. The archive at `target/strapd-wasm.tar.gz` contains the same files:
 
-| File | Use |
-| --- | --- |
-| `strapd.wasm` | Use with a core WASM runtime, such as wazero, and compatible generated bindings |
-| `strapd.component.wasm` | Use with a runtime that supports WASM components, such as Wasmtime |
-| `tools.wit` | Function names, inputs, and outputs for generating bindings in your language |
-| `SHA256SUMS` | Checksums for verifying the three files |
+| File                    | Use                                                                             |
+| ----------------------- | ------------------------------------------------------------------------------- |
+| `strapd.wasm`           | Use with a core WASM runtime, such as wazero, and compatible generated bindings |
+| `strapd.component.wasm` | Use with a runtime that supports WASM components, such as Wasmtime              |
+| `tools.wit`             | Function names, inputs, and outputs for generating bindings in your language    |
+| `SHA256SUMS`            | Checksums for verifying the three files                                         |
 
 To run the library's checks, use `make portable-wasm-test`.
 

@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>strapd guard</title>
+    <link rel="stylesheet" href="popup.css" />
+  </head>
+  <body>
+    <main>
+      <header class="popup-header">
+        <div class="brand-block">
+          <span class="brand-mark" aria-hidden="true">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none">
+              <path
+                d="M12 2.5 4.5 5.75V11.5C4.5 16.45 7.68 20.98 12 22.25c4.32-1.27 7.5-5.8 7.5-10.75V5.75L12 2.5Z"
+                stroke="currentColor"
+                stroke-width="1.85"
+                stroke-linejoin="round"
+              />
+              <path
+                d="m9.5 9.5 2.5 2.5-2.5 2.5m3.25 0h2.5"
+                stroke="var(--emerald)"
+                stroke-width="1.85"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              />
+            </svg>
+          </span>
+          <span class="brand-copy">
+            <strong>strapd guard</strong>
+          </span>
+        </div>
+      </header>
+
+      <div class="popup-body">
+        <section aria-labelledby="mode-heading">
+          <div class="section-heading">
+            <span id="mode-heading" class="section-label">PASTE MODE</span>
+            <span id="mode-status-hint" class="section-meta">Interactive review</span>
+          </div>
+          <div role="radiogroup" aria-label="Paste behavior mode" class="mode-list">
+            <button type="button" class="mode-card" data-mode="ask" role="radio" aria-checked="false">
+              <span class="mode-radio"><span class="mode-dot"></span></span>
+              <span class="mode-copy">
+                <span class="mode-title">Ask before pasting <span class="mode-badge">default</span></span>
+                <span class="mode-description">Pause when secrets are found and let me review.</span>
+              </span>
+            </button>
+            <button type="button" class="mode-card" data-mode="auto" role="radio" aria-checked="false">
+              <span class="mode-radio"><span class="mode-dot"></span></span>
+              <span class="mode-copy">
+                <span class="mode-title">Auto-redact (Silent) <span class="mode-badge emerald">zero-friction</span></span>
+                <span class="mode-description">Scrub and paste immediately with no popup or confirmation.</span>
+              </span>
+            </button>
+            <button type="button" class="mode-card" data-mode="paused" role="radio" aria-checked="false">
+              <span class="mode-radio"><span class="mode-dot"></span></span>
+              <span class="mode-copy">
+                <span class="mode-title">Paused <span class="mode-badge amber">15 min</span></span>
+                <span class="mode-description">Temporarily allow raw pastes without scanning.</span>
+              </span>
+            </button>
+          </div>
+        </section>
+
+        <section aria-labelledby="detectors-heading">
+          <div class="section-heading">
+            <span id="detectors-heading" class="section-label">LOCAL DETECTORS</span>
+            <span id="detector-count-label" class="section-meta">4 / 4 active</span>
+          </div>
+          <div class="chip-list" id="detector-chips">
+            <button type="button" class="detector-chip" data-detector="apiKey" aria-pressed="true">
+              <span class="chip-dot"></span>API Keys &amp; Secrets
+            </button>
+            <button type="button" class="detector-chip" data-detector="jwt" aria-pressed="true">
+              <span class="chip-dot"></span>JWT / Tokens
+            </button>
+            <button type="button" class="detector-chip" data-detector="email" aria-pressed="true">
+              <span class="chip-dot"></span>Emails &amp; PII
+            </button>
+            <button type="button" class="detector-chip" data-detector="ip" aria-pressed="true">
+              <span class="chip-dot"></span>IPs &amp; Hosts
+            </button>
+          </div>
+        </section>
+
+        <section aria-labelledby="sites-heading">
+          <div class="section-heading">
+            <span id="sites-heading" class="section-label">PROTECTED SITES</span>
+            <span class="section-meta">scoped only</span>
+          </div>
+          <div class="site-list" id="sites-list"></div>
+          <button type="button" id="add-site-btn" class="add-site-btn">+ This site</button>
+          <p id="site-status" class="site-status" role="status"></p>
+        </section>
+      </div>
+
+      <footer class="proof-strip">
+        <div class="proof-summary">
+          <span class="lock-mark" aria-hidden="true">
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="11" width="18" height="11" rx="2" />
+              <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+            </svg>
+          </span>
+          <span class="proof-copy"><strong>0 bytes</strong> sent · Fully offline</span>
+          <button type="button" id="proof-toggle-btn" aria-expanded="false" aria-controls="proof-drawer">
+            Proof <span class="proof-chevron">▾</span>
+          </button>
+        </div>
+        <div id="proof-drawer" class="proof-drawer" hidden>
+          <div class="audit-heading">VERIFIABLE OFFLINE AUDIT</div>
+          <dl class="audit-list">
+            <div><dt>CSP</dt><dd id="audit-csp" class="mono">—</dd></div>
+            <div><dt>Origins</dt><dd id="audit-hosts" class="wrap">—</dd></div>
+            <div><dt>Engine</dt><dd id="audit-engine" class="mono wrap">—</dd></div>
+            <div><dt>Session</dt><dd id="audit-session" class="mono emerald">0 redactions this session</dd></div>
+          </dl>
+          <button type="button" id="self-test-btn" class="self-test-btn">Run Offline Self-Test</button>
+          <pre id="self-test-result" class="self-test-result" hidden></pre>
+        </div>
+      </footer>
+    </main>
+    <script src="popup.js"></script>
+  </body>
+</html>

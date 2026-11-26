@@ -58,3 +58,10 @@ next-env.d.ts
 
 # WASM build output for webapp
 webapp/wasm/{*.wasm,*.js,*.ts,*.json}
+
+# Browser extension build output
+extension/dist/
+extension/release/
+extension/node_modules/
+extension/wasm/
+extension/src/generated-meta.ts
