@@ -1,20 +1,50 @@
 import { createHash } from "node:crypto";
-import { copyFile, cp, mkdir, readFile, rm, writeFile } from "node:fs/promises";
-import { dirname, join } from "node:path";
+import {
+  copyFile,
+  cp,
+  mkdir,
+  readFile,
+  readdir,
+  rm,
+  writeFile,
+} from "node:fs/promises";
+import { dirname, join, relative } from "node:path";
 import { fileURLToPath } from "node:url";
 import { build } from "esbuild";
 
 const root = dirname(fileURLToPath(import.meta.url));
 const dist = join(root, "dist");
+const release = join(root, "release");
 const wasmPath = join(root, "wasm/strapd_wasm_bg.wasm");
+const production = process.argv.includes("--production");
+const output = production ? release : dist;
 
 const shared = {
   bundle: true,
   platform: "browser",
   target: "chrome120",
-  sourcemap: true,
   logLevel: "info",
+  ...(production
+    ? { sourcemap: false, minify: true, legalComments: "none" }
+    : { sourcemap: true }),
 };
+
+const EXPECTED_DESCRIPTION =
+  "Scrub secrets and PII before pasting. Zero network access.";
+const EXPECTED_CSP =
+  "script-src 'self' 'wasm-unsafe-eval'; connect-src 'none'; object-src 'self'";
+const DEFAULT_SITES = [
+  "https://chatgpt.com/*",
+  "https://claude.ai/*",
+  "https://gemini.google.com/*",
+];
+const ICON_SIZES = [16, 32, 48, 128];
+const URL_PATTERN = /https?:\/\/[^\s"'`<>()]+/g;
+const ALLOWED_URLS = new Set([
+  "http://*/*",
+  "https://*/*",
+  ...DEFAULT_SITES,
+]);
 
 const wasm = await readFile(wasmPath);
 const sha256 = createHash("sha256").update(wasm).digest("hex");
@@ -40,41 +70,156 @@ await writeFile(
   ].join("\n"),
 );
 
-await rm(dist, { recursive: true, force: true });
-await mkdir(dist, { recursive: true });
+await rm(output, { recursive: true, force: true });
+await mkdir(output, { recursive: true });
 
-await Promise.all([
-  build({
-    ...shared,
-    entryPoints: [join(root, "src/background.ts")],
-    outfile: join(dist, "background.js"),
-    format: "esm",
-  }),
-  build({
-    ...shared,
-    entryPoints: [join(root, "src/content.ts")],
-    outfile: join(dist, "content.js"),
-    format: "iife",
-  }),
-  build({
-    ...shared,
-    entryPoints: [join(root, "src/popup.ts")],
-    outfile: join(dist, "popup.js"),
-    format: "iife",
-  }),
-  build({
-    ...shared,
-    entryPoints: [join(root, "src/test-harness.ts")],
-    outfile: join(dist, "test.js"),
-    format: "esm",
-  }),
-]);
+const entries = [
+  { file: "background.js", entry: "src/background.ts", format: "esm" },
+  { file: "content.js", entry: "src/content.ts", format: "iife" },
+  { file: "popup.js", entry: "src/popup.ts", format: "iife" },
+  ...(production
+    ? []
+    : [{ file: "test.js", entry: "src/test-harness.ts", format: "esm" }]),
+];
 
-await Promise.all([
-  copyFile(join(root, "manifest.json"), join(dist, "manifest.json")),
-  copyFile(join(root, "src/popup.html"), join(dist, "popup.html")),
-  copyFile(join(root, "src/popup.css"), join(dist, "popup.css")),
-  copyFile(join(root, "test.html"), join(dist, "test.html")),
-  copyFile(wasmPath, join(dist, "strapd_wasm_bg.wasm")),
-  cp(join(root, "icons"), join(dist, "icons"), { recursive: true }),
-]);
+await Promise.all(
+  entries.map(({ file, entry, format }) =>
+    build({
+      ...shared,
+      entryPoints: [join(root, entry)],
+      outfile: join(output, file),
+      format,
+    }),
+  ),
+);
+
+const assets = [
+  ["manifest.json", "manifest.json"],
+  ["src/popup.html", "popup.html"],
+  ["src/popup.css", "popup.css"],
+  ["wasm/strapd_wasm_bg.wasm", "strapd_wasm_bg.wasm"],
+  ...(production ? [] : [["test.html", "test.html"]]),
+];
+
+await Promise.all(
+  assets.map(([source, destination]) =>
+    copyFile(join(root, source), join(output, destination)),
+  ),
+);
+
+if (production) {
+  await mkdir(join(output, "icons"), { recursive: true });
+  await Promise.all(
+    ICON_SIZES.map((size) =>
+      copyFile(
+        join(root, "icons", `${size}.png`),
+        join(output, "icons", `${size}.png`),
+      ),
+    ),
+  );
+} else {
+  await cp(join(root, "icons"), join(output, "icons"), { recursive: true });
+}
+
+if (production) {
+  await writeChecksums(output);
+  await assertProductionContract(output);
+  console.log(`Production extension staged at ${relative(process.cwd(), output)}`);
+}
+
+async function writeChecksums(directory) {
+  const files = await listFiles(directory);
+  const lines = await Promise.all(
+    files.map(async (file) => {
+      const bytes = await readFile(join(directory, file));
+      return `${createHash("sha256").update(bytes).digest("hex")}  ${file}`;
+    }),
+  );
+  await writeFile(join(directory, "SHA256SUMS"), `${lines.join("\n")}\n`);
+}
+
+async function assertProductionContract(directory) {
+  const files = await listFiles(directory);
+  const expected = [
+    "SHA256SUMS",
+    "background.js",
+    "content.js",
+    "icons/128.png",
+    "icons/16.png",
+    "icons/32.png",
+    "icons/48.png",
+    "manifest.json",
+    "popup.css",
+    "popup.html",
+    "popup.js",
+    "strapd_wasm_bg.wasm",
+  ];
+  assert(
+    files.join("\n") === expected.join("\n"),
+    `unexpected shipped files: ${files.join(", ")}`,
+  );
+
+  const builtManifest = JSON.parse(
+    await readFile(join(directory, "manifest.json"), "utf8"),
+  );
+  assert(builtManifest.name === "strapd guard", "manifest name changed");
+  assert(
+    builtManifest.description === EXPECTED_DESCRIPTION,
+    "manifest description changed",
+  );
+  assert(
+    builtManifest.content_security_policy?.extension_pages === EXPECTED_CSP,
+    "manifest CSP changed",
+  );
+  assert(builtManifest.content_scripts?.length === 1, "expected one static script");
+  const script = builtManifest.content_scripts[0];
+  assert(script.run_at === "document_start", "static script is not document_start");
+  assert(script.all_frames === true, "static script is not all-frames");
+  assert(
+    script.matches.join("\n") === DEFAULT_SITES.join("\n"),
+    "static script site scope changed",
+  );
+
+  const builtWasm = await readFile(join(directory, "strapd_wasm_bg.wasm"));
+  const builtDigest = createHash("sha256").update(builtWasm).digest("hex");
+  const metadata = await readFile(join(root, "src/generated-meta.ts"), "utf8");
+  assert(metadata.includes(`WASM_SHA256 = "${builtDigest}"`), "WASM metadata mismatch");
+
+  for (const size of ICON_SIZES) {
+    const icon = await readFile(join(directory, "icons", `${size}.png`));
+    assert(icon.subarray(1, 4).toString() === "PNG", `${size}.png is not a PNG`);
+    assert(icon.readUInt32BE(16) === size, `${size}.png has the wrong width`);
+    assert(icon.readUInt32BE(20) === size, `${size}.png has the wrong height`);
+  }
+
+  for (const file of files.filter((name) => /\.(js|css|html|json)$/.test(name))) {
+    const source = await readFile(join(directory, file), "utf8");
+    assert(
+      !source.includes("sourceMappingURL"),
+      `${file} contains a source map reference`,
+    );
+    for (const url of source.match(URL_PATTERN) ?? []) {
+      assert(ALLOWED_URLS.has(url), `${file} contains an unexpected URL: ${url}`);
+    }
+  }
+}
+
+function assert(condition, message) {
+  if (!condition) {
+    throw new Error(`Production package check failed: ${message}`);
+  }
+}
+
+async function listFiles(directory, base = directory) {
+  const entries = await readdir(directory, { withFileTypes: true });
+  const files = [];
+  for (const entry of entries) {
+    const path = join(directory, entry.name);
+    if (entry.isDirectory()) {
+      files.push(...(await listFiles(path, base)));
+    } else if (entry.isFile()) {
+      files.push(relative(base, path));
+    }
+  }
+  return files.sort();
+}

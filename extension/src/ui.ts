@@ -1,4 +1,5 @@
 import { buildDiffSegments } from "./diff";
+import { resolveKeyboardAction } from "./keyboard";
 import type { Finding, WarningAction, WarningSelection } from "./types";
 
 export interface OverlayOptions {
@@ -105,35 +106,29 @@ export function showWarning(options: WarningOptions): WarningHandle {
   }
 
   function onKeyDown(event: KeyboardEvent): void {
-    if (event.key === "Escape") {
-      event.preventDefault();
-      event.stopImmediatePropagation();
-      finish("cancel");
+    const action = resolveKeyboardAction(event, shadow.activeElement, {
+      diffToggle: diff.toggle,
+      alwaysAuto,
+      pasteRaw,
+      cancel,
+      close,
+    });
+    if (action === "ignore") {
       return;
     }
 
-    if (event.key !== "Enter") {
-      return;
-    }
-
-    const focused = shadow.activeElement;
     event.preventDefault();
     event.stopImmediatePropagation();
 
-    if (focused === diff.toggle) {
+    if (action === "consume") {
+      return;
+    }
+    if (action === "toggle-diff") {
       toggleDiff(diff);
       return;
     }
-    if (focused === alwaysAuto) {
-      return;
-    }
-    if (focused === pasteRaw) {
-      finish("raw");
-    } else if (focused === cancel || focused === close) {
-      finish("cancel");
-    } else {
-      finish(event.shiftKey ? "raw" : "scrubbed");
-    }
+
+    finish(action);
   }
 
   diff.toggle.addEventListener("click", () => toggleDiff(diff));
@@ -301,6 +296,7 @@ function countFindings(findings: Finding[]): number {
 function categoryLabel(kind: string): string {
   const labels: Record<string, string> = {
     "API key": "API Key",
+    Secret: "Secret",
     "Authorization header": "Auth",
     Cookie: "Cookie",
     "Database URL": "Database",

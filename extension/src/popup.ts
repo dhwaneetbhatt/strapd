@@ -4,7 +4,6 @@ import {
   getLocalSettings,
   getRegisteredScripts,
   getSessionValues,
-  hostnameForUrl,
   injectContentScript,
   isOurScriptId,
   originPatternForUrl,
@@ -13,11 +12,11 @@ import {
   requestOrigins,
   scriptIdForOrigin,
   sendToWorker,
-  setLocalSettings,
   setSessionValues,
   unregisterScripts,
   dynamicScriptForOrigin,
 } from "./chrome";
+import { DEFAULT_SITES, isDefaultSitePattern, labelForPattern } from "./sites";
 import { CSP_CONNECT_SRC, WASM_FILENAME, WASM_SHA256 } from "./generated-meta";
 import { countFindings } from "./scan";
 import {
@@ -35,12 +34,6 @@ import type {
   PasteMode,
   ScanResponse,
 } from "./types";
-
-const DEFAULT_SITES = [
-  "https://chatgpt.com/*",
-  "https://claude.ai/*",
-  "https://gemini.google.com/*",
-];
 
 const SELF_TEST_TEXT = [
   "AWS_ACCESS_KEY_ID=AKIAIOSFODNN7EXAMPLE",
@@ -64,6 +57,8 @@ const selfTestResult = document.querySelector<HTMLElement>("#self-test-result")!
 
 let settings: ExtensionSettings | undefined;
 let activeTab: chrome.tabs.Tab | undefined;
+let grantedPatterns = new Set<string>();
+let registeredScriptIds = new Set<string>();
 let proofRender: Promise<void> = Promise.resolve();
 
 void initialize();
@@ -83,7 +78,7 @@ async function initialize(): Promise<void> {
   settings = next;
 
   activeTab = await getActiveTab().catch(() => undefined);
-  render();
+  await refreshSiteState();
 
   chrome.storage.onChanged.addListener((changes, area) => {
     if (area === "local" && (changes[SETTINGS_KEY] || changes.enabled)) {
@@ -91,6 +86,20 @@ async function initialize(): Promise<void> {
       render();
     }
   });
+  chrome.permissions?.onAdded?.addListener(() => void refreshSiteState());
+  chrome.permissions?.onRemoved?.addListener(() => void refreshSiteState());
+}
+
+async function refreshSiteState(): Promise<void> {
+  const [granted, scripts] = await Promise.all([
+    getGrantedOrigins().catch((): string[] => []),
+    getRegisteredScripts().catch(() => []),
+  ]);
+  grantedPatterns = new Set(granted);
+  registeredScriptIds = new Set(
+    scripts.filter((script) => isOurScriptId(script.id)).map((script) => script.id),
+  );
+  render();
 }
 
 function render(): void {
@@ -142,15 +151,18 @@ async function selectMode(mode: PasteMode | undefined): Promise<void> {
   }
 
   if (mode === "paused") {
-    if (settings.mode !== "paused") {
-      await setSessionValues({ [PAUSED_FROM_KEY]: settings.mode }).catch(() => undefined);
-      settings = startPause(settings);
+    if (settings.mode === "paused") {
+      return;
     }
+    await setSessionValues({ [PAUSED_FROM_KEY]: settings.mode }).catch(() => undefined);
+    const paused = startPause(settings);
+    settings = paused;
+    await persistSettings({ mode: paused.mode, pauseUntil: paused.pauseUntil });
   } else {
     settings = { ...settings, mode, pauseUntil: null };
+    await persistSettings({ mode, pauseUntil: null });
   }
 
-  await persistSettings();
   render();
 }
 
@@ -165,7 +177,7 @@ for (const chip of document.querySelectorAll<HTMLButtonElement>(".detector-chip"
       ...settings,
       detectors: { ...settings.detectors, [key]: !settings.detectors[key] },
     };
-    void persistSettings().then(render);
+    void persistSettings({ detectors: settings.detectors }).then(render);
   });
 }
 
@@ -177,24 +189,61 @@ function renderSites(): void {
   sitesList.replaceChildren();
 
   for (const site of DEFAULT_SITES) {
-    sitesList.append(sitePill(site, false));
+    sitesList.append(sitePill(site, false, true));
   }
   for (const site of settings.customSites) {
-    sitesList.append(sitePill(site, true));
+    sitesList.append(sitePill(site, true, isSiteActive(site)));
   }
   updateAddSiteButton();
 }
 
-function sitePill(site: string, removable: boolean): HTMLElement {
+function isSiteActive(pattern: string): boolean {
+  if ((DEFAULT_SITES as readonly string[]).includes(pattern)) {
+    return true;
+  }
+
+  return Boolean(
+    settings?.customSites.includes(pattern) &&
+      grantedPatterns.has(pattern) &&
+      registeredScriptIds.has(scriptIdForOrigin(pattern)),
+  );
+}
+
+function sitePill(site: string, removable: boolean, active: boolean): HTMLElement {
+  const granted = grantedPatterns.has(site);
+  const registered = registeredScriptIds.has(scriptIdForOrigin(site));
   const pill = document.createElement("span");
   pill.className = removable ? "site-pill custom" : "site-pill";
+  if (!active) {
+    pill.classList.add("needs-access");
+    pill.title = !granted
+      ? "Chrome access is not granted"
+      : !registered
+        ? "Content script is not registered"
+        : "Site protection needs attention";
+  }
   const dot = document.createElement("span");
   dot.className = "site-dot";
   const label = document.createElement("span");
-  label.textContent = hostnameForUrl(site.replace("/*", "")) ?? site;
+  label.textContent = labelForPattern(site) ?? site;
+  if (removable && !active) {
+    label.textContent += granted ? " · repair needed" : " · access needed";
+  }
   pill.append(dot, label);
 
   if (removable) {
+    if (!active) {
+      const repair = document.createElement("button");
+      repair.type = "button";
+      repair.className = "site-repair";
+      repair.setAttribute("aria-label", `Repair ${label.textContent}`);
+      repair.textContent = "↻";
+      repair.addEventListener("click", () => {
+        void repairSite(site);
+      });
+      pill.append(repair);
+    }
+
     const remove = document.createElement("button");
     remove.type = "button";
     remove.className = "site-remove";
@@ -210,17 +259,24 @@ function sitePill(site: string, removable: boolean): HTMLElement {
 }
 
 function isProtected(pattern: string): boolean {
-  return Boolean(settings && [...DEFAULT_SITES, ...settings.customSites].includes(pattern));
+  return isDefaultSitePattern(pattern) || isSiteActive(pattern);
 }
 
 function updateAddSiteButton(): void {
   const pattern = activeTab?.url ? originPatternForUrl(activeTab.url) : null;
-  const hostname = pattern ? hostnameForUrl(pattern.replace("/*", "")) : null;
+  const siteLabel = pattern ? labelForPattern(pattern) : null;
 
-  if (!pattern || !hostname) {
+  if (!pattern || !siteLabel) {
     addSiteButton.textContent = "+ This site";
     addSiteButton.disabled = true;
     addSiteButton.title = "Open an HTTP(S) site to protect it";
+    return;
+  }
+
+  if (settings?.customSites.includes(pattern) && !isProtected(pattern)) {
+    addSiteButton.textContent = `Repair ${siteLabel}`;
+    addSiteButton.disabled = false;
+    addSiteButton.title = `Restore protection for ${pattern}`;
     return;
   }
 
@@ -231,14 +287,21 @@ function updateAddSiteButton(): void {
     return;
   }
 
-  addSiteButton.textContent = `+ Add ${hostname}`;
+  addSiteButton.textContent = `+ Add ${siteLabel}`;
   addSiteButton.disabled = false;
   addSiteButton.title = `Grant access to ${pattern}`;
 }
 
 addSiteButton.addEventListener("click", () => {
   const pattern = activeTab?.url ? originPatternForUrl(activeTab.url) : null;
-  if (!settings || !pattern || isProtected(pattern)) {
+  if (!settings || !pattern) {
+    return;
+  }
+  if (settings.customSites.includes(pattern) && !isProtected(pattern)) {
+    void repairSite(pattern);
+    return;
+  }
+  if (isProtected(pattern)) {
     return;
   }
 
@@ -250,14 +313,20 @@ addSiteButton.addEventListener("click", () => {
       return;
     }
 
+    const script = dynamicScriptForOrigin(pattern);
     try {
-      await registerScripts([dynamicScriptForOrigin(pattern)]);
+      const registered = await getRegisteredScripts([script.id]).catch(() => []);
+      if (!registered.some((entry) => entry.id === script.id)) {
+        await registerScripts([script]);
+      }
       if (activeTab?.id !== undefined) {
         await injectContentScript(activeTab.id);
       }
     } catch (error) {
-      await removeOrigins([pattern]).catch(() => false);
+      await unregisterScripts([script.id]).catch(() => undefined);
+      await removeOrigins([pattern]).catch(() => undefined);
       siteStatus.textContent = `Could not protect this site: ${messageOf(error)}`;
+      await refreshSiteState();
       return;
     }
 
@@ -265,11 +334,39 @@ addSiteButton.addEventListener("click", () => {
       ...settings,
       customSites: [...settings.customSites.filter((site) => site !== pattern), pattern],
     };
-    await persistSettings();
-    siteStatus.textContent = "Protected. No reload needed.";
-    render();
+    await persistSettings({ customSites: settings.customSites });
+    await refreshSiteState();
+    siteStatus.textContent = "Protected. Reload this tab to shield scripts that already ran.";
   })();
 });
+
+async function repairSite(pattern: string): Promise<void> {
+  siteStatus.textContent = "Restoring site protection…";
+
+  try {
+    if (!grantedPatterns.has(pattern)) {
+      const granted = await requestOrigins([pattern]).catch(() => false);
+      if (!granted) {
+        siteStatus.textContent = "Permission declined. No site was repaired.";
+        return;
+      }
+    }
+
+    const script = dynamicScriptForOrigin(pattern);
+    const registered = await getRegisteredScripts([script.id]).catch(() => []);
+    if (!registered.some((entry) => entry.id === script.id)) {
+      await registerScripts([script]);
+    }
+    if (activeTab?.id !== undefined) {
+      await injectContentScript(activeTab.id);
+    }
+    await refreshSiteState();
+    siteStatus.textContent = `Protected ${labelForPattern(pattern) ?? pattern}. Reload this tab to shield scripts that already ran.`;
+  } catch (error) {
+    siteStatus.textContent = `Could not repair this site: ${messageOf(error)}`;
+    await refreshSiteState();
+  }
+}
 
 async function removeSite(pattern: string): Promise<void> {
   if (!settings) {
@@ -282,16 +379,19 @@ async function removeSite(pattern: string): Promise<void> {
     ...settings,
     customSites: settings.customSites.filter((site) => site !== pattern),
   };
-  await persistSettings();
-  siteStatus.textContent = `Removed ${hostnameForUrl(pattern.replace("/*", "")) ?? pattern}`;
-  render();
+  await persistSettings({ customSites: settings.customSites });
+  await refreshSiteState();
+  siteStatus.textContent = `Removed ${labelForPattern(pattern) ?? pattern}`;
 }
 
-async function persistSettings(): Promise<void> {
-  if (!settings) {
-    return;
+async function persistSettings(patch: Partial<ExtensionSettings>): Promise<void> {
+  const response = await sendToWorker<{ settings?: ExtensionSettings }>({
+    type: "UPDATE_SETTINGS",
+    patch,
+  }).catch(() => undefined);
+  if (response?.settings) {
+    settings = normalizeSettings(response.settings, Date.now(), true);
   }
-  await setLocalSettings({ [SETTINGS_KEY]: settings }).catch(() => undefined);
 }
 
 proofToggle.addEventListener("click", () => {
@@ -336,7 +436,7 @@ async function renderProof(): Promise<void> {
   );
   const count = values[BLOCKED_COUNT_KEY];
   const blocked = typeof count === "number" && Number.isFinite(count) ? Math.floor(count) : 0;
-  auditSession.textContent = `${blocked} secret${blocked === 1 ? "" : "s"} blocked · 0 network calls`;
+  auditSession.textContent = `${blocked} redaction${blocked === 1 ? "" : "s"} this session`;
 
   await getRegisteredScripts().catch(() => []).then((scripts) => {
     const custom = scripts.filter((script) => isOurScriptId(script.id)).length;
@@ -366,7 +466,7 @@ selfTestButton.addEventListener("click", () => {
       if (response?.ok && findings > 0) {
         selfTestResult.textContent =
           `✓ Verified: ${findings} findings in ${elapsed.toFixed(1)}ms round trip\n` +
-          `${CSP_CONNECT_SRC} active · 0 network calls`;
+          `${CSP_CONNECT_SRC} active · local scan verified`;
       } else {
         selfTestResult.textContent =
           `✗ Self-test failed: ${response?.error ?? "no findings returned"}`;

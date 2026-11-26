@@ -1,4 +1,5 @@
 import { beforeAll, describe, expect, it, vi } from "vitest";
+import { DEFAULT_SETTINGS } from "../src/storage";
 
 type MessageListener = (
   message: unknown,
@@ -7,11 +8,29 @@ type MessageListener = (
 ) => boolean | void;
 
 let messageListener: MessageListener | undefined;
+const startupListeners: Array<() => void> = [];
+let localValues: Record<string, unknown> = {};
 let sessionValues: Record<string, unknown> = {};
+let grantedOrigins: string[] = [];
+
+const setLocalValues = vi.fn(
+  (items: Record<string, unknown>, callback?: () => void) => {
+    Object.assign(localValues, items);
+    callback?.();
+  },
+);
+
+const setBadgeText = vi.fn((_details: { text: string }) => undefined);
 
 const setSessionValues = vi.fn(
   (items: Record<string, unknown>, callback?: () => void) => {
     Object.assign(sessionValues, items);
+    callback?.();
+  },
+);
+
+const registerContentScripts = vi.fn(
+  (_scripts: unknown, callback?: () => void) => {
     callback?.();
   },
 );
@@ -27,17 +46,19 @@ beforeAll(async () => {
           messageListener = listener;
         },
       },
-      onInstalled: { addListener: () => undefined },
-      onStartup: { addListener: () => undefined },
+      onInstalled: {
+        addListener: (listener: () => void) => startupListeners.push(listener),
+      },
+      onStartup: {
+        addListener: (listener: () => void) => startupListeners.push(listener),
+      },
     },
     storage: {
       local: {
         get: (_keys: unknown, callback: (items: Record<string, unknown>) => void) => {
-          callback({});
+          callback({ ...localValues });
         },
-        set: (_items: Record<string, unknown>, callback?: () => void) => {
-          callback?.();
-        },
+        set: setLocalValues,
       },
       session: {
         get: (keys: string[], callback: (items: Record<string, unknown>) => void) => {
@@ -56,12 +77,12 @@ beforeAll(async () => {
       onChanged: { addListener: () => undefined },
     },
     action: {
-      setBadgeText: () => undefined,
+      setBadgeText,
       setBadgeBackgroundColor: () => undefined,
     },
     permissions: {
       getAll: (callback: (permissions: { origins?: string[] }) => void) => {
-        callback({ origins: [] });
+        callback({ origins: [...grantedOrigins] });
       },
       request: (_permissions: unknown, callback: (granted: boolean) => void) => {
         callback(true);
@@ -77,9 +98,7 @@ beforeAll(async () => {
       ) => {
         callback([]);
       },
-      registerContentScripts: (_scripts: unknown, callback?: () => void) => {
-        callback?.();
-      },
+      registerContentScripts,
       unregisterContentScripts: (_query: unknown, callback?: () => void) => {
         callback?.();
       },
@@ -113,6 +132,88 @@ describe("service worker messages", () => {
       setSessionValues.mock.calls.map(([items]) => items.blockedCount),
     ).toEqual([1, 2]);
     expect(sessionValues.blockedCount).toBe(2);
+  });
+
+  it("serializes settings updates and derives the badge from the final state", async () => {
+    localValues = { settings: { ...DEFAULT_SETTINGS, mode: "ask" } };
+    setLocalValues.mockClear();
+    setBadgeText.mockClear();
+
+    const [paused, resumed] = await Promise.all([
+      sendToBackground({
+        type: "UPDATE_SETTINGS",
+        patch: { mode: "paused", pauseUntil: Date.now() + 60_000 },
+      }),
+      sendToBackground({
+        type: "UPDATE_SETTINGS",
+        patch: { mode: "auto", pauseUntil: null },
+      }),
+    ]);
+
+    expect(paused).toEqual({
+      settings: expect.objectContaining({ mode: "paused" }),
+    });
+    expect(resumed).toEqual({
+      settings: expect.objectContaining({ mode: "auto" }),
+    });
+    expect(localValues.settings).toEqual(
+      expect.objectContaining({ mode: "auto", pauseUntil: null }),
+    );
+    expect(setBadgeText).toHaveBeenLastCalledWith({ text: "" });
+  });
+
+  it("keeps the badge on when a newer pause follows an expired-pause resume", async () => {
+    localValues = {
+      settings: {
+        ...DEFAULT_SETTINGS,
+        mode: "paused",
+        pauseUntil: Date.now() - 1,
+      },
+    };
+    sessionValues = { pausedFrom: "auto" };
+    setBadgeText.mockClear();
+
+    const [resumed, pausedAgain] = await Promise.all([
+      sendToBackground({ type: "RESUME_PAUSED" }),
+      sendToBackground({
+        type: "UPDATE_SETTINGS",
+        patch: { mode: "paused", pauseUntil: Date.now() + 60_000 },
+      }),
+    ]);
+
+    expect(resumed).toEqual({ mode: "auto" });
+    expect(pausedAgain).toEqual({
+      settings: expect.objectContaining({ mode: "paused" }),
+    });
+    expect(setBadgeText).toHaveBeenLastCalledWith({ text: "OFF" });
+  });
+
+  it("re-registers a legacy no-port site with wildcard-port matches on startup", async () => {
+    localValues = {
+      settings: { ...DEFAULT_SETTINGS, customSites: ["http://localhost/*"] },
+    };
+    grantedOrigins = ["http://localhost/*"];
+    registerContentScripts.mockClear();
+
+    for (const listener of startupListeners) {
+      listener();
+    }
+
+    await vi.waitFor(() => {
+      expect(registerContentScripts).toHaveBeenCalledWith(
+        [
+          expect.objectContaining({
+            id: expect.stringContaining("localhost"),
+            matches: ["http://localhost/*"],
+            runAt: "document_start",
+            allFrames: true,
+          }),
+        ],
+        expect.any(Function),
+      );
+    });
+
+    grantedOrigins = [];
   });
 });
 

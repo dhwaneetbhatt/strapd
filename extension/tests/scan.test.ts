@@ -3,6 +3,7 @@ import { buildDiffSegments } from "../src/diff";
 import {
   aggregatePiiFindings,
   aggregateSecretFindings,
+  countFindings,
   detectorBits,
   scanText,
   type WasmScanner,
@@ -49,7 +50,10 @@ describe("detectorBits", () => {
   it("maps only enabled chips", () => {
     expect(
       detectorBits({ apiKey: true, jwt: false, email: false, ip: true }),
-    ).toEqual({ secrets: 191, pii: 1 });
+    ).toEqual({ secrets: 189, pii: 1 });
+    expect(
+      detectorBits({ apiKey: false, jwt: true, email: false, ip: false }),
+    ).toEqual({ secrets: 66, pii: 0 });
     expect(
       detectorBits({ apiKey: false, jwt: false, email: false, ip: false }),
     ).toEqual({ secrets: 0, pii: 0 });
@@ -70,6 +74,25 @@ describe("buildDiffSegments", () => {
     expect(segments.map(({ raw, tag }) => ({ raw, tag }))).toEqual([
       { raw: "ABC", tag: "[REDACTED_API_KEY]" },
       { raw: "a@b.com", tag: "[REDACTED_EMAIL]" },
+    ]);
+  });
+
+  it("falls back to a whole-text change when anchored segments cannot reconstruct it", () => {
+    const original = "Contact dev@example.com.";
+    const scrubbed = "Contact [REDACTED_EMAIL].";
+    const segments = buildDiffSegments(original, scrubbed);
+
+    let reconstructed = "";
+    let offset = 0;
+    for (const segment of segments) {
+      reconstructed += original.slice(offset, segment.start) + segment.tag;
+      offset = segment.end;
+    }
+    reconstructed += original.slice(offset);
+
+    expect(reconstructed).toBe(scrubbed);
+    expect(segments).toEqual([
+      { start: 0, end: original.length, raw: original, tag: scrubbed },
     ]);
   });
 });
@@ -113,6 +136,49 @@ describe("scanText", () => {
     expect(response.elapsedMs).toBeGreaterThanOrEqual(0);
   });
 
+  it("counts a redaction that consumes an existing placeholder", () => {
+    const engine: WasmScanner = {
+      detect_pii: () => new Uint32Array(),
+      sanitize_secrets: (input) =>
+        input.includes("[REDACTED_PASSWORD]")
+          ? input.replace("[REDACTED_PASSWORD]fresh", "[REDACTED_PASSWORD]")
+          : input.replace("password=", "[REDACTED_PASSWORD]"),
+      sanitize_pii: (input) => input,
+    };
+
+    const response = scanText(engine, "password=[REDACTED_PASSWORD]fresh");
+
+    expect(response.clean).toBe(false);
+    expect(response.findings).toContainEqual({ kind: "Secret", count: 1 });
+    expect(countFindings(response.findings)).toBe(1);
+  });
+
+  it("counts a consumed placeholder alongside a fresh secret", () => {
+    const engine: WasmScanner = {
+      detect_pii: () => new Uint32Array(),
+      sanitize_secrets: (input) => {
+        const scrubbed = input.includes("[REDACTED_PASSWORD]")
+          ? input.replace(
+              "[REDACTED_PASSWORD]fresh",
+              "[REDACTED_PASSWORD]",
+            )
+          : input.replace("password=fresh", "[REDACTED_PASSWORD]");
+        return scrubbed.replace("AKIAIOSFODNN7EXAMPLE", "[REDACTED_API_KEY]");
+      },
+      sanitize_pii: (input) => input,
+    };
+
+    const response = scanText(
+      engine,
+      "password=[REDACTED_PASSWORD]fresh key=AKIAIOSFODNN7EXAMPLE",
+    );
+
+    expect(response.findings).toEqual([
+      { kind: "API key", count: 1 },
+      { kind: "Secret", count: 1 },
+    ]);
+  });
+
   it("does not report clean when text changed without a known finding", () => {
     const engine: WasmScanner = {
       detect_pii: () => new Uint32Array(),
@@ -147,7 +213,7 @@ describe("scanText", () => {
 
     scanText(engine, "text", { apiKey: true, jwt: false, email: false, ip: true });
 
-    expect(secretBits).toEqual([191]);
+    expect(secretBits).toEqual([189]);
     expect(piiBits).toEqual([1, 1]);
   });
 });

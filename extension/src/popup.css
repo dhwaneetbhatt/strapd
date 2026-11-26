@@ -302,6 +302,14 @@ button:focus-visible {
   border-style: dashed;
 }
 
+.site-pill.needs-access {
+  color: var(--text-muted);
+}
+
+.site-pill.needs-access .site-dot {
+  background: var(--accent-amber);
+}
+
 .site-remove {
   padding: 0 2px;
   border: 0;
@@ -312,6 +320,19 @@ button:focus-visible {
 }
 
 .site-remove:hover {
+  color: var(--accent-amber);
+}
+
+.site-repair {
+  padding: 0 2px;
+  border: 0;
+  background: none;
+  color: var(--accent-blue);
+  font-size: 12px;
+  line-height: 1;
+}
+
+.site-repair:hover {
   color: var(--accent-amber);
 }
 

@@ -109,6 +109,16 @@ describe("popup identity copy", () => {
   });
 });
 
+describe("popup protected sites", () => {
+  it("recognizes a default site from the generated explicit-port pattern", () => {
+    const button = document.querySelector<HTMLButtonElement>("#add-site-btn")!;
+
+    expect(button.textContent).toBe("Protected");
+    expect(button.disabled).toBe(true);
+    expect(button.title).toBe("This site is already protected");
+  });
+});
+
 describe("popup proof drawer", () => {
   it("hides until toggled and stays hidden when toggled closed", () => {
     const toggle = document.querySelector<HTMLButtonElement>("#proof-toggle-btn")!;
@@ -141,7 +151,7 @@ describe("popup proof drawer", () => {
         "strapd_wasm_bg.wasm",
       );
       expect(document.querySelector("#audit-session")!.textContent).toBe(
-        "3 secrets blocked · 0 network calls",
+        "3 redactions this session",
       );
       expect(document.querySelector("#self-test-result")!.textContent).toContain(
         "✓ Verified: 4 findings",

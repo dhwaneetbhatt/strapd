@@ -13,6 +13,15 @@ export function buildDiffSegments(original: string, scrubbed: string): DiffSegme
     return [];
   }
 
+  const segments = deriveSegments(original, scrubbed);
+  if (reconstruct(original, segments) === scrubbed) {
+    return segments;
+  }
+
+  return [{ start: 0, end: original.length, raw: original, tag: scrubbed }];
+}
+
+function deriveSegments(original: string, scrubbed: string): DiffSegment[] {
   const segments: DiffSegment[] = [];
   let originalOffset = 0;
   let scrubbedOffset = 0;
@@ -64,6 +73,16 @@ export function buildDiffSegments(original: string, scrubbed: string): DiffSegme
   }
 
   return segments;
+}
+
+function reconstruct(original: string, segments: DiffSegment[]): string {
+  let result = "";
+  let offset = 0;
+  for (const segment of segments) {
+    result += original.slice(offset, segment.start) + segment.tag;
+    offset = segment.end;
+  }
+  return result + original.slice(offset);
 }
 
 function commonPrefix(

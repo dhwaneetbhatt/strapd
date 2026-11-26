@@ -51,10 +51,16 @@ export interface ResumePausedMessage {
   type: "RESUME_PAUSED";
 }
 
+export interface UpdateSettingsMessage {
+  type: "UPDATE_SETTINGS";
+  patch: Partial<ExtensionSettings>;
+}
+
 export type WorkerMessage =
   | ScanRequest
   | RecordRedactionMessage
-  | ResumePausedMessage;
+  | ResumePausedMessage
+  | UpdateSettingsMessage;
 
 export type WarningAction = "scrubbed" | "raw" | "cancel";
 

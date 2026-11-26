@@ -33,10 +33,12 @@ import type {
   ResumePausedMessage,
   ScanRequest,
   ScanResponse,
+  UpdateSettingsMessage,
 } from "./types";
 
 let enginePromise: Promise<WasmScanner> | null = null;
 let counterWrite: Promise<void> = Promise.resolve();
+let settingsWrite: Promise<unknown> = Promise.resolve();
 
 function getWasmEngine(): Promise<WasmScanner> {
   if (!enginePromise) {
@@ -82,7 +84,9 @@ function badgePaused(settings: ExtensionSettings): boolean {
 
 async function syncBadge(): Promise<void> {
   try {
-    updateBadge(badgePaused(await readSettings()));
+    await withSettingsLock(async (current) => {
+      updateBadge(badgePaused(current));
+    });
   } catch {
     // A stale badge is preferable to blocking paste scanning.
   }
@@ -105,22 +109,52 @@ function recordRedaction(message: RecordRedactionMessage): Promise<void> {
   return update;
 }
 
+function withSettingsLock<T>(
+  task: (current: ExtensionSettings) => Promise<T>,
+): Promise<T> {
+  const run = settingsWrite.then(async () => {
+    const stored = await getLocalSettings();
+    const current = normalizeSettings(
+      stored[SETTINGS_KEY] ?? stored,
+      Date.now(),
+      true,
+    );
+    return task(current);
+  });
+  settingsWrite = run.then(
+    () => undefined,
+    () => undefined,
+  );
+  return run;
+}
+
 async function resumePaused(): Promise<ExtensionSettings | undefined> {
   try {
-    const settings = await readSettings(true);
-    if (settings.mode !== "paused" || !isPauseExpired(settings.pauseUntil)) {
-      return settings;
-    }
+    return await withSettingsLock(async (current) => {
+      if (current.mode !== "paused" || !isPauseExpired(current.pauseUntil)) {
+        updateBadge(badgePaused(current));
+        return current;
+      }
 
-    const values = await getSessionValues([PAUSED_FROM_KEY]);
-    const resumed = resumeFromPause(settings, values[PAUSED_FROM_KEY]);
-    await setLocalSettings({ [SETTINGS_KEY]: resumed });
-    updateBadge(false);
-    return resumed;
+      const values = await getSessionValues([PAUSED_FROM_KEY]);
+      const resumed = resumeFromPause(current, values[PAUSED_FROM_KEY]);
+      await setLocalSettings({ [SETTINGS_KEY]: resumed });
+      updateBadge(false);
+      return resumed;
+    });
   } catch {
     // Fall back to the cached settings in the content script.
     return undefined;
   }
+}
+
+function patchSettings(patch: Partial<ExtensionSettings>): Promise<ExtensionSettings> {
+  return withSettingsLock(async (current) => {
+    const next = normalizeSettings({ ...current, ...patch }, Date.now(), true);
+    await setLocalSettings({ [SETTINGS_KEY]: next });
+    updateBadge(badgePaused(next));
+    return next;
+  });
 }
 
 async function reconcileCustomSites(): Promise<void> {
@@ -128,7 +162,9 @@ async function reconcileCustomSites(): Promise<void> {
     const settings = await readSettings();
     const granted = new Set(await getGrantedOrigins());
     const registered = await getRegisteredScripts();
-    const expectedIds = new Set(settings.customSites.map(scriptIdForOrigin));
+    const expectedIds = new Set(
+      settings.customSites.filter((site) => granted.has(site)).map(scriptIdForOrigin),
+    );
 
     for (const pattern of settings.customSites) {
       const id = scriptIdForOrigin(pattern);
@@ -178,6 +214,14 @@ function isResumeMessage(value: unknown): value is ResumePausedMessage {
   );
 }
 
+function isUpdateSettingsMessage(value: unknown): value is UpdateSettingsMessage {
+  if (typeof value !== "object" || value === null) {
+    return false;
+  }
+  const message = value as Partial<UpdateSettingsMessage>;
+  return message.type === "UPDATE_SETTINGS" && typeof message.patch === "object" && message.patch !== null;
+}
+
 chrome.runtime.onMessage.addListener((message: unknown, _sender, sendResponse) => {
   if (isScanRequest(message)) {
     const request: ScanRequest = {
@@ -210,6 +254,26 @@ chrome.runtime.onMessage.addListener((message: unknown, _sender, sendResponse) =
           sendResponse({ ok: false });
         } catch {
           // The caller may have navigated away before the counter write finished.
+        }
+      },
+    );
+    return true;
+  }
+
+  if (isUpdateSettingsMessage(message)) {
+    void patchSettings(message.patch).then(
+      (settings) => {
+        try {
+          sendResponse({ settings });
+        } catch {
+          // The caller may have closed before the write completed.
+        }
+      },
+      () => {
+        try {
+          sendResponse({ ok: false });
+        } catch {
+          // The caller may have closed before the write completed.
         }
       },
     );

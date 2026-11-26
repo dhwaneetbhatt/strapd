@@ -1,10 +1,13 @@
-import { getLocalSettings, sendToWorker, setLocalSettings } from "./chrome";
+import { getLocalSettings, sendToWorker } from "./chrome";
 import {
   captureSelection,
   findEditableTarget,
   insertText,
+  isNonEditableBoundary,
+  readText,
   type SelectionSnapshot,
 } from "./insert";
+import { isSiteProtected } from "./sites";
 import { SETTINGS_KEY, isPauseExpired, normalizeSettings } from "./storage";
 import type {
   ExtensionSettings,
@@ -27,7 +30,11 @@ let requestSequence = 0;
 let activeOverlay: Dismissable | null = null;
 
 function onPaste(event: ClipboardEvent): void {
-  if (!settings || settings.mode === "paused" && !isPauseExpired(settings.pauseUntil)) {
+  if (
+    !settings ||
+    (!isSiteProtected(settings, window.location.href) && !hasFixtureOptIn()) ||
+    (settings.mode === "paused" && !isPauseExpired(settings.pauseUntil))
+  ) {
     return;
   }
 
@@ -36,9 +43,7 @@ function onPaste(event: ClipboardEvent): void {
     return;
   }
 
-  const target =
-    findEditableTarget(event.target instanceof Element ? event.target : null) ??
-    findEditableTarget(document.activeElement);
+  const target = findEventEditableTarget(event);
   if (!target) {
     return;
   }
@@ -53,14 +58,50 @@ function onPaste(event: ClipboardEvent): void {
   void handlePaste(target, text);
 }
 
+function hasFixtureOptIn(): boolean {
+  try {
+    return (
+      document.documentElement.dataset.strapdFixture === "true" &&
+      window.location.href === chrome.runtime.getURL("test.html")
+    );
+  } catch {
+    return false;
+  }
+}
+
+function findEventEditableTarget(event: ClipboardEvent): HTMLElement | null {
+  const path = typeof event.composedPath === "function" ? event.composedPath() : [];
+  for (const node of path) {
+    if (!(node instanceof Element)) {
+      continue;
+    }
+    if (isNonEditableBoundary(node)) {
+      return null;
+    }
+    const target = findEditableTarget(node);
+    if (target) {
+      return target;
+    }
+  }
+
+  if (
+    document.activeElement instanceof Element &&
+    isNonEditableBoundary(document.activeElement)
+  ) {
+    return null;
+  }
+  return findEditableTarget(document.activeElement);
+}
+
 async function handlePaste(target: HTMLElement, text: string): Promise<void> {
   const request = ++requestSequence;
   activeOverlay?.dismiss();
   activeOverlay = null;
   const snapshot = captureSelection(target);
+  const baseline = readText(target);
 
   if (!settings) {
-    insertText(target, text, snapshot);
+    insertPreservingEdits(target, text, snapshot, baseline);
     return;
   }
 
@@ -71,7 +112,7 @@ async function handlePaste(target: HTMLElement, text: string): Promise<void> {
     return;
   }
   if (!settings || settings.mode === "paused") {
-    insertText(target, text, snapshot);
+    insertPreservingEdits(target, text, snapshot, baseline);
     return;
   }
 
@@ -82,25 +123,35 @@ async function handlePaste(target: HTMLElement, text: string): Promise<void> {
     return;
   }
   if (!response.ok || response.clean) {
-    insertText(target, text, snapshot);
+    insertPreservingEdits(target, text, snapshot, baseline);
     return;
   }
 
   if (mode === "auto") {
-    autoRedact(target, response, snapshot);
+    autoRedact(target, response, snapshot, baseline);
     return;
   }
 
-  await askBeforePaste(target, text, response, snapshot, request);
+  await askBeforePaste(target, text, response, snapshot, baseline, request);
 }
 
 function autoRedact(
   target: HTMLElement,
   response: ScanResponse,
   snapshot: SelectionSnapshot,
+  baseline: string | null,
 ): void {
-  insertText(target, response.scrubbedText, snapshot);
+  insertPreservingEdits(target, response.scrubbedText, snapshot, baseline);
   recordRedaction(response.findings);
+}
+
+function insertPreservingEdits(
+  target: HTMLElement,
+  text: string,
+  snapshot: SelectionSnapshot,
+  baseline: string | null,
+): void {
+  insertText(target, text, readText(target) === baseline ? snapshot : null);
 }
 
 async function askBeforePaste(
@@ -108,6 +159,7 @@ async function askBeforePaste(
   text: string,
   response: ScanResponse,
   snapshot: SelectionSnapshot,
+  baseline: string | null,
   request: number,
 ): Promise<void> {
   let selection: WarningSelection;
@@ -122,7 +174,7 @@ async function askBeforePaste(
     selection = await warning.result;
   } catch {
     // Fail open: the original text is already known and no UI is mandatory.
-    insertText(target, text, snapshot);
+    insertPreservingEdits(target, text, snapshot, baseline);
     return;
   }
 
@@ -135,7 +187,10 @@ async function askBeforePaste(
 
   if (selection.alwaysAuto) {
     settings = { ...settings!, mode: "auto", pauseUntil: null };
-    void setLocalSettings({ [SETTINGS_KEY]: settings }).catch(() => undefined);
+    void sendToWorker({
+      type: "UPDATE_SETTINGS",
+      patch: { mode: "auto", pauseUntil: null },
+    }).catch(() => undefined);
   }
 
   if (selection.action === "cancel") {
@@ -143,7 +198,12 @@ async function askBeforePaste(
     return;
   }
 
-  insertText(target, selection.action === "scrubbed" ? response.scrubbedText : text, snapshot);
+  insertPreservingEdits(
+    target,
+    selection.action === "scrubbed" ? response.scrubbedText : text,
+    snapshot,
+    baseline,
+  );
   if (selection.action === "scrubbed") {
     recordRedaction(response.findings);
   }

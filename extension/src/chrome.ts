@@ -1,3 +1,5 @@
+import { originPatternForUrl as siteOriginPatternForUrl } from "./sites";
+
 export function getLocalSettings(): Promise<Record<string, unknown>> {
   return new Promise((resolve, reject) => {
     chrome.storage.local.get(null, (items) => {
@@ -119,7 +121,8 @@ export interface DynamicContentScript {
   id: string;
   matches: string[];
   js: string[];
-  runAt: "document_idle";
+  runAt: "document_start" | "document_idle";
+  allFrames: boolean;
   persistAcrossSessions: boolean;
 }
 
@@ -166,7 +169,7 @@ export function unregisterScripts(ids: string[]): Promise<void> {
 export function injectContentScript(tabId: number): Promise<void> {
   return new Promise((resolve, reject) => {
     chrome.scripting.executeScript(
-      { target: { tabId }, files: ["content.js"] },
+      { target: { tabId, allFrames: true }, files: ["content.js"] },
       () => {
         const error = chrome.runtime.lastError;
         if (error) {
@@ -187,7 +190,10 @@ export function updateBadge(paused: boolean): void {
 }
 
 export function scriptIdForOrigin(originPattern: string): string {
-  return `strapd-site-${originPattern.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "")}`;
+  const encoded = originPattern.toLowerCase().replace(/[^a-z0-9]/g, (character) => {
+    return `_${character.codePointAt(0)!.toString(16)}_`;
+  });
+  return `strapd-site-${encoded}`;
 }
 
 export function isOurScriptId(id: string): boolean {
@@ -199,21 +205,14 @@ export function dynamicScriptForOrigin(originPattern: string): DynamicContentScr
     id: scriptIdForOrigin(originPattern),
     matches: [originPattern],
     js: ["content.js"],
-    runAt: "document_idle",
+    runAt: "document_start",
+    allFrames: true,
     persistAcrossSessions: true,
   };
 }
 
 export function originPatternForUrl(url: string): string | null {
-  try {
-    const parsed = new URL(url);
-    if (parsed.protocol !== "http:" && parsed.protocol !== "https:") {
-      return null;
-    }
-    return `${parsed.protocol}//${parsed.hostname}/*`;
-  } catch {
-    return null;
-  }
+  return siteOriginPatternForUrl(url);
 }
 
 export function hostnameForUrl(url: string): string | null {

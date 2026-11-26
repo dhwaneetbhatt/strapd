@@ -10,6 +10,7 @@ let currentSettings: ExtensionSettings = DEFAULT_SETTINGS;
 let storageListener:
   | ((changes: Record<string, { newValue?: unknown }>, area: string) => void)
   | undefined;
+let originalLocation: PropertyDescriptor | undefined;
 
 const sendMessage = vi.fn(
   (request: unknown, callback: (response: unknown) => void) => {
@@ -43,6 +44,12 @@ beforeAll(async () => {
   Element.prototype.attachShadow = function (_init: ShadowRootInit): ShadowRoot {
     return originalAttachShadow.call(this, { mode: "open" }) as ShadowRoot;
   };
+
+  originalLocation = Object.getOwnPropertyDescriptor(window, "location");
+  Object.defineProperty(window, "location", {
+    configurable: true,
+    value: new URL("https://chatgpt.com/"),
+  });
 
   (globalThis as unknown as { chrome: unknown }).chrome = {
     runtime: {
@@ -83,6 +90,9 @@ beforeAll(async () => {
 
 afterAll(() => {
   Element.prototype.attachShadow = originalAttachShadow;
+  if (originalLocation) {
+    Object.defineProperty(window, "location", originalLocation);
+  }
 });
 
 beforeEach(() => {
@@ -209,6 +219,23 @@ describe("content paste flow", () => {
     expect(textarea.value).toBe("later paste");
   });
 
+  it("uses the current editor state when text changes during a scan", async () => {
+    setSettings({ ...DEFAULT_SETTINGS, mode: "auto" });
+    dirtyResponse();
+    deferScans = true;
+    const textarea = mountTextarea();
+
+    dispatchPaste("Contact dev@example.com");
+    await nextTick();
+
+    textarea.value = "typed";
+    textarea.setSelectionRange(5, 5);
+    pendingScans.shift()?.(scanResponse);
+    await nextTick();
+
+    expect(textarea.value).toBe("typedContact [REDACTED_EMAIL]");
+  });
+
   it("leaves a file paste alone", async () => {
     const textarea = mountTextarea();
 
@@ -222,7 +249,25 @@ describe("content paste flow", () => {
     expect(textarea.value).toBe("");
   });
 
-  it("opens the review card and pastes scrubbed text on Enter", async () => {
+  it("leaves a paste inside a non-editable island alone", async () => {
+    const outer = document.createElement("div");
+    outer.setAttribute("contenteditable", "true");
+    outer.textContent = "outer";
+    const inner = document.createElement("span");
+    inner.setAttribute("contenteditable", "false");
+    inner.textContent = "inner";
+    outer.append(inner);
+    document.body.append(outer);
+
+    const event = dispatchPasteAt("Contact dev@example.com", inner);
+    await nextTick();
+
+    expect(event.defaultPrevented).toBe(false);
+    expect(sendMessage).not.toHaveBeenCalled();
+    expect(outer.textContent).toBe("outerinner");
+  });
+
+  it("opens the review card and pastes scrubbed text when Paste redacted is clicked", async () => {
     dirtyResponse();
     const textarea = mountTextarea();
 
@@ -231,7 +276,7 @@ describe("content paste flow", () => {
 
     expect(overlayRoot("strapd-warning")).not.toBeNull();
 
-    dispatchKey("Enter");
+    clickAction(".action.primary");
     await nextTick();
 
     expect(overlayRoot("strapd-warning")).toBeNull();
@@ -242,25 +287,38 @@ describe("content paste flow", () => {
     );
   });
 
-  it("pastes raw text on Shift+Enter", async () => {
+  it("pastes raw text when Paste raw is clicked", async () => {
     dirtyResponse();
     const textarea = mountTextarea();
 
     dispatchPaste("Contact dev@example.com");
     await nextTick();
-    dispatchKey("Enter", { shiftKey: true });
+    clickAction(".action.secondary");
     await nextTick();
 
     expect(textarea.value).toBe("Contact dev@example.com");
   });
 
-  it("cancels on Escape without inserting", async () => {
+  it("ignores synthesized key events from the page", async () => {
     dirtyResponse();
     const textarea = mountTextarea();
 
     dispatchPaste("Contact dev@example.com");
     await nextTick();
-    dispatchKey("Escape");
+    dispatchKey("Enter");
+    await nextTick();
+
+    expect(overlayRoot("strapd-warning")).not.toBeNull();
+    expect(textarea.value).toBe("");
+  });
+
+  it("cancels without inserting when Cancel is clicked", async () => {
+    dirtyResponse();
+    const textarea = mountTextarea();
+
+    dispatchPaste("Contact dev@example.com");
+    await nextTick();
+    clickAction(".action.ghost");
     await nextTick();
 
     expect(overlayRoot("strapd-warning")).toBeNull();
@@ -282,11 +340,14 @@ describe("content paste flow", () => {
       return;
     }
     checkbox.click();
-    dispatchKey("Enter");
+    clickAction(".action.primary");
     await nextTick();
 
-    expect(localSet).toHaveBeenCalledWith(
-      { settings: expect.objectContaining({ mode: "auto" }) },
+    expect(sendMessage).toHaveBeenCalledWith(
+      {
+        type: "UPDATE_SETTINGS",
+        patch: { mode: "auto", pauseUntil: null },
+      },
       expect.any(Function),
     );
     expect(textarea.value).toBe("Contact [REDACTED_EMAIL]");
@@ -351,11 +412,15 @@ function mountTextarea(): HTMLTextAreaElement {
 }
 
 function dispatchPaste(text: string, files: File[] = []): Event {
+  return dispatchPasteAt(text, document, files);
+}
+
+function dispatchPasteAt(text: string, target: EventTarget, files: File[] = []): Event {
   const event = new Event("paste", { bubbles: true, cancelable: true });
   Object.defineProperty(event, "clipboardData", {
     value: { getData: () => text, files },
   });
-  document.dispatchEvent(event);
+  target.dispatchEvent(event);
   return event;
 }
 
@@ -372,6 +437,10 @@ function dispatchKey(key: string, options: KeyboardEventInit = {}): void {
 
 function overlayRoot(key: string): ShadowRoot | null {
   return document.querySelector<HTMLElement>(`[data-${key}]`)?.shadowRoot ?? null;
+}
+
+function clickAction(selector: string): void {
+  overlayRoot("strapd-warning")?.querySelector<HTMLButtonElement>(selector)?.click();
 }
 
 async function nextTick(): Promise<void> {

@@ -8,6 +8,7 @@ import {
   ALL_SECRET_CATEGORIES,
   aggregatePiiFindings,
   aggregateSecretFindings,
+  scanText,
 } from "../src/scan";
 
 const wasmPath = join(process.cwd(), "wasm", "strapd_wasm_bg.wasm");
@@ -30,6 +31,34 @@ describe.skipIf(!wasmBuilt)("WASM contract", () => {
     expect(scrubbed).toBe("AWS_ACCESS_KEY_ID=[REDACTED_API_KEY]");
     expect(aggregateSecretFindings(original, scrubbed)).toEqual([
       { kind: "API key", count: 1 },
+    ]);
+  });
+
+  it("leaves a bearer JWT unchanged when JWT detection is off", () => {
+    const text =
+      "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ1c3JfOTg0MiJ9.dBjftJeZ4CVP";
+    const response = scanText(wasm, text, {
+      apiKey: true,
+      jwt: false,
+      email: true,
+      ip: true,
+    });
+
+    expect(response.scrubbedText).toBe(text);
+    expect(response.findings).toEqual([]);
+  });
+
+  it("counts a consumed placeholder alongside a fresh API key", () => {
+    const response = scanText(
+      wasm,
+      "password=[REDACTED_PASSWORD]fresh AKIAIOSFODNN7EXAMPLE",
+      { apiKey: true, jwt: false, email: false, ip: false },
+    );
+
+    expect(response.scrubbedText).toContain("[REDACTED_API_KEY]");
+    expect(response.findings).toEqual([
+      { kind: "API key", count: 1 },
+      { kind: "Secret", count: 1 },
     ]);
   });
 

@@ -38,10 +38,10 @@ export function detectorBits(detectors?: DetectorSettings): { secrets: number; p
   let pii = 0;
 
   if (settings.apiKey) {
-    secrets |= 1 | 2 | 4 | 8 | 16 | 32 | 128;
+    secrets |= 1 | 4 | 8 | 16 | 32 | 128;
   }
   if (settings.jwt) {
-    secrets |= 64;
+    secrets |= 2 | 64;
   }
   if (settings.ip) {
     pii |= 1;
@@ -68,10 +68,24 @@ export function scanText(
     ? scrubbedSecrets
     : engine.sanitize_pii(scrubbedSecrets, bits.pii, false);
 
+  const secretFindings =
+    bits.secrets === 0 ? [] : aggregateSecretFindings(text, scrubbedSecrets);
   const findings = [
-    ...(bits.secrets === 0 ? [] : aggregateSecretFindings(text, scrubbedSecrets)),
+    ...secretFindings,
     ...(bits.pii === 0 ? [] : aggregatePiiFindings(piiTriples)),
   ];
+
+  if (bits.secrets !== 0 && scrubbedSecrets !== text) {
+    const consumed = countConsumedPlaceholders(
+      engine,
+      text,
+      scrubbedSecrets,
+      bits.secrets,
+    );
+    if (consumed > 0) {
+      findings.push({ kind: "Secret", count: consumed });
+    }
+  }
 
   return {
     ok: true,
@@ -127,5 +141,40 @@ function countOccurrences(input: string, needle: string): number {
     if (found === -1) return count;
     count += 1;
     offset = found + needle.length;
+  }
+}
+
+function countAllMarkers(input: string): number {
+  return SECRET_MARKERS.reduce(
+    (total, { placeholder }) => total + countOccurrences(input, placeholder),
+    0,
+  );
+}
+
+function stripSecretMarkers(input: string): string {
+  return SECRET_MARKERS.reduce(
+    (text, { placeholder }) => text.split(placeholder).join(""),
+    input,
+  );
+}
+
+function countConsumedPlaceholders(
+  engine: WasmScanner,
+  original: string,
+  scrubbed: string,
+  secretBits: number,
+): number {
+  if (countAllMarkers(original) === 0) {
+    return 0;
+  }
+
+  try {
+    const stripped = stripSecretMarkers(original);
+    const resanitized = engine.sanitize_secrets(stripped, secretBits);
+    const strippedAdditions = countFindings(aggregateSecretFindings(stripped, resanitized));
+    const originalAdditions = countFindings(aggregateSecretFindings(original, scrubbed));
+    return Math.max(0, strippedAdditions - originalAdditions);
+  } catch {
+    return 0;
   }
 }

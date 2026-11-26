@@ -30,6 +30,25 @@ export function findEditableTarget(element: Element | null): HTMLElement | null 
   return contentEditableRoot(element);
 }
 
+export function isNonEditableBoundary(element: Element | null): boolean {
+  if (!(element instanceof HTMLElement)) {
+    return false;
+  }
+
+  if (element instanceof HTMLTextAreaElement) {
+    return element.disabled || element.readOnly;
+  }
+  if (element instanceof HTMLInputElement) {
+    return (
+      element.disabled ||
+      element.readOnly ||
+      !TEXT_INPUT_TYPES.has(element.type.toLowerCase())
+    );
+  }
+
+  return element.getAttribute("contenteditable")?.toLowerCase() === "false";
+}
+
 function contentEditableRoot(element: Element): HTMLElement | null {
   let current: Element | null = element;
 
@@ -52,22 +71,94 @@ function contentEditableRoot(element: Element): HTMLElement | null {
 
 export type SelectionSnapshot = TextSelection | Range | null;
 
+type SelectionWithComposedRanges = Selection & {
+  getComposedRanges?: (...shadowRoots: ShadowRoot[]) => StaticRange[];
+};
+
+function targetSelection(target: HTMLElement): Selection | null {
+  const root = target.getRootNode();
+  if (root instanceof Document || root instanceof ShadowRoot) {
+    const rootWithSelection = root as Document & {
+      getSelection?: () => Selection | null;
+    };
+    const selection = rootWithSelection.getSelection?.() ?? null;
+    if (selection) {
+      return selection;
+    }
+  }
+  return window.getSelection();
+}
+
+function inShadowRoot(target: HTMLElement): boolean {
+  return target.getRootNode() instanceof ShadowRoot;
+}
+
+function ownsFocus(target: HTMLElement): boolean {
+  const root = target.getRootNode();
+  if (root instanceof ShadowRoot) {
+    return root.activeElement === target;
+  }
+  return document.activeElement === target;
+}
+
+function focusTarget(target: HTMLElement): void {
+  target.focus({ preventScroll: true });
+  if (!ownsFocus(target) && typeof (target as { focus?: () => void }).focus === "function") {
+    (target as { focus: () => void }).focus();
+  }
+}
+
+function rangeInsideTarget(target: HTMLElement, range: Range): boolean {
+  return target.contains(range.startContainer) && target.contains(range.endContainer);
+}
+
+function composedRangeForTarget(target: HTMLElement, selection: Selection): Range | null {
+  const getComposedRanges = (selection as SelectionWithComposedRanges).getComposedRanges;
+  if (typeof getComposedRanges !== "function") {
+    return null;
+  }
+
+  const root = target.getRootNode();
+  const staticRange = getComposedRanges.call(
+    selection,
+    ...(root instanceof ShadowRoot ? [root] : []),
+  )[0];
+  if (!staticRange) {
+    return null;
+  }
+
+  try {
+    const range = document.createRange();
+    range.setStart(staticRange.startContainer, staticRange.startOffset);
+    range.setEnd(staticRange.endContainer, staticRange.endOffset);
+    return rangeInsideTarget(target, range) ? range : null;
+  } catch {
+    return null;
+  }
+}
+
+function captureRange(target: HTMLElement): Range | null {
+  const selection = targetSelection(target);
+  if (!selection) {
+    return null;
+  }
+
+  if (selection.rangeCount > 0) {
+    const range = selection.getRangeAt(0);
+    if (rangeInsideTarget(target, range)) {
+      return range.cloneRange();
+    }
+  }
+
+  return composedRangeForTarget(target, selection);
+}
+
 export function captureSelection(target: HTMLElement): SelectionSnapshot {
   if (target instanceof HTMLTextAreaElement || target instanceof HTMLInputElement) {
     return readSelection(target);
   }
 
-  const selection = window.getSelection();
-  if (!selection || selection.rangeCount === 0) {
-    return null;
-  }
-
-  const range = selection.getRangeAt(0);
-  if (!target.contains(range.startContainer) || !target.contains(range.endContainer)) {
-    return null;
-  }
-
-  return range.cloneRange();
+  return captureRange(target);
 }
 
 export function readSelection(target: HTMLElement): TextSelection | null {
@@ -83,6 +174,14 @@ export function readSelection(target: HTMLElement): TextSelection | null {
   return null;
 }
 
+export function readText(target: HTMLElement): string | null {
+  if (target instanceof HTMLTextAreaElement || target instanceof HTMLInputElement) {
+    return target.value;
+  }
+
+  return target.textContent;
+}
+
 export function insertText(
   target: HTMLElement,
   text: string,
@@ -92,7 +191,7 @@ export function insertText(
     return;
   }
 
-  target.focus({ preventScroll: true });
+  focusTarget(target);
 
   if (target instanceof HTMLTextAreaElement || target instanceof HTMLInputElement) {
     insertIntoTextControl(target, text, snapshot instanceof Range ? null : snapshot);
@@ -107,22 +206,52 @@ function insertIntoTextControl(
   text: string,
   selection: TextSelection | null,
 ): void {
+  if (selection) {
+    try {
+      target.setSelectionRange(selection.start, selection.end);
+    } catch {
+      // Some text-like inputs do not expose a selection range.
+    }
+  }
+
+  if (!inShadowRoot(target)) {
+    try {
+      if (
+        ownsFocus(target) &&
+        typeof document.execCommand === "function" &&
+        document.execCommand("insertText", false, text)
+      ) {
+        return;
+      }
+    } catch {
+      // Fall through to the value path when the host blocks execCommand.
+    }
+  }
+
+  insertWithValue(target, text);
+}
+
+function insertWithValue(target: TextControl, text: string): void {
   const valueLength = target.value.length;
-  const rawStart = selection?.start ?? target.selectionStart ?? valueLength;
-  const rawEnd = selection?.end ?? target.selectionEnd ?? rawStart;
+  const rawStart = target.selectionStart ?? valueLength;
+  const rawEnd = target.selectionEnd ?? rawStart;
   const start = clamp(Math.min(rawStart, rawEnd), 0, valueLength);
   const end = clamp(Math.max(rawStart, rawEnd), start, valueLength);
-  const nextValue = target.value.slice(0, start) + text + target.value.slice(end);
+  const maxLength = target.maxLength >= 0 ? target.maxLength : Number.MAX_SAFE_INTEGER;
+  const allowed = text.slice(0, Math.max(0, maxLength - (valueLength - (end - start))));
+  if (allowed.length === 0) {
+    return;
+  }
 
-  setNativeValue(target, nextValue);
+  setNativeValue(target, target.value.slice(0, start) + allowed + target.value.slice(end));
 
-  const caret = start + text.length;
+  const caret = start + allowed.length;
   try {
     target.setSelectionRange(caret, caret);
   } catch {
     // Some text-like inputs do not expose a selection range.
   }
-  dispatchInput(target, text);
+  dispatchInput(target, allowed);
 }
 
 function insertIntoContentEditable(
@@ -130,87 +259,84 @@ function insertIntoContentEditable(
   text: string,
   capturedRange: Range | null,
 ): void {
-  restoreSelection(target, capturedRange);
-
-  const selection = window.getSelection();
-  if (!selection || selection.rangeCount === 0) {
+  const range =
+    capturedRange && isUsableRange(target, capturedRange)
+      ? capturedRange.cloneRange()
+      : endRange(target);
+  if (!range) {
     return;
   }
 
-  const start = selection.getRangeAt(0).cloneRange();
-  start.collapse(true);
+  if (!inShadowRoot(target)) {
+    restoreSelection(target, range);
+
+    try {
+      if (
+        ownsFocus(target) &&
+        typeof document.execCommand === "function" &&
+        document.execCommand("insertText", false, text)
+      ) {
+        return;
+      }
+    } catch {
+      // Fall through to the Range path when the host blocks execCommand.
+    }
+  }
+
+  insertWithRange(target, text, range);
+}
+
+function isUsableRange(target: HTMLElement, range: Range): boolean {
+  return (
+    range.startContainer.isConnected &&
+    range.endContainer.isConnected &&
+    rangeInsideTarget(target, range)
+  );
+}
+
+function endRange(node: Node): Range | null {
+  try {
+    const range = document.createRange();
+    range.selectNodeContents(node);
+    range.collapse(false);
+    return range;
+  } catch {
+    return null;
+  }
+}
+
+function restoreSelection(target: HTMLElement, range: Range): void {
+  if (!isUsableRange(target, range)) {
+    return;
+  }
+
+  const selection = targetSelection(target);
+  if (!selection) {
+    return;
+  }
 
   try {
-    if (document.execCommand("insertText", false, text)) {
-      return;
-    }
+    selection.removeAllRanges();
+    selection.addRange(range);
   } catch {
-    // Fall through to the Range path when the host blocks execCommand.
+    // A Range insert still works when the host rejects the Selection update.
   }
-
-  insertWithRange(target, text);
 }
 
-function restoreSelection(target: HTMLElement, capturedRange: Range | null): void {
-  if (!capturedRange) {
-    ensureSelectionInside(target);
+function insertWithRange(target: HTMLElement, text: string, range: Range): void {
+  if (!isUsableRange(target, range)) {
     return;
   }
 
-  if (
-    !capturedRange.startContainer.isConnected ||
-    !capturedRange.endContainer.isConnected ||
-    !target.contains(capturedRange.startContainer) ||
-    !target.contains(capturedRange.endContainer)
-  ) {
-    ensureSelectionInside(target);
-    return;
-  }
-
-  const selection = window.getSelection();
-  if (!selection) {
-    return;
-  }
-
-  selection.removeAllRanges();
-  selection.addRange(capturedRange);
-}
-
-function ensureSelectionInside(target: HTMLElement): void {
-  const selection = window.getSelection();
-  if (!selection) {
-    return;
-  }
-
-  if (selection.rangeCount > 0) {
-    const range = selection.getRangeAt(0);
-    if (target.contains(range.startContainer) && target.contains(range.endContainer)) {
-      return;
-    }
-  }
-
-  const range = document.createRange();
-  range.selectNodeContents(target);
-  range.collapse(false);
-  selection.removeAllRanges();
-  selection.addRange(range);
-}
-
-function insertWithRange(target: HTMLElement, text: string): void {
-  const selection = window.getSelection();
-  if (!selection || selection.rangeCount === 0) {
-    return;
-  }
-
-  const range = selection.getRangeAt(0);
   range.deleteContents();
 
   const textNode = document.createTextNode(text);
   range.insertNode(textNode);
-  range.setStartAfter(textNode);
-  range.collapse(true);
-  selection.removeAllRanges();
-  selection.addRange(range);
+
+  const caret = endRange(textNode);
+  if (caret) {
+    restoreSelection(target, caret);
+  }
 
   dispatchInput(target, text);
 }

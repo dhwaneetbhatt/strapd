@@ -12,6 +12,14 @@ make extension-build
 
 This builds a `--target web` WASM artifact into `extension/wasm/`, installs the extension workspace dependencies, generates `src/generated-meta.ts` from the real WASM SHA-256, and writes a self-contained unpacked extension to `extension/dist/`. Generated directories are ignored by Git.
 
+## Production package
+
+```bash
+make extension-package
+```
+
+This stages a minified build in `extension/release/`, verifies the shipped-file contract and manifest policy, writes `SHA256SUMS`, and creates `target/strapd-guard-<version>.zip` with a matching `.sha256` file. The package omits sourcemaps and the local test fixture. Use `extension/dist/` for unpacked development and the ZIP for distribution.
+
 ## Load in Chrome
 
 1. Open `chrome://extensions`.
@@ -31,7 +39,7 @@ Four detector chips control `apiKey`, `jwt`, `email`, and `ip`. Disabled categor
 
 ## Protected sites
 
-The default host permissions cover `chatgpt.com`, `claude.ai`, and `gemini.google.com`. On any other HTTP(S) site, open the popup and choose **+ Add &lt;hostname&gt;**. Chrome asks for that origin; once granted, `strapd guard` registers a persistent content script and injects immediately into the open tab. Use the `×` on a custom-site pill to unregister the script and revoke the origin permission. Custom sites are reconciled with Chrome permissions on install and startup.
+The default host permissions cover `chatgpt.com`, `claude.ai`, and `gemini.google.com`. On any other HTTP(S) site, open the popup and choose **+ Add &lt;host[:port]&gt;**. Chrome asks for that origin with an explicit port, so `http://localhost/` grants only `http://localhost:80/`. The pill is marked protected only when both the permission and content script are active; if either is missing, use the repair control or the **Repair &lt;host&gt;** button. Once protected, `strapd guard` registers a persistent `document_start` content script in all same-origin frames and injects into the open tab. Dynamic scripts run before page scripts on future navigations, but page listeners that captured paste before immediate injection may require a reload; the popup says so. Use the `×` on a custom-site pill to unregister the script and revoke the origin permission. Removing a site also makes already-open tabs stop intercepting on their next paste. Custom sites are reconciled with granted permissions on install and startup, and a failed registration or injection rolls back both the script and the permission.
 
 ## Proof drawer
 
@@ -40,8 +48,8 @@ Expand **Proof** in the popup to see:
 - the exact active `connect-src 'none'` directive from the built manifest;
 - granted origins read live from `chrome.permissions.getAll()`;
 - the generated WASM SHA-256, with click-to-copy;
-- a RAM-only `blockedCount` from `chrome.storage.session`;
-- **Run Offline Self-Test**, which sends a dummy AWS key, JWT, email, and IP through the real `SCAN_TEXT` path and reports the finding count and measured round-trip time.
+- a RAM-only redaction count from `chrome.storage.session`;
+- **Run Offline Self-Test**, which sends a dummy AWS key, JWT, email, and IP through the real `SCAN_TEXT` path and reports the finding count and measured round-trip time as a local scan, without claiming a network-call count.
 
 ## Manual test fixture
 
@@ -55,5 +63,6 @@ The fixture imports the same interceptor module as the content script. To verify
 ## Scope
 
 - Plain-text paste interception only; images, files, and drag-and-drop are untouched.
+- Editors inside open shadow roots and same-origin frames are covered when their URL matches a protected pattern.
 - No pre-submit scanning, offscreen document, remote config, or external assets.
 - The service worker only loads its packaged WASM file from its own extension origin.

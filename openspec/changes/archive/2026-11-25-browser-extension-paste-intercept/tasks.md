@@ -81,3 +81,22 @@
 - [x] 13.1 Add the supplied shield-and-`S` SVG as the local icon master.
 - [x] 13.2 Add `extension/render-icons.sh`, preferring `rsvg-convert` and falling back to ImageMagick MVG commands because MSVG drops SVG strokes. Regenerate the 16/32/48/128 PNGs with it.
 - [x] 13.3 Rebuild `extension/dist/` and verify the shipped icon sizes and local-only artifact.
+
+## 14. PR review hardening
+
+- [x] 14.1 Require trusted keyboard events and cover the pure keyboard mapping.
+- [x] 14.2 Register custom-site scripts at `document_start` in all frames, preserve explicit ports, avoid script-ID collisions, and make current-tab wording honest about reload-limited protection.
+- [x] 14.3 Treat only Chrome-granted custom sites as protected, roll back failed injection, and fail open in open tabs after removal.
+- [x] 14.4 Cover editors in open shadow roots and same-origin frames, preserve edits during pending scans, honor `maxlength`/caret semantics, and avoid expired-pause overwrites.
+- [x] 14.5 Separate JWT/Auth redaction, count placeholder-consuming redactions, reconstruct diff previews, and correct self-test wording.
+- [x] 14.6 Wire extension tests into default `make test` and add targeted regressions for site patterns, keyboard trust, detector bits, diff reconstruction, redaction counts, and insertion limits.
+
+## 15. Production package and final review fixes
+
+- [x] 15.1 Add `make extension-package` with minification, no sourcemaps, no test fixture, `SHA256SUMS`, artifact contract checks, and a versioned ZIP with checksum.
+- [x] 15.2 Require both permission grant and script registration for protected custom sites, refresh permission changes while the popup is open, and offer repair.
+- [x] 15.3 Use root selection or composed ranges for shadow-root capture and target-bound Range fallback for insertion; guard `execCommand` with target focus ownership.
+- [x] 15.4 Serialize worker settings mutations, derive the badge from the final stored pause state, and match Chrome's omitted-port wildcard semantics with explicit effective grant patterns.
+- [x] 15.5 Gate the local fixture by exact URL and marker, stop composed editable-target lookup at non-editable boundaries, and count consumed placeholders beside fresh findings with real WASM coverage.
+- [x] 15.6 Simplify only the extension section of the usage guide, update the extension guide and OpenSpec artifacts, and add focused regressions for the new fixes.
+- [x] 15.7 Preserve wildcard-port matches for legacy no-port custom sites and recognize pinned default hosts from generated explicit-port patterns.
